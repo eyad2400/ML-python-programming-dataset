@@ -470,30 +470,8 @@
       if(entry.meta.target) parts.push(entry.meta.target);
       return parts.join(' • ');
     }
-    function logActivity(action, meta = {}){
-      const actorName = meta.actor || (CURRENT_USER ? CURRENT_USER.name : 'مجهول');
-      const actorRole = meta.actorRole || (CURRENT_USER ? CURRENT_USER.role : 'guest');
-      const entry = {
-        action,
-        meta,
-        user: actorName,
-        role: actorRole,
-        ts: new Date().toISOString()
-      };
-      activityLog.push(entry);
-      activityLog = activityLog.slice(-500);
-      try { localStorage.setItem('activityLog', JSON.stringify(activityLog)); } catch(_) {}
-    }
-    function formatActivityDetails(entry){
-      if(!entry || !entry.meta) return '';
-      const parts = [];
-      if(entry.meta.month) parts.push('شهر: '+entry.meta.month);
-      if(entry.meta.dutyName) parts.push('خدمة: '+entry.meta.dutyName);
-      if(entry.meta.day) parts.push('يوم: '+entry.meta.day);
-      if(entry.meta.note) parts.push(entry.meta.note);
-      if(entry.meta.target) parts.push(entry.meta.target);
-      return parts.join(' • ');
-    }
+    
+    
     function getDeptGroup(deptId){
       const d = departments.find(dd=>dd.id===deptId);
       return d?.groupKey || 'internal';
@@ -3306,7 +3284,7 @@
       showToast('تم حفظ الإعدادات','success');
       renderTab('settings');
     }
-    unction renderUsersTable(){
+    function renderUsersTable(){
       const u = SETTINGS.users||[];
       if(!u.length) return '<div class="text-muted">لا مستخدمين</div>';
       const rows = u.map((us,i)=>{
@@ -3377,7 +3355,10 @@
 
     function renderSupportRequestsTable(){
       if(!supportRequests.length) return '<div class="text-muted">لا توجد طلبات مسجلة.</div>';
-      const rows = supportRequests.slice().sort((a,b)=> (b.createdAt||0).localeCompare(a.createdAt||0)).map(r=>{
+      const rows = supportRequests
+        .slice()
+        .sort((a,b)=> String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+        .map(r=>{
         const statusCls = r.status==='pending' ? 'warning' : (r.status==='denied'?'danger':'success');
         const created = r.createdAt ? new Date(r.createdAt).toLocaleString('ar-EG') : '';
         const note = escapeHtml(r.note||'');
