@@ -130,15 +130,15 @@
      @keyframes splashBounce { 0%, 80%, 100% { transform: translateY(0); opacity:.6; } 40% { transform: translateY(-8px); opacity:1; } }
     @keyframes splashAutoHide { to { opacity:0; visibility:hidden; pointer-events:none; } }
     .app-footer { position:fixed; bottom:0; left:0; right:0; background:#0f172a; color:#e2e8f0; padding:10px 16px; text-align:center; font-size:12px; z-index:900; }
-    @media print { @page { size:A4 portrait; margin:10mm; } .no-print { display:none !important; } body { background:#fff; color:#000; } }␊
+    @media print { @page { size:A4 portrait; margin:10mm; } .no-print { display:none !important; } body { background:#fff; color:#000; } }
   </style>
 </head>
 <body>
   <div id="splashScreen" class="splash-screen">
-    <div class="splash-logo">
-      <img id="splashLogoImg" alt="logo">
+   <div class="splash-logo">
+      <img id="splashLogoImg" alt="logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
     </div>
-    <div class="splash-title">مرحباً بك في نظام الخدمات</div>
+    <div class="splash-title">مرحباً بك في نظام الخدمات الإدارة العامة للمساعدات الفنية</div>
     <div class="splash-subtitle">يتم الآن تجهيز لوحة العمل...</div>
     <div class="splash-progress" aria-hidden="true">
       <div class="splash-progress-bar" id="splashProgressBar"></div>
@@ -154,7 +154,7 @@
     <div class="container-fluid d-flex justify-content-between align-items-center">
       <div>
         <div class="d-flex align-items-center gap-2">
-          <img src="${SETTINGS.logoData||''}" class="logo logo-anim" alt="logo" onerror="this.style.display='none'">
+          <img id="appLogoImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" class="logo logo-anim" alt="logo" style="display:none" onerror="this.style.display='none'">
           <div>
             <div class="brand" id="appNameTitle">نظام خدمات الضباط</div>
             <small id="appSubtitle" class="subtitle"></small>
@@ -253,7 +253,7 @@
     const defaultSettings = {
       appName: "تطبيق خدمات الإدارة العامة للمساعدات الفنية",
       appSubtitle: "",
-      hheaderHtml: "",
+      headerHtml: "",
       headerAlign: "center",
       logoData: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeDI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZTRkN2JhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U0ZDdiYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz4KICA8cG9seWxpbmUgcG9pbnRzPSIxNTAsMTIwIDE5MCw0MjAgMjIwLDEyMCAyNjAsNDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iMTgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjI2MCwxMDAgMzcwLDIyMCAzMTAsMjMwIDQxMCw0MjAgMjkwLDMyMCAyNTAsNDIwIDI0MCwyMzAgMTgwLDIyMCIgZmlsbD0iIzI3MzI2YiIgLz4KICA8dGV4dCB4PSIyNTYiIHk9IjU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjI4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtix2KfZhNi52KjZiNin2Kog2YPYqNio2YrYp9mGPC90ZXh0PgogIDx0ZXh0IHg9IjI1NiIgeT0iNDc1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtmF2YTZitmHINin2YTYo9iz2LnZiNmKINmF2YbYp9mI2Lkg2KjYp9mG2Ycg2KfZhNmF2YrYp9mE2YrZg9ipPC90ZXh0Pgo8L3N2Zz4=",
       footerHtml: "<div style='font-size:12px;color:#333;'>© حقوق محفوظة</div>",
@@ -352,6 +352,7 @@
       applyTheme();
       applyCustomFont();
       applyFontSettings();
+      updateNavLogo();
       cleanupOfficerLimits();
       autoArchiveOldMonths();
       resetIdleTimer();
@@ -445,6 +446,17 @@
       root.style.setProperty('--app-font', `${SETTINGS.appFontFamily || 'Arial'}, ${fallback}`);
       root.style.setProperty('--form-font', `${SETTINGS.formFontFamily || 'Arial'}, ${fallback}`);
       root.style.setProperty('--tab-font', `${SETTINGS.tabFontFamily || 'Arial'}, ${fallback}`);
+    }
+    function updateNavLogo(){
+      const logo = document.getElementById('appLogoImg');
+      if(!logo) return;
+      if(SETTINGS.logoData){
+        logo.src = SETTINGS.logoData;
+        logo.style.display = 'inline-block';
+      } else {
+        logo.removeAttribute('src');
+        logo.style.display = 'none';
+      }
     }
     function hideSplashScreen(){
       const splash = document.getElementById('splashScreen');
@@ -3137,7 +3149,8 @@
           <div class="relation-item"><span>الحالة</span><span class="relation-tag">${escapeHtml(o.status || 'active')}</span></div>
         </div>`;
       }).join('');
-      <div class="card-header d-flex justify-content-between align-items-center">
+      return `<div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
           <div>Organizational structure — الأقسام والمسميات والضباط</div>
           <div class="small text-muted">عرض مخطط تنظيمي للهيكل الإداري</div>
         </div>
@@ -3358,7 +3371,18 @@
         {name: document.getElementById('sig3n').value, title: document.getElementById('sig3t').value, place: document.getElementById('sig3p').value}
      ];
       const f = document.getElementById('set_logo')?.files?.[0];
-      if(f){ const r = new FileReader(); r.onload=()=>{ SETTINGS.logoData = r.result; saveAll(); showToast('تم حفظ الإعدادات مع الشعار','success'); renderTab('settings'); }; r.readAsDataURL(f); return; }
+       if(f){
+        const r = new FileReader();
+        r.onload=()=>{
+          SETTINGS.logoData = r.result;
+          saveAll();
+          updateNavLogo();
+          showToast('تم حفظ الإعدادات مع الشعار','success');
+          renderTab('settings');
+        };
+        r.readAsDataURL(f);
+        return;
+      }
      saveAll();
       document.getElementById('appNameTitle').textContent = SETTINGS.appName;
       document.getElementById('appSubtitle').textContent = SETTINGS.appSubtitle||'';
@@ -3369,9 +3393,12 @@
       }
       applyTheme();
       applyFontSettings();
+      updateNavLogo();
       showToast('تم حفظ الإعدادات','success');
       renderTab('settings');
     }
+      const footer = document.getElementById('appFooterText');
+     
     function renderUsersTable(){
       const u = SETTINGS.users||[];
       if(!u.length) return '<div class="text-muted">لا مستخدمين</div>';
