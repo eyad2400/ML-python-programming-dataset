@@ -121,10 +121,14 @@
     .relation-card h5 { margin:0 0 8px 0; font-size:15px; color:#1e3a8a; }
     .relation-item { font-size:13px; padding:4px 6px; border-radius:8px; background:#eef2ff; margin-bottom:6px; display:flex; justify-content:space-between; }
     .relation-tag { font-size:11px; color:#64748b; }
-    .report-preview-paper { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:16px; box-shadow:0 8px 20px rgba(15,23,42,.08); }
+   .report-preview-paper { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:16px; box-shadow:0 8px 20px rgba(15,23,42,.08); }
     .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#334155; margin-bottom:6px; }
     .report-header { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1e40af; padding-bottom:8px; margin-bottom:10px; gap:12px; }
     .report-title { font-size:18px; font-weight:800; text-align:center; color:#1e40af; }
+    .report-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:inherit; }
+    .report-table th, .report-table td { border:1px solid #1e293b; padding:4px 3px; text-align:center; }
+    .report-table th { background:#1e40af; color:#fff; }
+    .report-table td:last-child { width:32%; }
     @keyframes floatLogo { 0%{transform:translateY(0);} 50%{transform:translateY(-6px);} 100%{transform:translateY(0);} }
     @keyframes splashPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
      @keyframes splashBounce { 0%, 80%, 100% { transform: translateY(0); opacity:.6; } 40% { transform: translateY(-8px); opacity:1; } }
@@ -138,7 +142,7 @@
    <div class="splash-logo">
       <img id="splashLogoImg" alt="logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
     </div>
-    <div class="splash-title">مرحباً بك في نظام الخدمات الإدارة العامة للمساعدات الفنية</div>
+    <div class="splash-title">مرحباً بك في نظام الإدارة العامة للمساعدات الفنية</div>
     <div class="splash-subtitle">يتم الآن تجهيز لوحة العمل...</div>
     <div class="splash-progress" aria-hidden="true">
       <div class="splash-progress-bar" id="splashProgressBar"></div>
@@ -233,15 +237,41 @@
     const dutySwapState = {};
     let ADMIN_RECOVERY_CONTEXT = null;
 
-    function parseBadgeNumber(val){ const n = parseInt(val, 10); return isNaN(n) ? Number.MAX_SAFE_INTEGER : n; }
+    function parseBadgeSegment(val){
+      const n = parseInt(val, 10);
+      return isNaN(n) ? Number.MAX_SAFE_INTEGER : n;
+    }
+    function splitBadgeParts(badge){
+      const parts = String(badge || '').split('/');
+      return [parts[0] || '', parts[1] || '', parts[2] || ''];
+    }
+    function buildBadgeValue(part1, part2, part3){
+      const p1 = (part1 || '').trim();
+      const p2 = (part2 || '').trim();
+      const p3 = (part3 || '').trim();
+      if(!p1 && !p2 && !p3) return '';
+      return `${p1}/${p2}${p3 ? `/${p3}` : ''}`;
+    }
+    function getBadgeSortKey(badge){
+      const [first, second, third] = splitBadgeParts(badge);
+      return [
+        parseBadgeSegment(second),
+        parseBadgeSegment(first),
+        parseBadgeSegment(third)
+      ];
+    }
     function compareOfficerFairness(a, b, totalsMap){
       const totalA = totalsMap?.[a.id]?.total || totalsMap?.[a.id] || 0;
       const totalB = totalsMap?.[b.id]?.total || totalsMap?.[b.id] || 0;
       if(totalA !== totalB) return totalA - totalB;
       const rankDiff = ranks.indexOf(a.rank) - ranks.indexOf(b.rank);
       if(rankDiff !== 0) return rankDiff;
-      const badgeDiff = parseBadgeNumber(a.badge) - parseBadgeNumber(b.badge);
-      if(badgeDiff !== 0) return badgeDiff;
+      const badgeA = getBadgeSortKey(a.badge);
+      const badgeB = getBadgeSortKey(b.badge);
+      for(let i=0; i<badgeA.length; i++){
+        const diff = badgeA[i] - badgeB[i];
+        if(diff !== 0) return diff;
+      }
       return (a.name||'').localeCompare(b.name||'');
     }
     function ruleMatchesWeekday(rule, weekday){
@@ -275,6 +305,7 @@
         { key: 'external', name: 'أقسام خارجية' }
       ]
     };
+    const REPORT_MAX_FONT_SIZE = 9;
     let SETTINGS = Object.assign({}, defaultSettings);
     let CURRENT_USER = null;
     let ACTIVE_SESSIONS = [];
@@ -2376,6 +2407,40 @@
     function getReportFontFamily(){
       return SETTINGS.reportFontFamily || 'Arial';
     }
+    function getReportPrintFontSize(){
+      const requested = Number(SETTINGS.printFontSize || defaultSettings.printFontSize || 9);
+      return Math.min(requested, REPORT_MAX_FONT_SIZE);
+    }
+    function buildReportStyles({fontFamily, fontSize, includeBackground = true}){
+      return `
+          @page{size:A4 portrait;margin:8mm}
+          body{font-family:${fontFamily},"Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm;${includeBackground ? 'background:#f8fafc;' : ''}}
+          .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid}
+          .report-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:${fontSize}px}
+          .report-table th,.report-table td{border:1px solid #1e293b;padding:4px 3px;text-align:center}
+          .report-table th{background:#1e40af;color:#fff}
+          .report-table td:last-child{width:32%}
+          tr{page-break-inside:avoid}
+          h2,h3{margin:0}
+          .report-header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #1e40af;padding-bottom:6px;margin-bottom:8px}
+          .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#334155;margin-bottom:6px}
+          .report-title{font-size:16px;font-weight:800;text-align:center;color:#1e40af}
+          .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
+      `;
+    }
+    function buildDutyTableHtml(rows, effectiveMonth){
+      const [y,m] = effectiveMonth.split('-');
+      const days = new Date(+y,+m,0).getDate();
+      let table = `<table class="report-table"><thead><tr><th>م</th><th>التاريخ</th><th>اليوم</th><th>الرتبة</th><th>الضابط</th><th>ملاحظات</th></tr></thead><tbody>`;
+      for(let day=1; day<=days; day++){
+        const r = rows.find(x=>x.day===day) || {officerId:null,notes:""};
+        const date = new Date(+y,+m-1,day);
+        const o = officers.find(x=>x.id===r.officerId) || {rank:'',name:'—'};
+        table += `<tr><td>${day}</td><td>${date.toLocaleDateString('ar-EG')}</td><td>${weekdays[date.getDay()]}</td><td>${escapeHtml(o.rank)}</td><td>${escapeHtml(o.name)}</td><td>${escapeHtml(r.notes)}</td></tr>`;
+      }
+      table += '</tbody></table>';
+      return table;
+    }
     function buildReportHeader(duty, effectiveMonth){
       const logo = SETTINGS.logoData ? `<img src="${SETTINGS.logoData}" style="max-height:72px;border-radius:50%;object-fit:cover;">` : '';
       const title = `كشف خدمات ${escapeHtml(duty.printLabel || duty.name)}`;
@@ -2426,37 +2491,17 @@
         <div style="flex:1;text-align:center;font-weight:700;">${escapeHtml(sigs[2]?.place||'')}<br><br>__________________<br><span style="font-weight:800">${escapeHtml(sigs[2]?.name||'')}</span><br><span>${escapeHtml(sigs[2]?.title||'')}</span></div>
       </div>`;
       const footer = buildFooterHtml(signatureHtml, true);
-      const fontSize = SETTINGS.printFontSize || 10;
       const fontFamily = getReportFontFamily();
-            const watermark = buildReportWatermarkHtml();
-      const safeFontSize = Math.min(fontSize, 10);
+      const fontSize = getReportPrintFontSize();
+      const watermark = buildReportWatermarkHtml();
       let html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${escapeHtml(duty.printLabel || duty.name)}</title>
         <style>
-          @page{size:A4 portrait;margin:8mm}
-          body{font-family:${fontFamily},"Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm;height:297mm;box-sizing:border-box}
-          .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid}
-          table{width:100%;border-collapse:collapse;font-size:${safeFontSize}px;table-layout:fixed}
-          th,td{border:1px solid #1e293b;padding:4px 3px;text-align:center}
-          th{background:#1e40af;color:#fff}
-          td:last-child{width:32%}
-          tr{page-break-inside:avoid}
-          h2,h3{margin:0}
-          .report-header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #1e40af;padding-bottom:6px;margin-bottom:8px}
-          .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#334155;margin-bottom:6px}
-          .report-title{font-size:16px;font-weight:800;text-align:center;color:#1e40af}
-          .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
+          ${buildReportStyles({fontFamily, fontSize, includeBackground: false})}
+          body{height:297mm;box-sizing:border-box}
         </style>
-      </head><body><div class="one-duty-page">${watermark}<div class="duty-content">`;
+      </head><body><div class="one-duty-page">${watermark}<div class="duty-content" style="font-size:${fontSize}px;">`;
       html += `${headerBlock ? `<div style="margin-bottom:6px;">${headerBlock}</div>` : ''}${reportHeader}`;
-      html += `<table><thead><tr><th>م</th><th>التاريخ</th><th>اليوم</th><th>الرتبة</th><th>الضابط</th><th>ملاحظات</th></tr></thead><tbody>`;
-      const [y,m] = effectiveMonth.split('-'); const days = new Date(+y,+m,0).getDate();
-      for(let day=1; day<=days; day++){
-        const r = rows.find(x=>x.day===day) || {officerId:null,notes:""};
-        const date = new Date(+y,+m-1,day);
-        const o = officers.find(x=>x.id===r.officerId) || {rank:'',name:'—'};
-        html += `<tr><td>${day}</td><td>${date.toLocaleDateString('ar-EG')}</td><td>${weekdays[date.getDay()]}</td><td>${escapeHtml(o.rank)}</td><td>${escapeHtml(o.name)}</td><td style="width:40%;">${escapeHtml(r.notes)}</td></tr>`;
-      }
-     html += `</tbody></table><div style="margin-top:8px">${signatureHtml}</div></div></div></body></html>`;
+      html += `${buildDutyTableHtml(rows, effectiveMonth)}<div style="margin-top:8px">${signatureHtml}</div></div></div></body></html>`;
       return html;
     }
     function triggerIframePrint(html){
@@ -2495,6 +2540,8 @@
     }
     function printDuty(dutyId){
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
+      const duty = duties.find(d=>d.id===dutyId);
+      if(!duty){ safeShowToast('تعذر العثور على نوع الخدمة للطباعة','danger'); return; }
       const html = buildDutyHtmlForExport(dutyId, month);
       triggerIframePrint(html);
     }
@@ -2520,17 +2567,9 @@
   const rows = roster[month]?.[dutyId] || [];
   const header = buildHeaderHtml();
   const reportHeader = buildReportHeader(duty, month);
-  const fontSize = SETTINGS.printFontSize || 10;
+  const fontSize = getReportPrintFontSize();
   const fontFamily = getReportFontFamily();
-  const [y,m] = month.split('-'); const days = new Date(+y,+m,0).getDate();
-  let table = `<table class="table table-bordered" style="table-layout:fixed;"><thead class="table-dark"><tr><th>م</th><th>التاريخ</th><th>اليوم</th><th>الرتبة</th><th>الضابط</th><th style="width:32%;">ملاحظات</th></tr></thead><tbody>`;
-  for(let day=1; day<=days; day++){
-    const r = rows.find(x=>x.day===day) || {officerId:null,notes:""};
-    const date = new Date(+y,+m-1,day);
-    const o = officers.find(x=>x.id===r.officerId) || {rank:'',name:'—'};
-    table += `<tr><td>${day}</td><td>${date.toLocaleDateString('ar-EG')}</td><td>${weekdays[date.getDay()]}</td><td>${escapeHtml(o.rank)}</td><td>${escapeHtml(o.name)}</td><td>${escapeHtml(r.notes)}</td></tr>`;
-  }
-  table += '</tbody></table>';
+  const table = buildDutyTableHtml(rows, month);
   const sigs = SETTINGS.signatures || [];
   const signatureHtml = `<div style="display:flex;gap:12px;margin-top:6px;font-size:12px;line-height:1.35;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">
         <div style="flex:1;text-align:center;">${escapeHtml(sigs[0]?.place||'')}<br><br>__________________<br><span>${escapeHtml(sigs[0]?.name||'')}</span><br><span>${escapeHtml(sigs[0]?.title||'')}</span></div>
@@ -2538,8 +2577,7 @@
         <div style="flex:1;text-align:center;font-weight:700;">${escapeHtml(sigs[2]?.place||'')}<br><br>__________________<br><span style="font-weight:800">${escapeHtml(sigs[2]?.name||'')}</span><br><span>${escapeHtml(sigs[2]?.title||'')}</span></div>
       </div>`;
   const watermark = buildReportWatermarkHtml();
-  const safeFontSize = Math.min(fontSize, 10);
-  return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${safeFontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}${reportHeader}${table}<div style="margin-top:8px">${signatureHtml}</div></div></div>`;
+  return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}${reportHeader}${table}<div style="margin-top:8px">${signatureHtml}</div></div></div>`;
 }
 
    function printSelectedDuties(){
@@ -2639,6 +2677,7 @@
       const disabledAttr = canManage ? '' : 'disabled';
       const isUpper = jobTitles.find(j=>j.id===o.jobTitleId)?.isUpper;
       const deptDisabled = isUpper ? 'disabled' : disabledAttr;
+      const [badgeFirst, badgeSecond, badgeThird] = splitBadgeParts(o.badge);
       return `<div class="card sticky-panel"><div class="card-header">تفاصيل الضابط</div><div class="card-body">
         <div class="mb-2"><label class="form-label">الاسم</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.name)}" onchange="updateOfficer(${o.id},'name',this.value)"></div>
         <div class="row g-2">
@@ -2647,7 +2686,15 @@
         </div>
         <div class="row g-2">
           <div class="col-md-6"><label class="form-label">المسمى الوظيفي</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'jobTitleId',+this.value||null)"><option value="">— مسمى —</option>${jobTitles.map(j=>`<option value="${j.id}" ${j.id===o.jobTitleId?'selected':''}>${escapeHtml(j.name)}</option>`).join('')}</select></div>
-          <div class="col-md-6"><label class="form-label">رقم الأقدمية</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.badge||'')}" onchange="updateOfficer(${o.id},'badge',this.value)"></div>
+          <div class="col-md-6"><label class="form-label">رقم الأقدمية</label>
+            <div class="d-flex align-items-center gap-1">
+              <input id="badge_${o.id}_1" class="form-control" ${disabledAttr} value="${escapeHtml(badgeFirst)}" placeholder="رقم 1" required onchange="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
+              <span class="text-muted">/</span>
+              <input id="badge_${o.id}_2" class="form-control" ${disabledAttr} value="${escapeHtml(badgeSecond)}" placeholder="رقم 2" required onchange="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
+              <span class="text-muted">/</span>
+              <input id="badge_${o.id}_3" class="form-control" ${disabledAttr} value="${escapeHtml(badgeThird)}" placeholder="اختياري" onchange="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
+            </div>
+          </div>
         </div>
         <div class="row g-2">
           <div class="col-md-6"><label class="form-label">هاتف</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.phone||'')}" onchange="updateOfficer(${o.id},'phone',this.value)"></div>
@@ -2680,7 +2727,15 @@
         <div class="row g-2">
           <div class="col-md-4"><input id="new_off_name" class="form-control" placeholder="الاسم"></div>
           <div class="col-md-2"><select id="new_off_rank" class="form-select">${ranks.map(r=>`<option>${r}</option>`).join('')}</select></div>
-          <div class="col-md-2"><input id="new_off_badge" class="form-control" placeholder="رقم"></div>
+          <div class="col-md-2">
+            <div class="d-flex align-items-center gap-1">
+              <input id="new_off_badge_1" class="form-control" placeholder="رقم 1" required style="min-width:0;">
+              <span class="text-muted">/</span>
+              <input id="new_off_badge_2" class="form-control" placeholder="رقم 2" required style="min-width:0;">
+              <span class="text-muted">/</span>
+              <input id="new_off_badge_3" class="form-control" placeholder="اختياري" style="min-width:0;">
+            </div>
+          </div>
           <div class="col-md-2"><select id="new_off_dept" class="form-select"><option value="">قسم</option>${departments.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select></div>
           <div class="col-md-2"><select id="new_off_job" class="form-select"><option value="">مسمى</option>${jobTitles.map(j=>`<option value="${j.id}">${escapeHtml(j.name)}</option>`).join('')}</select></div>
           <div class="col-md-2"><input id="new_off_phone" class="form-control" placeholder="هاتف"></div>
@@ -2697,13 +2752,34 @@
       const name = document.getElementById('new_off_name').value.trim();
       const rank = document.getElementById('new_off_rank').value;
       if(!name) return showToast('ادخل الاسم','danger');
+      const badgePart1 = document.getElementById('new_off_badge_1').value;
+      const badgePart2 = document.getElementById('new_off_badge_2').value;
+      const badgePart3 = document.getElementById('new_off_badge_3').value;
+      if(!badgePart1.trim() || !badgePart2.trim()){
+        return showToast('رقما الأقدمية الأول والثاني مطلوبان','danger');
+      }
       const id = Date.now();
-      officers.push({id, name, rank, badge: document.getElementById('new_off_badge').value, deptId: +document.getElementById('new_off_dept').value || null, jobTitleId: +document.getElementById('new_off_job').value || null, subs: [], status:'active', transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value});
+      const badgeValue = buildBadgeValue(
+        badgePart1,
+        badgePart2,
+        badgePart3
+      );
+      officers.push({id, name, rank, badge: badgeValue, deptId: +document.getElementById('new_off_dept').value || null, jobTitleId: +document.getElementById('new_off_job').value || null, subs: [], status:'active', transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value});
       saveAll();
       document.getElementById('officerEditorArea').innerHTML='';
       SELECTED_OFFICER_ID = id;
       logActivity('إضافة ضابط', {target: name, rank});
       renderTab('officers');
+    }
+    function updateOfficerBadgeFromInputs(id){
+      const part1 = document.getElementById(`badge_${id}_1`)?.value || '';
+      const part2 = document.getElementById(`badge_${id}_2`)?.value || '';
+      const part3 = document.getElementById(`badge_${id}_3`)?.value || '';
+      if(!part1.trim() || !part2.trim()){
+        safeShowToast('رقما الأقدمية الأول والثاني مطلوبان','warning');
+        return;
+      }
+      updateOfficer(id, 'badge', buildBadgeValue(part1, part2, part3));
     }
     function updateOfficer(id,key,val){ const o = officers.find(x=>x.id===id); if(!o) return; o[key]=val; saveAll(); }
     function deleteOfficer(id){ if(!confirm('حذف الضابط؟')) return; const removed = officers.find(o=>o.id===id); officers = officers.filter(o=>o.id!==id); delete officerLimits[id]; saveAll(); logActivity('حذف ضابط', {target: removed?.name || id}); renderTab('officers'); }
@@ -3200,8 +3276,8 @@
               <div class="mt-3 text-end"><button class="btn btn-outline-primary" onclick="saveReportSettingsFromTab()">حفظ إعدادات التقرير</button></div>
             </div>
           </div>
-          <div class="row g-2 mb-3 align-items-end">
-            <div class="col-md-4"><label class="form-label">امتداد التصدير</label><select id="rpt_export_format" class="form-select"><option value="pdf">PDF</option><option value="png">PNG</option><option value="jpeg">JPEG</option><option value="html">HTML</option></select></div>
+          <div class="row g-2 mb-3 align-items-end">␊
+            <div class="col-md-4"><label class="form-label">امتداد التصدير</label><select id="rpt_export_format" class="form-select"><option value="pdf">PDF</option><option value="png">PNG</option><option value="jpeg">JPEG</option><option value="html">HTML</option><option value="docx">DOCX</option></select></div>
             <div class="col-md-8 text-end">
               <button class="btn btn-success me-2" onclick="previewSelectedDuties()">معاينة</button>
               <button class="btn btn-outline-primary me-2" onclick="exportDutiesByFormat('selected')">تصدير المحدد</button>
@@ -3254,22 +3330,31 @@
     }
     function buildReportHtmlDocument(ids, month){
       const fontFamily = getReportFontFamily();
-      const fontSize = SETTINGS.printFontSize || 10;
+      const fontSize = getReportPrintFontSize();
       const bodyContent = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
       return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Roster ${month}</title>
         <style>
-         @page{size:A4 portrait;margin:8mm}
-          body{font-family:${fontFamily},"Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm;background:#f8fafc}
-          table{width:100%;border-collapse:collapse;font-size:${Math.min(fontSize,10)}px;table-layout:fixed}
-          th,td{border:1px solid #1e293b;padding:4px 3px;text-align:center}
-          th{background:#1e40af;color:#fff}
-          td:last-child{width:32%}
+          ${buildReportStyles({fontFamily, fontSize, includeBackground: true})}
           .report-preview-paper{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.08)}
           .report-header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:10px}
           .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#334155;margin-bottom:8px}
           .report-title{font-size:18px;font-weight:800;text-align:center;color:#1e40af}
-          .one-duty-page{position:relative;page-break-inside:avoid}
-          .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
+        </style>
+      </head><body>${bodyContent}</body></html>`;
+    }
+    function buildReportDocxDocument(ids, month){
+      const fontFamily = getReportFontFamily();
+      const fontSize = getReportPrintFontSize();
+      const bodyContent = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
+      return `<!doctype html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40" lang="ar" dir="rtl"><head><meta charset="utf-8">
+        <title>Roster ${month}</title>
+        <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom></w:WordDocument></xml><![endif]-->
+        <style>
+          ${buildReportStyles({fontFamily, fontSize, includeBackground: false})}
+          .report-preview-paper{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px}
+          .report-header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:10px}
+          .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#334155;margin-bottom:8px}
+          .report-title{font-size:18px;font-weight:800;text-align:center;color:#1e40af}
         </style>
       </head><body>${bodyContent}</body></html>`;
     }
@@ -3286,6 +3371,16 @@
         const html = buildReportHtmlDocument(ids, month);
         downloadTextFile(`Roster_${scope}_${month}.html`, html, 'text/html');
         return showToast('تم تصدير ملف HTML','success');
+      }
+      if(format === 'docx'){
+        const doc = buildReportDocxDocument(ids, month);
+        downloadTextFile(`Roster_${scope}_${month}.docx`, doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        return showToast('تم تصدير ملف DOCX','success');
+      }
+      if(format === 'docx'){
+        const doc = buildReportDocxDocument(ids, month);
+        downloadTextFile(`Roster_${scope}_${month}.docx`, doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        return showToast('تم تصدير ملف DOCX','success');
       }
       if(format === 'png' || format === 'jpeg'){
         const container = document.createElement('div');
