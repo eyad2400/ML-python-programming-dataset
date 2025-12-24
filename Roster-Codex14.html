@@ -99,11 +99,45 @@
     .duty-content { position:relative; z-index:2; }
     .watermark { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:64px; color:var(--brand-dark); opacity:0.08; white-space:pre-wrap; text-align:center; width:160%; pointer-events:none; z-index:1; user-select:none; }
     .drag-over { outline:2px dashed #0ea5e9; background:#e0f2fe; }
+    .splash-screen { position:fixed; inset:0; background:radial-gradient(circle at 20% 20%, #eef2ff, #1e3a8a); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:5000; gap:18px; transition:opacity .6s ease, visibility .6s ease; }
+    .splash-screen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+    .splash-logo { width:160px; height:160px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); box-shadow:0 20px 40px rgba(15,23,42,.35); animation:splashPulse 2.8s ease-in-out infinite; overflow:hidden; }
+    .splash-logo img { width:100%; height:100%; object-fit:cover; }
+    .splash-title { font-size:24px; font-weight:800; text-align:center; }
+    .splash-subtitle { font-size:14px; opacity:.85; text-align:center; }
+    .splash-dots { display:flex; gap:8px; margin-top:6px; }
+    .splash-dot { width:10px; height:10px; border-radius:50%; background:#facc15; animation:splashBounce 1.4s infinite ease-in-out; }
+    .splash-dot:nth-child(2){ animation-delay:.2s; }
+    .splash-dot:nth-child(3){ animation-delay:.4s; }
+    .relations-board { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+    .relations-column { background:#f8fafc; border-radius:12px; border:1px solid #e5e7eb; padding:12px; min-height:240px; }
+    .relation-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:10px 12px; margin-bottom:10px; box-shadow:0 4px 10px rgba(0,0,0,.06); }
+    .relation-card h5 { margin:0 0 8px 0; font-size:15px; color:#1e3a8a; }
+    .relation-item { font-size:13px; padding:4px 6px; border-radius:8px; background:#eef2ff; margin-bottom:6px; display:flex; justify-content:space-between; }
+    .relation-tag { font-size:11px; color:#64748b; }
+    .report-preview-paper { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:16px; box-shadow:0 8px 20px rgba(15,23,42,.08); }
+    .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#334155; margin-bottom:6px; }
+    .report-header { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1e40af; padding-bottom:8px; margin-bottom:10px; gap:12px; }
+    .report-title { font-size:18px; font-weight:800; text-align:center; color:#1e40af; }
     @keyframes floatLogo { 0%{transform:translateY(0);} 50%{transform:translateY(-6px);} 100%{transform:translateY(0);} }
+    @keyframes splashPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
+    @keyframes splashBounce { 0%, 80%, 100% { transform: translateY(0); opacity:.6; } 40% { transform: translateY(-8px); opacity:1; } }
     @media print { @page { size:A4 portrait; margin:10mm; } .no-print { display:none !important; } body { background:#fff; color:#000; } }
   </style>
 </head>
 <body>
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-logo">
+      <img id="splashLogoImg" alt="logo" style="display:none;">
+    </div>
+    <div class="splash-title">مرحباً بك في نظام الخدمات</div>
+    <div class="splash-subtitle">يتم الآن تجهيز لوحة العمل...</div>
+    <div class="splash-dots">
+      <span class="splash-dot"></span>
+      <span class="splash-dot"></span>
+      <span class="splash-dot"></span>
+    </div>
+  </div>
   <nav class="navbar fixed-top navbar-dark no-print">
     <div class="container-fluid d-flex justify-content-between align-items-center">
       <div>
@@ -134,6 +168,7 @@
       <li class="nav-item"><button class="nav-link" data-tab="duties" onclick="renderTab('duties')">أنواع الخدمات</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="limits" onclick="renderTab('limits')">حدود الضباط</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="exceptions" onclick="renderTab('exceptions')">القواعد</button></li>
+      <li class="nav-item"><button class="nav-link" data-tab="relations" onclick="renderTab('relations')">مخطط العلاقات</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="report" onclick="renderTab('report')">التقرير</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="stats" onclick="renderTab('stats')">إحصاءات/أرشيف</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="account" onclick="renderTab('account')">الملف الشخصي</button></li>
@@ -203,6 +238,7 @@
       authEnabled: false,
       users: [],
       printFontSize: 10,
+      reportFontFamily: 'Arial',
       includeHeaderOnPrint: false,
       includeFooterOnPrint: true,
       idleLogoutMinutes: 0,
@@ -217,9 +253,10 @@
     let CURRENT_USER = null;
     let ACTIVE_SESSIONS = [];
       const ROLE_TABS = {
-      admin: ['roster','officers','ranks','departments','jobtitles','duties','limits','exceptions','report','stats','admin','settings','account','about'],
-      editor: ['roster','report','stats','officers','account','about'], // no org/rules edits
-      user: ['roster','account','about']
+     admin: ['roster','officers','ranks','departments','jobtitles','duties','limits','exceptions','relations','report','stats','admin','settings','account','about'],
+      editor: ['roster','report','stats','officers','relations','account','about'], // no org/rules edits
+      user: ['roster','relations','account','about'],
+      viewer: ['roster','relations','account','about']
     };
 
     /* ========= Persistence ========= */
@@ -262,12 +299,14 @@
       if(!Array.isArray(SETTINGS.deptGroups) || !SETTINGS.deptGroups.length) SETTINGS.deptGroups = defaultSettings.deptGroups.slice();
       if(!SETTINGS.themeKey || !THEMES[SETTINGS.themeKey]) SETTINGS.themeKey = defaultSettings.themeKey;
       if(!SETTINGS.loginLayout) SETTINGS.loginLayout = defaultSettings.loginLayout;
+      if(!SETTINGS.reportFontFamily) SETTINGS.reportFontFamily = defaultSettings.reportFontFamily;
       try { ACTIVE_SESSIONS = JSON.parse(sessionStorage.getItem('activeSessions')) || []; } catch(_) { ACTIVE_SESSIONS = []; }
       try { CURRENT_USER = JSON.parse(sessionStorage.getItem('currentUser')) || null; if(CURRENT_USER && CURRENT_USER.officerId===undefined) CURRENT_USER.officerId=null; } catch(_) { CURRENT_USER = null; }
       try { supportRequests = JSON.parse(localStorage.getItem('supportRequests')) || []; } catch(_) { supportRequests = []; }
       document.getElementById('appNameTitle').textContent = SETTINGS.appName;
       document.getElementById('appSubtitle').textContent = SETTINGS.appSubtitle || '';
       updateLoginLabel();
+      initSplashScreen();
       if(CURRENT_USER){
         const rec = (SETTINGS.users||[]).find(u=>u.name===CURRENT_USER.name);
         if(rec){ CURRENT_USER.mustChangePassword = !!rec.mustChangePassword; sessionStorage.setItem('currentUser', JSON.stringify(CURRENT_USER)); }
@@ -365,6 +404,25 @@
         body { font-family: "AppCustomFont","Arial","Noto Sans Arabic","Tahoma",sans-serif; }
       `;
     }
+    function hideSplashScreen(){
+      const splash = document.getElementById('splashScreen');
+      if(!splash || splash.classList.contains('hidden')) return;
+      splash.classList.add('hidden');
+      setTimeout(()=> splash.remove(), 1200);
+    }
+    function initSplashScreen(){
+      const splash = document.getElementById('splashScreen');
+      if(!splash) return;
+      const logo = document.getElementById('splashLogoImg');
+      if(logo){
+        if(SETTINGS.logoData){ logo.src = SETTINGS.logoData; logo.style.display='block'; }
+        else { logo.style.display='none'; }
+      }
+      const title = splash.querySelector('.splash-title');
+      if(title) title.textContent = `مرحباً بك في ${SETTINGS.appName}`;
+      setTimeout(hideSplashScreen, 1800);
+      setTimeout(hideSplashScreen, 5000);
+    }
     function logActivity(action, meta = {}){
       const actorName = meta.actor || (CURRENT_USER ? CURRENT_USER.name : 'مجهول');
       const actorRole = meta.actorRole || (CURRENT_USER ? CURRENT_USER.role : 'guest');
@@ -439,7 +497,8 @@
       return d?.groupKey || 'internal';
     }
     function canEditRoster(){ const r=currentRole(); return !SETTINGS.authEnabled || r==='admin' || r==='editor'; }
-    function isViewOnlyUser(){ return SETTINGS.authEnabled && currentRole()==='user'; }
+    function isViewerUser(){ return SETTINGS.authEnabled && currentRole()==='viewer'; }
+    function isViewOnlyUser(){ return SETTINGS.authEnabled && (currentRole()==='user' || currentRole()==='viewer'); }
     // Offline fallbacks for missing libs
     // Lightweight html2canvas alternative using SVG foreignObject to avoid external dependencies
     if (typeof window.html2canvas === 'undefined') {
@@ -524,6 +583,7 @@
         case 'duties': c.innerHTML = renderDutiesTab(); break;
         case 'limits': c.innerHTML = renderOfficerLimitsTab(); break;
         case 'exceptions': c.innerHTML = renderExceptionsTab(); clearExceptionForm(); break;
+        case 'relations': c.innerHTML = renderRelationsTab(); break;
         case 'report': c.innerHTML = renderReportTab(); break;
         case 'stats': c.innerHTML = renderStatsArchiveTab(); break;
         case 'account': c.innerHTML = renderAccountTab(); break;
@@ -958,12 +1018,15 @@
         const rlSummary = summaryParts.filter(Boolean).join(' • ');
         const [yy,mm] = month.split('-');
         const days = new Date(Number(yy), Number(mm), 0).getDate();
+        const viewerOfficerId = isViewerUser() ? CURRENT_USER?.officerId : null;
+        const viewerDays = viewerOfficerId ? dutyRows.filter(r=>r.officerId===viewerOfficerId).map(r=>r.day).filter(Boolean) : [];
+        const daysToRender = isViewerUser() ? viewerDays : Array.from({length: days}, (_, idx) => idx + 1);
 
         const countsByOfficer = {};
         (dutyRows || []).forEach(r => { if (r.officerId) countsByOfficer[r.officerId] = (countsByOfficer[r.officerId] || 0) + 1; });
         const monthlyCounts = buildOfficerDutyCountsForMonth(month);
 
-        const rowsHtml = Array.from({length: days}, (_, idx) => idx + 1).map(day => {
+        const rowsHtml = daysToRender.map(day => {
           const date = new Date(Number(yy), Number(mm) - 1, day);
           const r = dutyRows.find(x => x.day === day) || {officerId: null, notes: ""};
           const off = officers.find(o => o.id === r.officerId) || null;
@@ -971,12 +1034,20 @@
           const cls = blocked.length ? 'blocked' : '';
           const ttl = blocked.length ? `title="${blocked.join(' | ')}"` : '';
 
+          if(isViewerUser()){
+            const displayOfficer = off || (viewerOfficerId ? officers.find(o=>o.id===viewerOfficerId) : null);
+            return `<tr class="${cls}" ${ttl}><td class="text-center">${day}</td><td class="text-center">${weekdays[date.getDay()]}</td><td class="text-center">${date.toLocaleDateString('ar-EG')}</td>
+              <td>${escapeHtml(displayOfficer?.rank || '')}</td>
+              <td>${escapeHtml(displayOfficer?.name || '')}</td>
+              <td>${escapeHtml(r.notes || '')}</td></tr>`;
+          }
+
           let eligible = [];
           try {
             eligible = officers.filter(o => isOfficerEligibleForDropdown(o, duty, date, month, r.officerId));
           } catch (err) {
             console.error('Eligibility filter error', err);
-            eligible = [];
+		eligible = [];
           }
 
           if (!eligible.length) eligible = officers.filter(o => !(duty.allowedRanks && duty.allowedRanks.length) || duty.allowedRanks.includes(o.rank));
@@ -1005,7 +1076,7 @@
         }).join('');
 
         const collapsed = !!dutyCollapseState[duty.id];
-        const showSwap = !!dutySwapState[duty.id];
+        const showSwap = canEditRoster() && !!dutySwapState[duty.id];
         const swapControls = showSwap ? `<div class="d-flex align-items-center gap-2 mb-2">
               <div>تبديل سريع:</div>
               <input type="number" min="1" max="${days}" class="form-control form-control-sm" style="width:120px" placeholder="اليوم الأول" id="swap_${duty.id}_a">
@@ -1013,19 +1084,23 @@
               <button class="btn btn-sm btn-success" onclick="swapDutyDays(${duty.id})">تبديل</button>
             </div>` : '';
 
+        const tableHead = isViewerUser()
+          ? '<tr><th>اليوم</th><th>الأسبوع</th><th>التاريخ</th><th>الرتبة</th><th>الضابط</th><th>ملاحظات</th></tr>'
+          : '<tr><th>اليوم</th><th>الأسبوع</th><th>التاريخ</th><th>الضابط</th><th>ملاحظات</th></tr>';
+
         return `<div class="card mb-3"><div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <div><strong>${escapeHtml(duty.name)}</strong> — ${duty.duration}س — راحة ${duty.restHours}س</div>
             <div class="d-flex align-items-center gap-1">
               <button class="btn btn-sm btn-outline-secondary" onclick="toggleDutyCollapse(${duty.id})">${collapsed?'عرض':'إخفاء'}</button>
-              <button class="btn btn-sm btn-outline-info" onclick="toggleSwapBox(${duty.id})">${showSwap?'إخفاء التبديل':'تبديل سريع'}</button>
+              ${canEditRoster() ? `<button class="btn btn-sm btn-outline-info" onclick="toggleSwapBox(${duty.id})">${showSwap?'إخفاء التبديل':'تبديل سريع'}</button>` : ''}
               <button class="btn btn-sm btn-outline-primary" onclick="printDuty(${duty.id})">طباعة</button>
               <button class="btn btn-sm btn-outline-secondary" onclick="exportDutyPDF(${duty.id})">حفظ PDF</button>
             </div>
           </div>
           ${rlSummary ? `<div class="mb-2 small-muted">${escapeHtml(rlSummary)}</div>` : ''}
           ${swapControls}
-          ${collapsed ? '<div class="text-muted">القسم مطوي</div>' : `<div class="table-responsive"><table class="table table-bordered table-sm"><thead class="table-dark"><tr><th>اليوم</th><th>الأسبوع</th><th>التاريخ</th><th>الضابط</th><th>ملاحظات</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`}
+          ${collapsed ? '<div class="text-muted">القسم مطوي</div>' : `${isViewerUser() && !viewerOfficerId ? '<div class="alert alert-warning">لم يتم ربط حسابك بضابط لعرض الأيام المسندة.</div>' : ''}${isViewerUser() && viewerOfficerId && !rowsHtml ? '<div class="alert alert-info">لا توجد أيام مسندة لك في هذا النوع خلال الشهر.</div>' : `<div class="table-responsive"><table class="table table-bordered table-sm"><thead class="table-dark">${tableHead}</thead><tbody>${rowsHtml || `<tr><td colspan=\"${isViewerUser() ? 6 : 5}\" class=\"text-center text-muted\">لا توجد أيام لعرضها</td></tr>`}</tbody></table></div>`}`}
         </div></div>`;
       } catch (err) {
         console.error('renderDutySection error', err);
@@ -1415,8 +1490,8 @@
                   <div class="col-md-3"><input id="admin_user_fullName" class="form-control" placeholder="الاسم الكامل"></div>
                   <div class="col-md-3"><input id="admin_user_email" type="email" class="form-control" placeholder="البريد الإلكتروني"></div>
                 </div>
-                <div class="row g-2">
-                  <div class="col-md-2"><select id="admin_user_role" class="form-select"><option value="admin">Admin</option><option value="editor">Editor</option><option value="user">User</option></select></div>
+               <div class="row g-2">
+                  <div class="col-md-2"><select id="admin_user_role" class="form-select"><option value="admin">Admin</option><option value="editor">Editor</option><option value="user">User</option><option value="viewer">Viewer</option></select></div>
                   <div class="col-md-2"><select id="admin_user_officer" class="form-select"><option value="">ربط بضابط</option>${officers.map(o=>`<option value="${o.id}">${escapeHtml(o.name)} (${escapeHtml(o.rank)})</option>`).join('')}</select></div>
                   <div class="col-md-2"><input id="admin_user_phone" class="form-control" placeholder="هاتف"></div>
                   <div class="col-md-3"><input id="admin_user_note" class="form-control" placeholder="ملاحظات"></div>
@@ -1424,6 +1499,20 @@
                 </div>
                 <div class="small text-muted mt-1">الربط بضابط يفعّل الصلاحيات الفردية ويظهر الاسم في الشريط العلوي.</div>
                 <div class="mt-3" id="admin_usersTable">${renderUsersTable()}</div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="border rounded p-3 h-100 mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">مستخدمي المشاهدة للضباط</h6>
+                  <div>
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="adminGenerateViewerUsersForAll(false)">إنشاء حسابات المشاهدة</button>
+                    <button class="btn btn-sm btn-outline-warning me-2" onclick="adminGenerateViewerUsersForAll(true)">تحديث كلمات المرور</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="exportViewerUsersCSV()">تصدير CSV</button>
+                  </div>
+                </div>
+                <div class="small text-muted mb-2">ينشئ النظام حساب مشاهدة لكل ضابط لعرض أيامه المسندة فقط.</div>
+                <div id="viewerUsersSheet">${renderViewerUsersSheet()}</div>
               </div>
             </div>
             <div class="col-md-12">
@@ -1574,6 +1663,57 @@
       logActivity('حذف رتبة', {target: name});
       showToast('تم الحذف', 'success');
     }
+    function generateViewerUsername(officer){
+      const base = `viewer_${officer.badge || officer.id}`;
+      let username = base;
+      let suffix = 1;
+      while((SETTINGS.users||[]).some(u=>u.name===username)){
+        username = `${base}_${suffix++}`;
+      }
+      return username;
+    }
+    function adminGenerateViewerUsersForAll(resetPasswords=false){
+      if(!officers.length) return showToast('لا يوجد ضباط لإنشاء المستخدمين', 'warning');
+      if(!confirm(resetPasswords ? 'سيتم تحديث كلمات المرور لكل مستخدم مشاهد مرتبط بضابط. متابعة؟' : 'سيتم إنشاء حسابات مشاهدة للضباط الذين لا يملكون حساباً. متابعة؟')) return;
+      SETTINGS.users = SETTINGS.users || [];
+      let created = 0;
+      let updated = 0;
+      officers.forEach(officer=>{
+        const existingIdx = SETTINGS.users.findIndex(u=>u.role==='viewer' && u.officerId===officer.id);
+        if(existingIdx >= 0){
+          if(resetPasswords){
+            SETTINGS.users[existingIdx].pwd = generateTempPassword();
+            SETTINGS.users[existingIdx].mustChangePassword = false;
+            updated++;
+          }
+          return;
+        }
+        const username = generateViewerUsername(officer);
+        const password = generateTempPassword();
+        SETTINGS.users.push({
+          name: username,
+          pwd: password,
+          role: 'viewer',
+          officerId: officer.id,
+          fullName: officer.name || '',
+          createdAt: new Date().toISOString(),
+          mustChangePassword: false
+        });
+        created++;
+      });
+      saveAll();
+      renderTab('admin');
+      logActivity('إنشاء مستخدمي مشاهدة', {created, updated});
+      showToast(`تم إنشاء ${created} مستخدم، وتحديث ${updated} كلمات مرور`, 'success');
+    }
+    function exportViewerUsersCSV(){
+      const viewers = getViewerUsers();
+      if(!viewers.length) return showToast('لا توجد بيانات لتصديرها', 'warning');
+      const header = ['الرتبة','الاسم الكامل','اسم المستخدم','كلمة المرور'].map(csvEscape).join(',');
+      const rows = viewers.map(v=>[v.rank, v.fullName, v.username, v.password].map(csvEscape).join(',')).join('\n');
+      downloadCSVFile(`viewer_users_${new Date().toISOString().slice(0,10)}.csv`, `${header}\n${rows}`);
+      showToast('تم تصدير جدول مستخدمي المشاهد', 'success');
+    }
     function adminAddUser(){
       const name=document.getElementById('admin_user_name').value.trim();
       const pwd=document.getElementById('admin_user_pwd').value;
@@ -1603,6 +1743,8 @@
       document.getElementById('admin_user_email').value='';
       saveAll();
       document.getElementById('admin_usersTable').innerHTML = renderUsersTable();
+      const viewerSheet = document.getElementById('viewerUsersSheet');
+      if(viewerSheet) viewerSheet.innerHTML = renderViewerUsersSheet();
       logActivity(editIdx!==undefined && editIdx!=='' ? 'تعديل مستخدم' : 'إضافة مستخدم', {target: name, role});
       showToast('تم إضافة المستخدم','success');
     }
@@ -1621,6 +1763,8 @@
       refreshSupportRequestsTable();
       logActivity('إعادة تعيين كلمة مرور', {target: u.name});
       showToast('تمت إعادة تعيين كلمة المرور','success');
+      const viewerSheet = document.getElementById('viewerUsersSheet');
+      if(viewerSheet) viewerSheet.innerHTML = renderViewerUsersSheet();
     }
     function saveIdleMinutes(val){
       const minutes = Math.max(0, +val || 0);
@@ -2160,7 +2304,34 @@
     }
 
     function buildHeaderHtml(){
-      return ''; // الرأس معطل افتراضياً لتقارير موحدة
+      if(!SETTINGS.includeHeaderOnPrint) return '';
+      return SETTINGS.headerHtml || '';
+    }
+    function getReportFontFamily(){
+      return SETTINGS.reportFontFamily || 'Arial';
+    }
+    function buildReportHeader(duty, effectiveMonth){
+      const logo = SETTINGS.logoData ? `<img src="${SETTINGS.logoData}" style="max-height:72px;border-radius:50%;object-fit:cover;">` : '';
+      const title = `كشف خدمات ${escapeHtml(duty.printLabel || duty.name)}`;
+      const monthTitle = new Date(effectiveMonth+'-01').toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
+      return `
+        <div class="report-header">
+          <div style="width:90px;text-align:right;">${logo}</div>
+          <div style="flex:1;text-align:center;">
+            <div style="font-weight:700;font-size:15px;">${escapeHtml(SETTINGS.appName)}</div>
+            ${SETTINGS.appSubtitle ? `<div style="font-size:12px;color:#475569;">${escapeHtml(SETTINGS.appSubtitle)}</div>` : ''}
+            <div class="report-title">${title}</div>
+          </div>
+          <div style="width:90px;text-align:left;font-size:11px;color:#475569;">
+            <div>تاريخ الإصدار</div>
+            <div>${new Date().toLocaleDateString('ar-EG')}</div>
+          </div>
+        </div>
+        <div class="report-meta">
+          <div>الشهر: ${monthTitle}</div>
+          <div>عدد الأيام: ${new Date(+effectiveMonth.split('-')[0], +effectiveMonth.split('-')[1], 0).getDate()}</div>
+        </div>
+      `;
     }
    function stripHtmlToText(html){
       const div = document.createElement('div');
@@ -2179,8 +2350,9 @@
       const duty = duties.find(d=>d.id===dutyId);
       const effectiveMonth = month || (document.getElementById('rpt_month')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7));
       const rows = roster[effectiveMonth]?.[dutyId] || [];
-      const logoHtml = SETTINGS.logoData ? `<div style="text-align:right"><img src="${SETTINGS.logoData}" style="max-height:80px;border-radius:50%;"></div>` : '';
       const sigs = SETTINGS.signatures || [];
+      const headerBlock = buildHeaderHtml();
+      const reportHeader = buildReportHeader(duty, effectiveMonth);
       const signatureHtml = `<div style="display:flex;gap:12px;margin-top:6px;font-size:13px;line-height:1.35;font-family:'Arial','Noto Sans Arabic','Tahoma',sans-serif;">
         <div style="flex:1;text-align:center;">${escapeHtml(sigs[0]?.place||'')}<br><br>__________________<br><span>${escapeHtml(sigs[0]?.name||'')}</span><br><span>${escapeHtml(sigs[0]?.title||'')}</span></div>
         <div style="flex:1;text-align:center;">${escapeHtml(sigs[1]?.place||'')}<br><br>__________________<br><span>${escapeHtml(sigs[1]?.name||'')}</span><br><span>${escapeHtml(sigs[1]?.title||'')}</span></div>
@@ -2188,10 +2360,12 @@
       </div>`;
       const footer = buildFooterHtml(signatureHtml, true);
       const fontSize = SETTINGS.printFontSize || 10;
+      const fontFamily = getReportFontFamily();
+      const watermark = buildWatermarkHtml(true);
       let html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${escapeHtml(duty.printLabel || duty.name)}</title>
-        <style>@page{size:A4 portrait;margin:10mm}body{font-family:"Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm}table{width:100%;border-collapse:collapse;font-size:${fontSize}px}th,td{border:1px solid #333;padding:6px;text-align:center}th{background:#1e40af;color:#fff}</style>
-      </head><body><div class="one-duty-page">`;
-      html += `${logoHtml}<h2 style="margin-top:8px;text-align:center;font-size:18px;">كشف خدمات ${escapeHtml(duty.printLabel || duty.name)} — ${new Date(effectiveMonth+'-01').toLocaleDateString('ar-EG',{month:'long',year:'numeric'})}</h2><hr/>`;
+        <style>@page{size:A4 portrait;margin:10mm}body{font-family:${fontFamily},"Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm}table{width:100%;border-collapse:collapse;font-size:${fontSize}px}th,td{border:1px solid #1e293b;padding:6px;text-align:center}th{background:#1e40af;color:#fff}h2,h3{margin:0}.report-header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:10px}.report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#334155;margin-bottom:8px}.report-title{font-size:18px;font-weight:800;text-align:center;color:#1e40af}</style>
+      </head><body><div class="one-duty-page">${watermark}<div class="duty-content">`;
+      html += `${headerBlock ? `<div style="margin-bottom:6px;">${headerBlock}</div>` : ''}${reportHeader}`;
       html += `<table><thead><tr><th>م</th><th>التاريخ</th><th>اليوم</th><th>الرتبة</th><th>الضابط</th><th>ملاحظات</th></tr></thead><tbody>`;
       const [y,m] = effectiveMonth.split('-'); const days = new Date(+y,+m,0).getDate();
       for(let day=1; day<=days; day++){
@@ -2265,9 +2439,10 @@
     function buildDutyInnerHtml(dutyId, month){
   	const duty = duties.find(d=>d.id===dutyId);
   const rows = roster[month]?.[dutyId] || [];
-  const header = SETTINGS.includeHeaderOnPrint ? `<div>${SETTINGS.headerHtml||''}</div><hr/>` : '';
-  const title = `<h4>${escapeHtml(duty.printLabel || duty.name)} — ${new Date(month+'-01').toLocaleDateString('ar-EG',{month:'long',year:'numeric'})}</h4>`;
+  const header = buildHeaderHtml();
+  const reportHeader = buildReportHeader(duty, month);
   const fontSize = SETTINGS.printFontSize || 10;
+  const fontFamily = getReportFontFamily();
   const [y,m] = month.split('-'); const days = new Date(+y,+m,0).getDate();
   let table = `<table class="table table-bordered"><thead class="table-dark"><tr><th>م</th><th>التاريخ</th><th>اليوم</th><th>الرتبة</th><th>الضابط</th><th>ملاحظات</th></tr></thead><tbody>`;
   for(let day=1; day<=days; day++){
@@ -2278,13 +2453,13 @@
   }
   table += '</tbody></table>';
   const sigs = SETTINGS.signatures || [];
-  const signatureHtml = `<div style="display:flex;gap:12px;margin-top:6px;font-size:13px;line-height:1.35;font-family:'Arial','Noto Sans Arabic','Tahoma',sans-serif;">
+  const signatureHtml = `<div style="display:flex;gap:12px;margin-top:6px;font-size:13px;line-height:1.35;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">
         <div style="flex:1;text-align:center;">${escapeHtml(sigs[0]?.place||'')}<br><br>__________________<br><span>${escapeHtml(sigs[0]?.name||'')}</span><br><span>${escapeHtml(sigs[0]?.title||'')}</span></div>
         <div style="flex:1;text-align:center;">${escapeHtml(sigs[1]?.place||'')}<br><br>__________________<br><span>${escapeHtml(sigs[1]?.name||'')}</span><br><span>${escapeHtml(sigs[1]?.title||'')}</span></div>
         <div style="flex:1;text-align:center;font-weight:700;">${escapeHtml(sigs[2]?.place||'')}<br><br>__________________<br><span style="font-weight:800">${escapeHtml(sigs[2]?.name||'')}</span><br><span>${escapeHtml(sigs[2]?.title||'')}</span></div>
       </div>`;
   const watermark = buildWatermarkHtml(true);
-  return `<div class="one-duty-page">${watermark}<div class="duty-content" style="font-size:${fontSize}px">${header}${title}${table}<div style="margin-top:10px">${signatureHtml}</div></div></div>`;
+  return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}${reportHeader}${table}<div style="margin-top:10px">${signatureHtml}</div></div></div>`;
 }
 
    function printSelectedDuties(){
@@ -2336,7 +2511,7 @@
     /* ========= Officers Tab ========= */
     function renderOfficersTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للضباط.</div>';
-      if(SETTINGS.authEnabled && currentRole()==='user') return '<div class="alert alert-warning">وضع عرض فقط. تواصل مع المشرف للصلاحيات.</div>';
+      if(SETTINGS.authEnabled && (currentRole()==='user' || currentRole()==='viewer')) return '<div class="alert alert-warning">وضع عرض فقط. تواصل مع المشرف للصلاحيات.</div>';
       const statsBar = renderRankStatsBar();
       const canManage = currentRole()==='admin' || currentRole()==='editor';
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>الضباط — إدارة</div>
@@ -2864,26 +3039,106 @@
       window.scrollTo({top:0,behavior:'smooth'});
     }
 
+    /* ========= Relations Diagram ========= */
+    function renderRelationsTab(){
+      if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول لعرض المخطط.</div>';
+      const deptCards = departments.map(d=>{
+        const parent = departments.find(p=>p.id===d.parentId);
+        const head = d.headId ? officers.find(o=>o.id===d.headId) : null;
+        const count = officers.filter(o=>o.deptId===d.id).length;
+        return `<div class="relation-card">
+          <h5>${escapeHtml(d.name)}</h5>
+          <div class="relation-item"><span>العدد</span><span class="relation-tag">${count}</span></div>
+          <div class="relation-item"><span>يتبع</span><span class="relation-tag">${parent ? escapeHtml(parent.name) : '—'}</span></div>
+          <div class="relation-item"><span>المسؤول</span><span class="relation-tag">${head ? escapeHtml(head.name) : 'غير محدد'}</span></div>
+        </div>`;
+      }).join('');
+      const titleCards = jobTitles.map(t=>{
+        const parent = jobTitles.find(p=>p.id===t.parentId);
+        const count = officers.filter(o=>o.jobTitleId===t.id).length;
+        return `<div class="relation-card">
+          <h5>${escapeHtml(t.name)}</h5>
+          <div class="relation-item"><span>يتبع</span><span class="relation-tag">${parent ? escapeHtml(parent.name) : '—'}</span></div>
+          <div class="relation-item"><span>ضباط</span><span class="relation-tag">${count}</span></div>
+          <div class="relation-item"><span>قيادي</span><span class="relation-tag">${t.isUpper ? 'نعم' : 'لا'}</span></div>
+        </div>`;
+      }).join('');
+      const officerCards = officers.map(o=>{
+        const dept = departments.find(d=>d.id===o.deptId);
+        const title = jobTitles.find(t=>t.id===o.jobTitleId);
+        return `<div class="relation-card">
+          <h5>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</h5>
+          <div class="relation-item"><span>القسم</span><span class="relation-tag">${dept ? escapeHtml(dept.name) : '—'}</span></div>
+          <div class="relation-item"><span>المسمى</span><span class="relation-tag">${title ? escapeHtml(title.name) : '—'}</span></div>
+          <div class="relation-item"><span>الحالة</span><span class="relation-tag">${escapeHtml(o.status || 'active')}</span></div>
+        </div>`;
+      }).join('');
+      return `<div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>مخطط العلاقات بين الأقسام والمسميات والضباط</div>
+          <div class="small text-muted">عرض شبكي منظم للهيكل الإداري</div>
+        </div>
+        <div class="card-body">
+          <div class="relations-board">
+            <div class="relations-column">
+              <h5 class="mb-2">الأقسام</h5>
+              ${deptCards || '<div class="text-muted">لا توجد أقسام مسجلة.</div>'}
+            </div>
+            <div class="relations-column">
+              <h5 class="mb-2">المسميات الوظيفية</h5>
+              ${titleCards || '<div class="text-muted">لا توجد مسميات مسجلة.</div>'}
+            </div>
+            <div class="relations-column">
+              <h5 class="mb-2">الضباط</h5>
+              ${officerCards || '<div class="text-muted">لا يوجد ضباط مسجلون.</div>'}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
     /* ========= Report ========= */
     function renderReportTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول لرؤية التقارير.</div>';
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
       const title = new Date(month+'-01').toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
       const dutyOptions = duties.map(d=>`<div class="form-check form-check-inline"><input class="form-check-input rpt-duty-chk" type="checkbox" id="rpd_${d.id}" value="${d.id}"><label class="form-check-label" for="rpd_${d.id}">${escapeHtml(d.printLabel||d.name)}</label></div>`).join(' ');
+      const fontOptions = [
+        {label:'Arial', value:'Arial'},
+        {label:'Tahoma', value:'Tahoma'},
+        {label:'Noto Sans Arabic', value:'"Noto Sans Arabic"'},
+        {label:'Amiri', value:'Amiri'},
+        {label:'Cairo', value:'Cairo'},
+        {label:'خط مخصص', value:'AppCustomFont'}
+      ];
       return `<div class="card"><div class="card-header d-flex justify-content-between"><div>التقرير — ${title}</div>
         <div>
           <button class="btn btn-outline-primary btn-sm me-2" onclick="printAllDuties()">طباعة كل الأنواع</button>
-          <button class="btn btn-outline-secondary btn-sm" onclick="saveAllDutiesPDF()">حفظ PDF مجمّع</button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="exportDutiesByFormat('all')">تصدير الكل</button>
         </div></div>
         <div class="card-body">
           <div class="row mb-3">
             <div class="col-md-4"><label class="form-label">شهر</label><input id="rpt_month" type="month" class="form-control" value="${month}" onchange="document.getElementById('rosterMonth').value=this.value; onRosterMonthChange();"></div>
             <div class="col-md-8"><label class="form-label">اختر أنواع للطباعة/التصدير</label><div>${dutyOptions}</div></div>
           </div>
-          <div class="mb-3 text-end">
-            <button class="btn btn-success me-2" onclick="previewSelectedDuties()">معاينة</button>
-            <button class="btn btn-outline-primary me-2" onclick="printSelectedDuties()">طباعة المحدد</button>
-            <button class="btn btn-outline-secondary" onclick="saveSelectedDutiesPDF()">حفظ المحدد كـ PDF</button>
+          <div class="card mb-3">
+            <div class="card-header">إعدادات الخط والتخطيط</div>
+            <div class="card-body">
+              <div class="row g-2">
+                <div class="col-md-4"><label class="form-label">خط التقرير</label><select id="report_font_family" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.reportFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">حجم الخط</label><input id="report_font_size" type="number" class="form-control" value="${SETTINGS.printFontSize}" min="8" max="18"></div>
+                <div class="col-md-5"><label class="form-label">رفع خط مخصص (.ttf/.otf)</label><input id="report_custom_font" type="file" class="form-control" accept=".ttf,.otf"></div>
+              </div>
+              <div class="mt-3 text-end"><button class="btn btn-outline-primary" onclick="saveReportSettingsFromTab()">حفظ إعدادات التقرير</button></div>
+            </div>
+          </div>
+          <div class="row g-2 mb-3 align-items-end">
+            <div class="col-md-4"><label class="form-label">امتداد التصدير</label><select id="rpt_export_format" class="form-select"><option value="pdf">PDF</option><option value="png">PNG</option><option value="jpeg">JPEG</option><option value="html">HTML</option></select></div>
+            <div class="col-md-8 text-end">
+              <button class="btn btn-success me-2" onclick="previewSelectedDuties()">معاينة</button>
+              <button class="btn btn-outline-primary me-2" onclick="exportDutiesByFormat('selected')">تصدير المحدد</button>
+              <button class="btn btn-outline-secondary" onclick="printSelectedDuties()">طباعة المحدد</button>
+            </div>
           </div>
           <div id="reportPreview" class="print-preview"></div>
         </div></div>`;
@@ -2899,6 +3154,97 @@
       preview.innerHTML = ids.map(id=> buildDutyInnerHtml(id, month)).join('<hr/>');
       preview.scrollIntoView({behavior:'smooth'});
     }
+    function saveReportSettingsFromTab(){
+      SETTINGS.reportFontFamily = document.getElementById('report_font_family')?.value || SETTINGS.reportFontFamily;
+      SETTINGS.printFontSize = +document.getElementById('report_font_size')?.value || SETTINGS.printFontSize;
+      const fontFile = document.getElementById('report_custom_font')?.files?.[0];
+      if(fontFile){
+        const fr = new FileReader();
+        fr.onload = ()=>{
+          SETTINGS.customFontData = fr.result;
+          SETTINGS.reportFontFamily = 'AppCustomFont';
+          applyCustomFont();
+          saveAll();
+          showToast('تم تحديث إعدادات الخط للتقرير','success');
+          renderTab('report');
+        };
+        fr.readAsDataURL(fontFile);
+        return;
+      }
+      saveAll();
+      showToast('تم حفظ إعدادات التقرير','success');
+      renderTab('report');
+    }
+    function downloadTextFile(name, content, type='text/plain'){
+      const blob=new Blob([content],{type:`${type};charset=utf-8`});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.setAttribute('download',name);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+    function buildReportHtmlDocument(ids, month){
+      const fontFamily = getReportFontFamily();
+      const fontSize = SETTINGS.printFontSize || 10;
+      const bodyContent = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
+      return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Roster ${month}</title>
+        <style>
+          @page{size:A4 portrait;margin:10mm}
+          body{font-family:${fontFamily},"Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm;background:#f8fafc}
+          table{width:100%;border-collapse:collapse;font-size:${fontSize}px}
+          th,td{border:1px solid #1e293b;padding:6px;text-align:center}
+          th{background:#1e40af;color:#fff}
+          .report-preview-paper{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.08)}
+          .report-header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:10px}
+          .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#334155;margin-bottom:8px}
+          .report-title{font-size:18px;font-weight:800;text-align:center;color:#1e40af}
+          .one-duty-page{position:relative}
+          .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:64px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
+        </style>
+      </head><body>${bodyContent}</body></html>`;
+    }
+    async function exportDutiesByFormat(scope='selected'){
+      const month = document.getElementById('rpt_month')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
+      const ids = scope === 'all' ? duties.map(d=>d.id) : getSelectedDutyIdsInReport();
+      if(!ids.length) return showToast('اختر نوعاً واحداً أو أكثر للتصدير','danger');
+      const format = document.getElementById('rpt_export_format')?.value || 'pdf';
+      if(format === 'pdf'){
+        if(scope === 'all') return saveAllDutiesPDF();
+        return saveSelectedDutiesPDF();
+      }
+      if(format === 'html'){
+        const html = buildReportHtmlDocument(ids, month);
+        downloadTextFile(`Roster_${scope}_${month}.html`, html, 'text/html');
+        return showToast('تم تصدير ملف HTML','success');
+      }
+      if(format === 'png' || format === 'jpeg'){
+        const container = document.createElement('div');
+        container.style.width = '210mm';
+        container.style.padding = '6mm';
+        container.style.direction = 'rtl';
+        container.innerHTML = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
+        document.body.appendChild(container);
+        try{
+          await ensureHtml2CanvasReady();
+          const canvas = await html2canvas(container, {scale:2, useCORS:true});
+          const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+          const dataUrl = canvas.toDataURL(mime, 0.95);
+          const link = document.createElement('a');
+          link.href = dataUrl;
+          link.download = `Roster_${scope}_${month}.${format}`;
+          link.click();
+          showToast(`تم تصدير صورة ${format.toUpperCase()}`,'success');
+        }catch(err){
+          console.error(err);
+          showToast('فشل إنشاء الصورة','danger');
+        }finally{
+          container.remove();
+        }
+        return;
+      }
+      showToast('صيغة التصدير غير مدعومة حالياً','warning');
+    }
 
     /* ========= Settings ========= */
     function renderSettingsTab(){
@@ -2910,10 +3256,8 @@
           <div class="col-md-4"><label class="form-label">شعار (تحميل)</label><input id="set_logo" type="file" class="form-control" accept="image/*"></div>
           <div class="col-md-4"><label class="form-label">السمة</label><select id="set_theme" class="form-select">${Object.keys(THEMES).map(k=>`<option value="${k}" ${SETTINGS.themeKey===k?'selected':''}>${THEMES[k].name}</option>`).join('')}</select></div>
           <div class="col-md-4"><label class="form-label">تخطيط شاشة الدخول</label><select id="set_loginLayout" class="form-select"><option value="stacked" ${SETTINGS.loginLayout==='stacked'?'selected':''}>مكدس (شعار فوق البطاقة)</option><option value="inline" ${SETTINGS.loginLayout==='inline'?'selected':''}>عرض مضغوط</option></select></div>
-          <div class="col-md-6"><label class="form-label">خط من النظام (Windows .ttf/.otf)</label><input id="set_font" type="file" class="form-control" accept=".ttf,.otf"></div>
         <div class="col-12"><label class="form-label">رأس التقرير (HTML)</label><textarea id="set_header" class="form-control" rows="3">${escapeHtml(SETTINGS.headerHtml)}</textarea></div>
         <div class="col-12"><label class="form-label">تذييل التقرير (HTML) — يستخدم كعلامة مائية</label><textarea id="set_footer" class="form-control" rows="2">${escapeHtml(SETTINGS.footerHtml)}</textarea></div>
-        <div class="col-md-3"><label class="form-label">حجم الطباعة(px)</label><input id="set_printFont" type="number" class="form-control" value="${SETTINGS.printFontSize}"></div>
         <div class="col-md-3 form-check"><input id="set_incHeader" class="form-check-input" type="checkbox" ${SETTINGS.includeHeaderOnPrint?'checked':''}><label class="form-check-label">تضمين الرأس</label></div>
         <div class="col-md-3 form-check"><input id="set_incFooter" class="form-check-input" type="checkbox" ${SETTINGS.includeFooterOnPrint?'checked':''}><label class="form-check-label">تضمين العلامة المائية</label></div>
           <div class="col-md-6 form-check"><input id="set_auth" class="form-check-input" type="checkbox" ${SETTINGS.authEnabled?'checked':''}><label class="form-check-label">تمكين نظام المستخدمين</label></div>
@@ -2941,7 +3285,6 @@
       SETTINGS.appSubtitle = document.getElementById('set_appSubtitle').value || '';
       SETTINGS.headerHtml = document.getElementById('set_header').value || '';
       SETTINGS.footerHtml = document.getElementById('set_footer').value || '';
-      SETTINGS.printFontSize = +document.getElementById('set_printFont').value || 10;
       SETTINGS.includeHeaderOnPrint = !!document.getElementById('set_incHeader').checked;
       SETTINGS.includeFooterOnPrint = !!document.getElementById('set_incFooter').checked;
       SETTINGS.authEnabled = !!document.getElementById('set_auth').checked;
@@ -2951,15 +3294,8 @@
         {name: document.getElementById('sig1n').value, title: document.getElementById('sig1t').value, place: document.getElementById('sig1p').value},
         {name: document.getElementById('sig2n').value, title: document.getElementById('sig2t').value, place: document.getElementById('sig2p').value},
         {name: document.getElementById('sig3n').value, title: document.getElementById('sig3t').value, place: document.getElementById('sig3p').value}
-      ];
+     ];
       const f = document.getElementById('set_logo')?.files?.[0];
-      const fontFile = document.getElementById('set_font')?.files?.[0];
-      if(fontFile){
-        const fr = new FileReader();
-        fr.onload = ()=>{ SETTINGS.customFontData = fr.result; applyCustomFont(); saveAll(); showToast('تم تحميل الخط المخصص','success'); renderTab('settings'); };
-        fr.readAsDataURL(fontFile);
-        return;
-      }
       if(f){ const r = new FileReader(); r.onload=()=>{ SETTINGS.logoData = r.result; saveAll(); showToast('تم حفظ الإعدادات مع الشعار','success'); renderTab('settings'); }; r.readAsDataURL(f); return; }
       saveAll();
       document.getElementById('appNameTitle').textContent = SETTINGS.appName;
@@ -2968,7 +3304,7 @@
       showToast('تم حفظ الإعدادات','success');
       renderTab('settings');
     }
-    function renderUsersTable(){
+    unction renderUsersTable(){
       const u = SETTINGS.users||[];
       if(!u.length) return '<div class="text-muted">لا مستخدمين</div>';
       const rows = u.map((us,i)=>{
@@ -2988,7 +3324,41 @@
       }).join('');
       return `<div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-dark"><tr><th>المستخدم</th><th>الاسم</th><th>البريد</th><th>الدور</th><th>الضابط</th><th>الهاتف</th><th>ملاحظة</th><th>أنشئ</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
-    function removeUserFromSettings(i){ SETTINGS.users.splice(i,1); saveAll(); if(document.getElementById('admin_usersTable')) document.getElementById('admin_usersTable').innerHTML = renderUsersTable(); }
+    function getViewerUsers(){
+      return (SETTINGS.users||[]).filter(u=>u.role==='viewer').map(u=>{
+        const officer = officers.find(o=>o.id===u.officerId);
+        return {
+          username: u.name,
+          fullName: u.fullName || officer?.name || '',
+          rank: officer?.rank || '',
+          password: u.pwd || '',
+          officerId: u.officerId || null
+        };
+      });
+    }
+    function renderViewerUsersSheet(){
+      const viewers = getViewerUsers();
+      if(!viewers.length) return '<div class="text-muted">لم يتم إنشاء مستخدمين من نوع المشاهد بعد.</div>';
+      const rows = viewers.map((v,i)=>`<tr>
+        <td>${i+1}</td>
+        <td>${escapeHtml(v.rank)}</td>
+        <td>${escapeHtml(v.fullName)}</td>
+        <td>${escapeHtml(v.username)}</td>
+        <td>${escapeHtml(v.password)}</td>
+      </tr>`).join('');
+      return `<div class="table-responsive"><table class="table table-sm table-bordered align-middle">
+        <thead class="table-dark"><tr><th>#</th><th>الرتبة</th><th>الاسم الكامل</th><th>اسم المستخدم</th><th>كلمة المرور</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`;
+    }
+    function removeUserFromSettings(i){
+      SETTINGS.users.splice(i,1);
+      saveAll();
+      const usersTable = document.getElementById('admin_usersTable');
+      if(usersTable) usersTable.innerHTML = renderUsersTable();
+      const viewerSheet = document.getElementById('viewerUsersSheet');
+      if(viewerSheet) viewerSheet.innerHTML = renderViewerUsersSheet();
+    }
     function editUser(i){
       const u = (SETTINGS.users||[])[i]; if(!u) return;
       document.getElementById('admin_user_name').value = u.name;
@@ -3140,9 +3510,10 @@
       </div>`;
     }
 
-    /* ========= Init ========= */
+   /* ========= Init ========= */
     loadAll();
     renderTab('roster');
+    window.addEventListener('load', hideSplashScreen);
   </script>
 </body>
 </html>
