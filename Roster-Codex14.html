@@ -98,6 +98,7 @@
     .one-duty-page { position:relative; min-height:270mm; }
     .duty-content { position:relative; z-index:2; }
     .watermark { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:64px; color:var(--brand-dark); opacity:0.08; white-space:pre-wrap; text-align:center; width:160%; pointer-events:none; z-index:1; user-select:none; }
+    .drag-over { outline:2px dashed #0ea5e9; background:#e0f2fe; }
     @keyframes floatLogo { 0%{transform:translateY(0);} 50%{transform:translateY(-6px);} 100%{transform:translateY(0);} }
     @media print { @page { size:A4 portrait; margin:10mm; } .no-print { display:none !important; } body { background:#fff; color:#000; } }
   </style>
@@ -172,6 +173,7 @@
     const OFFICER_RANDOMNESS = {};
     const dutyCollapseState = {};
     const dutySwapState = {};
+    let ADMIN_RECOVERY_CONTEXT = null;
 
     function parseBadgeNumber(val){ const n = parseInt(val, 10); return isNaN(n) ? Number.MAX_SAFE_INTEGER : n; }
     function compareOfficerFairness(a, b, totalsMap){
@@ -193,13 +195,11 @@
     const defaultSettings = {
       appName: "تطبيق خدمات الإدارة العامة للمساعدات الفنية",
       appSubtitle: "",
-      headerHtml: "",
+      hheaderHtml: "",
       headerAlign: "center",
       logoData: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeDI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZTRkN2JhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U0ZDdiYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz4KICA8cG9seWxpbmUgcG9pbnRzPSIxNTAsMTIwIDE5MCw0MjAgMjIwLDEyMCAyNjAsNDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iMTgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjI2MCwxMDAgMzcwLDIyMCAzMTAsMjMwIDQxMCw0MjAgMjkwLDMyMCAyNTAsNDIwIDI0MCwyMzAgMTgwLDIyMCIgZmlsbD0iIzI3MzI2YiIgLz4KICA8dGV4dCB4PSIyNTYiIHk9IjU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjI4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtix2KfZhNi52KjZiNin2Kog2YPYqNio2YrYp9mGPC90ZXh0PgogIDx0ZXh0IHg9IjI1NiIgeT0iNDc1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtmF2YTZitmHINin2YTYo9iz2LnZiNmKINmF2YbYp9mI2Lkg2KjYp9mG2Ycg2KfZhNmF2YrYp9mE2YrZg9ipPC90ZXh0Pgo8L3N2Zz4=",
       footerHtml: "<div style='font-size:12px;color:#333;'>© حقوق محفوظة</div>",
       signatures: [{name:"",title:"",place:""},{name:"",title:"",place:""},{name:"",title:"",place:""}],
-      watermarkActive: true,
-      watermarkText: "سري",
       authEnabled: false,
       users: [],
       printFontSize: 10,
@@ -259,7 +259,6 @@
         lastLoginAt: u.lastLoginAt || null,
         mustChangePassword: u.mustChangePassword === undefined ? !(u.lastLoginAt) : !!u.mustChangePassword
       }));
-      if(SETTINGS.watermarkActive===undefined) SETTINGS.watermarkActive = true;
       if(!Array.isArray(SETTINGS.deptGroups) || !SETTINGS.deptGroups.length) SETTINGS.deptGroups = defaultSettings.deptGroups.slice();
       if(!SETTINGS.themeKey || !THEMES[SETTINGS.themeKey]) SETTINGS.themeKey = defaultSettings.themeKey;
       if(!SETTINGS.loginLayout) SETTINGS.loginLayout = defaultSettings.loginLayout;
@@ -677,36 +676,65 @@
       }
     }
     function showAdminRecoveryHelper(){
-      const adminIndex = (SETTINGS.users || []).findIndex(u=>u.role==='admin');
-      if(adminIndex<0) return showToast('لا يوجد حساب مدير لاستعادته','danger');
-      const adminUser = SETTINGS.users[adminIndex];
+      const container = document.getElementById('loginInlineMsg');
+      if(!container) return showToast('تعذر فتح نموذج الاستعادة','danger');
+      ADMIN_RECOVERY_CONTEXT = null;
+      container.innerHTML = `<div class="alert alert-info">أدخل اسم المستخدم الذي نسيت كلمة مروره.</div>
+        <div class="d-flex flex-wrap gap-2" style="align-items:center;">
+          <input id="admin_recover_username" class="form-control" placeholder="اسم المستخدم" style="min-width:220px;">
+          <button class="btn btn-warning" type="button" onclick="startAdminRecovery()">متابعة</button>
+        </div>`;
+      showToast('أدخل اسم المستخدم للمتابعة','warning');
+    }
+    function pickAdminRecoveryDetail(adminUser){
       const linkedOfficer = adminUser.officerId ? officers.find(o=>o.id===adminUser.officerId) : null;
-      const hints = [adminUser.fullName, adminUser.email, adminUser.phone, adminUser.note, linkedOfficer?.name].filter(Boolean);
-      const guidance = hints.length ? `أدخل أي معلومة من ملف المدير مثل: ${hints.slice(0,3).join(' • ')}${hints.length>3?' ...':''}` : 'أدخل أي معلومة تعريفية عن المدير (اسم، هاتف، أو ملاحظة).';
+      const candidates = [
+        {key:'fullName', label:'الاسم الكامل', value: adminUser.fullName},
+        {key:'email', label:'البريد الإلكتروني', value: adminUser.email},
+        {key:'phone', label:'رقم الهاتف', value: adminUser.phone},
+        {key:'note', label:'ملاحظة الملف', value: adminUser.note},
+        {key:'linkedOfficer', label:'اسم الضابط المرتبط', value: linkedOfficer?.name}
+      ].filter(item => item.value);
+      if(!candidates.length) return null;
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+    function startAdminRecovery(){
+      const username = (document.getElementById('admin_recover_username')?.value || '').trim();
+      if(!username) return showToast('أدخل اسم المستخدم أولاً','danger');
+      const adminIndex = (SETTINGS.users || []).findIndex(u=>u.name===username);
+      if(adminIndex < 0) return showToast('اسم المستخدم غير موجود','danger');
+      const adminUser = SETTINGS.users[adminIndex];
+      if(adminUser.role !== 'admin') return showToast('استعادة كلمة المرور متاحة لحساب المدير فقط','warning');
+      const detail = pickAdminRecoveryDetail(adminUser);
+      ADMIN_RECOVERY_CONTEXT = detail ? {index: adminIndex, expected: detail.value} : {index: adminIndex, expected: ''};
+      const prompt = detail ? `أدخل ${detail.label} لحساب المدير.` : 'أدخل أي معلومة تعريفية من ملف المدير.';
       const container = document.getElementById('loginInlineMsg');
       if(container){
-        container.innerHTML = `<div class="alert alert-info">${guidance}</div>
+        container.innerHTML = `<div class="alert alert-info">${prompt}</div>
           <div class="d-flex flex-wrap gap-2" style="align-items:center;">
-            <input id="admin_recover_hint" class="form-control" placeholder="معلومة تعريفية" style="min-width:220px;">
+            <input id="admin_recover_hint" class="form-control" placeholder="المعلومة المطلوبة" style="min-width:220px;">
             <input id="admin_recover_newpwd" type="password" class="form-control" placeholder="كلمة مرور جديدة" style="min-width:220px;">
-            <button class="btn btn-warning" type="button" onclick="processAdminRecovery(${adminIndex})">إعادة تعيين</button>
+            <button class="btn btn-warning" type="button" onclick="processAdminRecovery()">إعادة تعيين</button>
           </div>`;
       }
-      showToast('أجب عن المعلومة التعريفية لإعادة التعيين','warning');
+      showToast('أجب عن المعلومة المطلوبة لإعادة التعيين','warning');
     }
-    function processAdminRecovery(adminIndex){
-      const adminUser = (SETTINGS.users || [])[adminIndex];
+    function processAdminRecovery(){
+      const context = ADMIN_RECOVERY_CONTEXT;
+      const adminUser = (SETTINGS.users || [])[context?.index];
       if(!adminUser || adminUser.role!=='admin') return showToast('لم يتم العثور على حساب المدير','danger');
       const hintVal = (document.getElementById('admin_recover_hint')?.value || '').trim().toLowerCase();
       const newPwd = document.getElementById('admin_recover_newpwd')?.value || '';
-      if(!hintVal) return showToast('أدخل معلومة تعريفية مطابقة','danger');
+      if(!hintVal) return showToast('أدخل المعلومة المطلوبة','danger');
       if(!newPwd || newPwd.length < 4) return showToast('أدخل كلمة مرور جديدة صالحة','danger');
-      const linkedOfficer = adminUser.officerId ? officers.find(o=>o.id===adminUser.officerId) : null;
-      const candidates = [adminUser.fullName, adminUser.email, adminUser.phone, adminUser.note, linkedOfficer?.name].map(x=> (x||'').toLowerCase());
-      const match = candidates.some(c=> c && (c.includes(hintVal) || hintVal.includes(c)));
-      if(!match) return showToast('المعلومة لا تطابق بيانات المدير','danger');
+      const expected = (context?.expected || '').toString().trim().toLowerCase();
+      if(expected){
+        const match = expected.includes(hintVal) || hintVal.includes(expected);
+        if(!match) return showToast('المعلومة لا تطابق بيانات المدير','danger');
+      }
       adminUser.pwd = newPwd;
       adminUser.mustChangePassword = false;
+      ADMIN_RECOVERY_CONTEXT = null;
       saveAll();
       logActivity('استعادة كلمة مرور مدير', {admin: adminUser.name});
       showToast('تم تحديث كلمة مرور المدير. يمكنك تسجيل الدخول الآن.','success');
@@ -875,6 +903,49 @@
       safeShowToast('تم التبديل السريع بين اليومين','success');
       renderTab('roster');
     }
+    function swapDutyAssignments(dutyId, dayA, dayB){
+      if(!canEditRoster()) return safeShowToast('ليس لديك صلاحية للتعديل','danger');
+      const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
+      roster[month] = roster[month] || {};
+      roster[month][dutyId] = roster[month][dutyId] || [];
+      const ensureRow = (day)=>{
+        let r = roster[month][dutyId].find(x=>x.day===day);
+        if(!r){ r = {day, officerId:null, notes:''}; roster[month][dutyId].push(r); }
+        return r;
+      };
+      const rowA = ensureRow(dayA);
+      const rowB = ensureRow(dayB);
+      [rowA.officerId, rowB.officerId] = [rowB.officerId, rowA.officerId];
+      [rowA.notes, rowB.notes] = [rowB.notes, rowA.notes];
+      saveAll();
+      safeShowToast('تم تبديل الضباط بين اليومين بالسحب والإفلات','success');
+      renderTab('roster');
+    }
+    function handleDutyDragStart(event, dutyId, day){
+      if(!canEditRoster()) return;
+      const payload = { dutyId, day };
+      event.dataTransfer.setData('text/plain', JSON.stringify(payload));
+      event.dataTransfer.effectAllowed = 'move';
+    }
+    function allowDutyDrop(event){
+      if(!canEditRoster()) return;
+      event.preventDefault();
+      event.currentTarget.classList.add('drag-over');
+    }
+    function clearDutyDragOver(event){
+      event.currentTarget.classList.remove('drag-over');
+    }
+    function handleDutyDrop(event, dutyId, day){
+      if(!canEditRoster()) return;
+      event.preventDefault();
+      event.currentTarget.classList.remove('drag-over');
+      let payload;
+      try { payload = JSON.parse(event.dataTransfer.getData('text/plain')); } catch(_) { payload = null; }
+      if(!payload || payload.day == null) return;
+      if(payload.dutyId !== dutyId) return safeShowToast('لا يمكن التبديل بين نوعين مختلفين','warning');
+      if(+payload.day === +day) return;
+      swapDutyAssignments(dutyId, +payload.day, +day);
+    }
 
     function renderDutySection(duty){
       try {
@@ -924,8 +995,11 @@
             return `<option value="${o.id}" ${o.id === r.officerId ? 'selected' : ''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}${deptName? ' • '+deptName:''}${jtName? ' • '+jtName:''}${groupBadge}</option>`;
           }).join('');
           const disabledAttr = canEditRoster() ? '' : 'disabled';
+          const dragAttrs = canEditRoster()
+            ? `draggable="true" ondragstart="handleDutyDragStart(event, ${duty.id}, ${day})" ondragover="allowDutyDrop(event)" ondragleave="clearDutyDragOver(event)" ondrop="handleDutyDrop(event, ${duty.id}, ${day})"`
+            : '';
 
-          return `<tr class="${cls}" ${ttl}><td class="text-center">${day}</td><td class="text-center">${weekdays[date.getDay()]}</td><td class="text-center">${date.toLocaleDateString('ar-EG')}</td>
+          return `<tr class="${cls}" ${ttl} ${dragAttrs}><td class="text-center">${day}</td><td class="text-center">${weekdays[date.getDay()]}</td><td class="text-center">${date.toLocaleDateString('ar-EG')}</td>
             <td><select class="form-select form-select-sm" ${disabledAttr} onchange="assignOfficerWithValidation('${month}', ${duty.id}, ${day}, this.value)">${officerOptions}</select></td>
             <td><input class="form-control form-control-sm" ${disabledAttr} value="${escapeHtml(r.notes)}" onchange="updateNote('${month}', ${duty.id}, ${day}, this.value)"></td></tr>`;
         }).join('');
@@ -1144,6 +1218,33 @@
     }
     function computeRankStats(){ const counts = {}; for(const r of ranks) counts[r] = 0; for(const o of officers){ if(!o || !o.rank) continue; counts[o.rank] = (counts[o.rank] || 0) + 1; } return counts; }
     function renderRankStatsBar(){ const stats = computeRankStats(); return `<div class="mb-3 d-flex flex-wrap gap-2" style="align-items:center">${Object.keys(stats).map(rank => `<div class="badge-stat"><div style="font-size:12px">${escapeHtml(rank)}</div><div class="fw-bold">${stats[rank]}</div></div>`).join('')}</div>`; }
+    function computeDeptGroupStats(){
+      const groupDefs = SETTINGS.deptGroups || [{key:'internal', name:'المجموعة الداخلية'},{key:'external', name:'المجموعة الخارجية'}];
+      const stats = {};
+      groupDefs.forEach(g=>{
+        stats[g.key] = { name: g.name, total: 0, ranks: {} };
+        ranks.forEach(r=>{ stats[g.key].ranks[r] = 0; });
+      });
+      officers.forEach(o=>{
+        if(!o) return;
+        const groupKey = (departments.find(d=>d.id===o.deptId)?.groupKey) || 'internal';
+        if(!stats[groupKey]) stats[groupKey] = { name: groupKey, total: 0, ranks: {} };
+        if(!stats[groupKey].ranks[o.rank]) stats[groupKey].ranks[o.rank] = 0;
+        stats[groupKey].total += 1;
+        if(o.rank) stats[groupKey].ranks[o.rank] += 1;
+      });
+      return stats;
+    }
+    function renderDeptGroupStatsTable(){
+      const stats = computeDeptGroupStats();
+      const rankCols = ranks.map(r=>`<th>${escapeHtml(r)}</th>`).join('');
+      const rows = Object.keys(stats).map(key=>{
+        const group = stats[key];
+        const rankCells = ranks.map(r=>`<td>${group.ranks[r] || 0}</td>`).join('');
+        return `<tr><td>${escapeHtml(group.name)}</td><td>${group.total}</td>${rankCells}</tr>`;
+      }).join('');
+      return `<div class="table-responsive"><table class="table table-sm table-bordered"><thead class="table-dark"><tr><th>مجموعة الأقسام</th><th>الإجمالي</th>${rankCols}</tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
    function buildOfficerDutyCountsForMonth(month){
       const result = {};
       const monthRoster = roster[month] || {};
@@ -1191,6 +1292,8 @@
         <div class="card-body">
           <h5>إحصاء الرتب</h5>
           <div id="rankStatsBar">${renderRankStatsBar()}</div>
+          <h5>إحصاء مجموعات الأقسام</h5>
+          <div id="deptGroupStats">${renderDeptGroupStatsTable()}</div>
           <hr/>
           <h5>جدول الواجبات — احصاء شهري</h5>
           <div class="row g-2 mb-2">
@@ -1906,7 +2009,7 @@
                 else if (fr.targetType === 'dept') prefIds.push(...officers.filter(x => x.deptId === fr.targetId).map(x => x.id));
                 else if (fr.targetType === 'rank') prefIds.push(...officers.filter(x => x.rank === fr.targetId).map(x => x.id));
               }
-              const prefSet = Array.from(new Set(prefIds));
+               const prefSet = Array.from(new Set(prefIds));
               candidates.sort((a,b) => {
                 const ai = prefSet.indexOf(a.id) >= 0 ? 0 : 1;
                 const bi = prefSet.indexOf(b.id) >= 0 ? 0 : 1;
@@ -2059,20 +2162,16 @@
     function buildHeaderHtml(){
       return ''; // الرأس معطل افتراضياً لتقارير موحدة
     }
-   function buildFooterHtml(extraSignatureHtml='', force=false){
+   function stripHtmlToText(html){
+      const div = document.createElement('div');
+      div.innerHTML = html || '';
+      return (div.textContent || div.innerText || '').trim();
+    }
+    function buildWatermarkHtml(force=false){
       if(!SETTINGS.includeFooterOnPrint && !force) return '';
-      let f = '';
-      f += extraSignatureHtml;
-      const timeFont = Math.max(11, Math.round((SETTINGS.printFontSize || 10) * 1.2));
-      const userFont = Math.max(10, Math.round(timeFont * 0.9));
-      const userName = CURRENT_USER?escapeHtml(CURRENT_USER.name):'مجهول';
-      const stamp = new Date().toLocaleString('ar-EG');
-      f += `<div style="margin-top:6px;display:flex;justify-content:flex-start;align-items:flex-start;">
-        <div style="font-size:${userFont}px;color:#374151;text-align:left;">
-          ${stamp}<br><span style="font-weight:600;">${userName}</span>
-        </div>
-      </div>`;
-      return f;
+      const text = stripHtmlToText(SETTINGS.footerHtml || '');
+      if(!text) return '';
+      return `<div class="watermark">${escapeHtml(text)}</div>`;
     }
 
 
@@ -2101,7 +2200,7 @@
         const o = officers.find(x=>x.id===r.officerId) || {rank:'',name:'—'};
         html += `<tr><td>${day}</td><td>${date.toLocaleDateString('ar-EG')}</td><td>${weekdays[date.getDay()]}</td><td>${escapeHtml(o.rank)}</td><td>${escapeHtml(o.name)}</td><td style="width:40%;">${escapeHtml(r.notes)}</td></tr>`;
       }
-      html += `</tbody></table><div style="margin-top:10px">${footer}</div></div></body></html>`;
+     html += `</tbody></table><div style="margin-top:10px">${signatureHtml}</div></div></div></body></html>`;
       return html;
     }
     function triggerIframePrint(html){
@@ -2184,8 +2283,8 @@
         <div style="flex:1;text-align:center;">${escapeHtml(sigs[1]?.place||'')}<br><br>__________________<br><span>${escapeHtml(sigs[1]?.name||'')}</span><br><span>${escapeHtml(sigs[1]?.title||'')}</span></div>
         <div style="flex:1;text-align:center;font-weight:700;">${escapeHtml(sigs[2]?.place||'')}<br><br>__________________<br><span style="font-weight:800">${escapeHtml(sigs[2]?.name||'')}</span><br><span>${escapeHtml(sigs[2]?.title||'')}</span></div>
       </div>`;
-  const footer = buildFooterHtml(signatureHtml, true);
-  return `<div style="font-size:${fontSize}px">${header}${title}${table}${footer}</div>`;
+  const watermark = buildWatermarkHtml(true);
+  return `<div class="one-duty-page">${watermark}<div class="duty-content" style="font-size:${fontSize}px">${header}${title}${table}<div style="margin-top:10px">${signatureHtml}</div></div></div>`;
 }
 
    function printSelectedDuties(){
@@ -2648,7 +2747,7 @@
           <div class="col-md-3" id="ex_targetContainer"></div>
           <div class="col-md-3" id="ex_from_container" style="display:none;"><label class="form-label">من</label><input id="ex_from" type="date" class="form-control"></div>
           <div class="col-md-3" id="ex_to_container" style="display:none;"><label class="form-label">إلى</label><input id="ex_to" type="date" class="form-control"></div>
-          <div class="col-md-3" id="ex_weekday_container" style="display:none;"><label class="form-label">أيام أسبوعية (يمكن اختيار أكثر من يوم)</label><select id="ex_weekdays" class="form-select" multiple>${weekdays.map((d,i)=>`<option value="${i}">${d}</option>`).join('')}</select><small class="text-muted">يوم واحد أسبوعياً لكل اختيار</small></div>
+          <<div class="col-md-3" id="ex_weekday_container" style="display:none;"><label class="form-label">أيام أسبوعية (يمكن اختيار أكثر من يوم)</label><select id="ex_weekdays" class="form-select" multiple>${weekdays.map((d,i)=>`<option value="${i}">${d}</option>`).join('')}</select><small class="text-muted">يوم واحد أسبوعياً لكل اختيار</small></div>
           <div class="col-md-3" id="ex_day_container" style="display:none;"><label class="form-label">تاريخ محدد (اختياري)</label><input id="ex_day" type="number" min="1" max="31" class="form-control" placeholder="مثال: 15"></div>
           <div class="col-12"><label class="form-label">استثناء ضباط</label><select id="ex_excludedOfficers" multiple class="form-select" style="min-height:100px">${officers.map(o=>`<option value="${o.id}">${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>
           <div class="col-12 text-end"><button class="btn btn-secondary" onclick="clearExceptionForm()">مسح</button> <button class="btn btn-primary" onclick="saveExceptionFromForm()">حفظ</button></div>
@@ -2738,7 +2837,7 @@
       if(type==='force_weekly_only' && targetType==='officer' && (!rule.weekdays || !rule.weekdays.length)) return showToast('حدد يوم الأسبوع المطلوب للحجز','danger');
       if(type==='remove_all'){ rule.dutyId = null; }
       const editIndex = document.getElementById('ex_editIndex') ? +document.getElementById('ex_editIndex').value : null;
-       const wasEdit = editIndex!=null && !isNaN(editIndex);
+      const wasEdit = editIndex!=null && !isNaN(editIndex);
       if(wasEdit) exceptions[editIndex] = rule; else exceptions.push(rule);
       saveAll();
       showToast(wasEdit ? 'تم حفظ التعديل اليدوي على القاعدة' : 'تم حفظ القاعدة الجديدة', wasEdit ? 'warning' : 'success');
@@ -2813,12 +2912,10 @@
           <div class="col-md-4"><label class="form-label">تخطيط شاشة الدخول</label><select id="set_loginLayout" class="form-select"><option value="stacked" ${SETTINGS.loginLayout==='stacked'?'selected':''}>مكدس (شعار فوق البطاقة)</option><option value="inline" ${SETTINGS.loginLayout==='inline'?'selected':''}>عرض مضغوط</option></select></div>
           <div class="col-md-6"><label class="form-label">خط من النظام (Windows .ttf/.otf)</label><input id="set_font" type="file" class="form-control" accept=".ttf,.otf"></div>
         <div class="col-12"><label class="form-label">رأس التقرير (HTML)</label><textarea id="set_header" class="form-control" rows="3">${escapeHtml(SETTINGS.headerHtml)}</textarea></div>
-        <div class="col-12"><label class="form-label">تذييل التقرير (HTML)</label><textarea id="set_footer" class="form-control" rows="2">${escapeHtml(SETTINGS.footerHtml)}</textarea></div>
+        <div class="col-12"><label class="form-label">تذييل التقرير (HTML) — يستخدم كعلامة مائية</label><textarea id="set_footer" class="form-control" rows="2">${escapeHtml(SETTINGS.footerHtml)}</textarea></div>
         <div class="col-md-3"><label class="form-label">حجم الطباعة(px)</label><input id="set_printFont" type="number" class="form-control" value="${SETTINGS.printFontSize}"></div>
         <div class="col-md-3 form-check"><input id="set_incHeader" class="form-check-input" type="checkbox" ${SETTINGS.includeHeaderOnPrint?'checked':''}><label class="form-check-label">تضمين الرأس</label></div>
-        <div class="col-md-3 form-check"><input id="set_incFooter" class="form-check-input" type="checkbox" ${SETTINGS.includeFooterOnPrint?'checked':''}><label class="form-check-label">تضمين التذييل</label></div>
-          <div class="col-md-3 form-check"><input id="set_wmActive" class="form-check-input" type="checkbox" ${SETTINGS.watermarkActive?'checked':''}><label class="form-check-label">تفعيل العلامة المائية</label></div>
-          <div class="col-md-6"><label class="form-label">نص العلامة المائية</label><input id="set_wmText" class="form-control" value="${escapeHtml(SETTINGS.watermarkText)}"></div>
+        <div class="col-md-3 form-check"><input id="set_incFooter" class="form-check-input" type="checkbox" ${SETTINGS.includeFooterOnPrint?'checked':''}><label class="form-check-label">تضمين العلامة المائية</label></div>
           <div class="col-md-6 form-check"><input id="set_auth" class="form-check-input" type="checkbox" ${SETTINGS.authEnabled?'checked':''}><label class="form-check-label">تمكين نظام المستخدمين</label></div>
 
           <div class="col-12 mt-2"><label class="form-label">توقيعات افتراضية</label>
@@ -2847,8 +2944,6 @@
       SETTINGS.printFontSize = +document.getElementById('set_printFont').value || 10;
       SETTINGS.includeHeaderOnPrint = !!document.getElementById('set_incHeader').checked;
       SETTINGS.includeFooterOnPrint = !!document.getElementById('set_incFooter').checked;
-      SETTINGS.watermarkActive = !!document.getElementById('set_wmActive').checked;
-      SETTINGS.watermarkText = document.getElementById('set_wmText').value || '';
       SETTINGS.authEnabled = !!document.getElementById('set_auth').checked;
       SETTINGS.themeKey = document.getElementById('set_theme').value || 'classic';
       SETTINGS.loginLayout = document.getElementById('set_loginLayout').value || 'stacked';
@@ -3038,7 +3133,7 @@
             <li>تخصيص السمات والألوان، الشعار، وتخطيط شاشة الدخول.</li>
             <li>لوحة تحكم للنسخ الاحتياطي، الاستعادة، وإدارة المستخدمين.</li>
             <li>سجل نشاط كامل مع التصدير والتنظيف.</li>
-            <li>تقارير طباعة A4 مع توقيعات وتذييل زمني.</li>
+            <li>تقارير طباعة A4 مع توقيعات وعلامة مائية.</li>
           </ul>
           <div class="mt-3"><strong>الإصدار:</strong> 1.0 (واجهة أحادية الملف)</div>
         </div>
