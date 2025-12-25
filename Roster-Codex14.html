@@ -3032,15 +3032,22 @@
       const transferTree = renderDepartmentGroupTree(null,0,'transfer', false, 'transfer-departments');
       return `<div class="card"><div class="card-header d-flex justify-content-between"><div>${escapeHtml(transferLabel)}</div><div class="d-flex gap-2"><button class="btn btn-success btn-sm" onclick="openDepartmentForm('add',null,null,'transfer','transfer','transfer-departments')">إضافة جهة نقل</button></div></div>
         <div class="card-body">
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-outline-secondary btn-sm" onclick="downloadTransferDepartmentsTemplateCSV()">تحميل قالب CSV لجهات النقل</button>
+            <label class="btn btn-outline-primary btn-sm mb-0">استيراد CSV لجهات النقل <input type="file" id="transferDepartmentsCsvInput" accept=".csv" style="display:none" onchange="importTransferDepartmentsCSV(this)"></label>
+          </div>
           <div class="row g-3">
             <div class="col-md-6">${transferTree}</div>
             <div class="col-md-6"><div id="departmentFormArea"></div></div>
           </div>
-          <div class="small-muted mt-2">جهات النقل هي الإدارات العامة ومديريات الشرطة التي يتم النقل منها وإليها.</div>
+          <div class="small-muted mt-2">جهات النقل هي الإدارات العامة ومديريات الشرطة، ويتم إدخالها بالاسم فقط ويمكن رفعها عبر ملف CSV.</div>
         </div></div>`;
     }
     function downloadDepartmentsTemplateCSV(){
       downloadCSVFile('departments_template.csv','id,name,groupKey,parentId,headId,upperTitle,upperOfficerId');
+    }
+    function downloadTransferDepartmentsTemplateCSV(){
+      downloadCSVFile('transfer_departments_template.csv','name');
     }
    function importDepartmentsCSV(input){
       const f = input.files && input.files[0]; if(!f) return;
@@ -3061,6 +3068,28 @@
         });
         saveAll();
         renderTab('departments');
+      };
+      reader.readAsText(f);
+    }
+    function importTransferDepartmentsCSV(input){
+      const f = input.files && input.files[0]; if(!f) return;
+      const reader = new FileReader(); reader.onload = ()=>{
+        const rows = reader.result.split(/\r?\n/).slice(1).filter(Boolean);
+        rows.forEach(line=>{
+          const [name] = line.split(',');
+          if(!name) return;
+          departments.push({
+            id: Date.now() + Math.random(),
+            name: name.trim(),
+            groupKey: 'transfer',
+            parentId: null,
+            headId: null,
+            upperTitle: '',
+            upperOfficerId: null
+          });
+        });
+        saveAll();
+        renderTab('transfer-departments');
       };
       reader.readAsText(f);
     }
@@ -3115,28 +3144,37 @@
     function openDepartmentForm(mode,id=null,parentId=null,forcedGroup=null,scopeGroup=null,returnTab='departments'){
       const area = document.getElementById('departmentFormArea');
       let name='', headId='', pid = parentId || '', upperTitle='', upperOfficerId='', groupKey='internal';
-      if(mode==='edit' && id){ const d = departments.find(x=>x.id===id); if(d){ name=d.name; headId=d.headId||''; pid=d.parentId||''; upperTitle = d.upperTitle || ''; upperOfficerId = d.upperOfficerId || ''; groupKey = d.groupKey || 'internal'; } }
+       if(mode==='edit' && id){ const d = departments.find(x=>x.id===id); if(d){ name=d.name; headId=d.headId||''; pid=d.parentId||''; upperTitle = d.upperTitle || ''; upperOfficerId = d.upperOfficerId || ''; groupKey = d.groupKey || 'internal'; } }
       else if(mode==='add'){ pid = parentId || ''; groupKey = forcedGroup || 'internal'; }
       if(scopeGroup) groupKey = scopeGroup;
+      const isTransferGroup = groupKey === 'transfer';
       const parentOptions = (scopeGroup ? departments.filter(d=> (d.groupKey||'internal')===scopeGroup) : departments)
         .map(d=>`<option value="${d.id}" ${d.id==pid?'selected':''}>${escapeHtml(d.name)}</option>`).join('');
       const groupSelector = scopeGroup ? '' : `<div class="mb-2"><label class="form-label">مجموعة القسم</label><select id="dept_group" class="form-select">${(SETTINGS.deptGroups||[]).map(g=>`<option value="${g.key}" ${g.key===groupKey?'selected':''}>${escapeHtml(g.name)}</option>`).join('')}</select></div>`;
-      area.innerHTML = `<div class="card"><div class="card-header">${mode==='add'?'إضافة قسم':'تعديل قسم'}</div><div class="card-body">
-        <div class="mb-2"><label class="form-label">اسم</label><input id="dept_name" class="form-control" value="${escapeHtml(name)}"></div>
+      const transferNote = isTransferGroup ? '<div class="alert alert-info mb-2">جهات النقل تُسجّل بالاسم فقط.</div>' : '';
+      const extraFields = isTransferGroup ? '' : `
         <div class="mb-2"><label class="form-label">تابع لـ</label><select id="dept_parent" class="form-select"><option value="">— لا شيء —</option>${parentOptions}</select></div>
         <div class="mb-2"><label class="form-label">رئيس القسم</label><select id="dept_head" class="form-select"><option value="">— لا شيء —</option>${officers.map(o=>`<option value="${o.id}" ${o.id==headId?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>
         <div class="mb-2"><label class="form-label">مسمى الإدارة العليا (اختياري)</label><input id="dept_upperTitle" class="form-control" value="${escapeHtml(upperTitle)}"></div>
-        <div class="mb-2"><label class="form-label">ضابط الإدارة العليا (اختياري)</label><select id="dept_upperOfficer" class="form-select"><option value="">— لا شيء —</option>${officers.map(o=>`<option value="${o.id}" ${o.id==upperOfficerId?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>
+        <div class="mb-2"><label class="form-label">ضابط الإدارة العليا (اختياري)</label><select id="dept_upperOfficer" class="form-select"><option value="">— لا شيء —</option>${officers.map(o=>`<option value="${o.id}" ${o.id==upperOfficerId?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>`;
+      area.innerHTML = `<div class="card"><div class="card-header">${mode==='add'?'إضافة قسم':'تعديل قسم'}</div><div class="card-body">
+        ${transferNote}
+        <div class="mb-2"><label class="form-label">اسم</label><input id="dept_name" class="form-control" value="${escapeHtml(name)}"></div>
+        ${extraFields}
         ${groupSelector}
         <div class="text-end"><button class="btn btn-secondary" onclick="document.getElementById('departmentFormArea').innerHTML=''">إلغاء</button> <button class="btn btn-primary" onclick="saveDepartment('${mode}',${id||''},'${groupKey}','${returnTab}')">حفظ</button></div>
       </div></div>`;
     }
     function saveDepartment(mode,id,forcedGroup=null,returnTab='departments'){
       const name = document.getElementById('dept_name').value.trim();
-      const parentId = document.getElementById('dept_parent').value ? +document.getElementById('dept_parent').value : null;
-      const headId = document.getElementById('dept_head').value ? +document.getElementById('dept_head').value : null;
-      const upperTitle = document.getElementById('dept_upperTitle') ? document.getElementById('dept_upperTitle').value.trim() : '';
-      const upperOfficerId = document.getElementById('dept_upperOfficer') && document.getElementById('dept_upperOfficer').value ? +document.getElementById('dept_upperOfficer').value : null;
+      const parentEl = document.getElementById('dept_parent');
+      const headEl = document.getElementById('dept_head');
+      const upperTitleEl = document.getElementById('dept_upperTitle');
+      const upperOfficerEl = document.getElementById('dept_upperOfficer');
+      const parentId = parentEl && parentEl.value ? +parentEl.value : null;
+      const headId = headEl && headEl.value ? +headEl.value : null;
+      const upperTitle = upperTitleEl ? upperTitleEl.value.trim() : '';
+      const upperOfficerId = upperOfficerEl && upperOfficerEl.value ? +upperOfficerEl.value : null;
       const groupKey = forcedGroup || (document.getElementById('dept_group') ? document.getElementById('dept_group').value : 'internal');
       if(!name) return showToast('أدخل اسم القسم','danger');
       if(mode==='add'){ departments.push({id:Date.now(),name,parentId,headId,upperTitle,upperOfficerId,groupKey}); }
