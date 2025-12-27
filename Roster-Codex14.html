@@ -262,6 +262,7 @@
     const OFFICER_RANDOMNESS = {};
     const dutyCollapseState = {};
     const dutySwapState = {};
+    const deptCollapseState = {};
     let ADMIN_RECOVERY_CONTEXT = null;
 
     function parseBadgeSegment(val){
@@ -2495,7 +2496,7 @@
     }
     function buildReportHeader(duty, effectiveMonth){
       const monthTitle = new Date(effectiveMonth+'-01').toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
-      const title = `كشف خدمات ${escapeHtml(duty.printLabel || duty.name)} عن شهر ${monthTitle}`;
+      const title = `${escapeHtml(duty.printLabel || duty.name)}`;
       return `
         <div class="report-header">
           <div style="flex:1;text-align:center;">
@@ -2581,9 +2582,6 @@
       document.body.appendChild(iframe);
       iframe.onload = () => {
         try {
-          iframe.contentDocument.open();
-          iframe.contentDocument.write(html);
-          iframe.contentDocument.close();
           setTimeout(()=>{ iframe.contentWindow?.focus(); iframe.contentWindow?.print(); iframe.remove(); }, 350);
         } catch(err){
           console.error('iframe print error', err);
@@ -2747,8 +2745,9 @@
       const disabledAttr = canManage ? '' : 'disabled';
       const isUpper = jobTitles.find(j=>j.id===o.jobTitleId)?.isUpper;
       const deptDisabled = isUpper ? 'disabled' : disabledAttr;
-       const transferDepts = getTransferDepartments();
-      const transferVisible = o.admissionType === 'transferred';
+      const transferDepts = getTransferDepartments();
+      const transferInVisible = o.admissionType === 'transferred';
+      const transferOutVisible = o.status === 'transferred';
       const [badgeFirst, badgeSecond, badgeThird] = splitBadgeParts(o.badge);
       return `<div class="card sticky-panel"><div class="card-header">تفاصيل الضابط</div><div class="card-body">
         <div class="mb-2"><label class="form-label">الاسم</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.name)}" onchange="updateOfficer(${o.id},'name',this.value)"></div>
@@ -2777,26 +2776,30 @@
           <div class="col-md-6"><label class="form-label">حالة</label><div class="d-flex align-items-center gap-2">${renderStatusBadge(o.status||'active')}${canManage?`<button class="btn btn-sm btn-outline-primary" onclick="setOfficerStatus(${o.id},'active')">نشط</button><button class="btn btn-sm btn-outline-warning" onclick="setOfficerStatus(${o.id},'retired')">تقاعد</button><button class="btn btn-sm btn-outline-secondary" onclick="setOfficerStatus(${o.id},'transferred')">نقل</button>`:''}</div></div>
         </div>
         <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">نوع التعيين</label><select id="off_${o.id}_off_admission" class="form-select" ${disabledAttr} onchange="setOfficerAdmissionType(${o.id}, this.value)"><option value="fresh" ${o.admissionType!=='transferred'?'selected':''}>خريج جديد</option><option value="transferred" ${o.admissionType==='transferred'?'selected':''}>منقول من جهة أخرى</option></select></div>
-          <div class="col-md-6" id="off_${o.id}_off_hiring_fields" style="display:${transferVisible?'none':'block'};">
+           <div class="col-md-6"><label class="form-label">نوع التعيين</label><select id="off_${o.id}_off_admission" class="form-select" ${disabledAttr} onchange="setOfficerAdmissionType(${o.id}, this.value)"><option value="fresh" ${o.admissionType!=='transferred'?'selected':''}>خريج جديد</option><option value="transferred" ${o.admissionType==='transferred'?'selected':''}>منقول من جهة أخرى</option></select></div>
+          <div class="col-md-6" id="off_${o.id}_off_hiring_fields" style="display:${transferInVisible?'none':'block'};">
             <label class="form-label">تاريخ التعيين</label>
             <input type="date" class="form-control" ${disabledAttr} value="${o.hiringDate||''}" onchange="updateOfficer(${o.id},'hiringDate',this.value)">
           </div>
-          <div class="col-md-12" id="off_${o.id}_off_transfer_fields" style="display:${transferVisible?'block':'none'};">
-            <label class="form-label">جهة النقل من</label>
+          <div class="col-md-12" id="off_${o.id}_off_transfer_fields" style="display:${transferInVisible?'block':'none'};">
+            <label class="form-label">جهة النقل من (الإدارات العامة ومديريات الأمن)</label>
             <select class="form-select mb-2" ${disabledAttr} onchange="updateOfficer(${o.id},'transferFromDeptId',+this.value||null)">
               <option value="">— اختر جهة —</option>
               ${transferDepts.map(d=>`<option value="${d.id}" ${d.id===o.transferFromDeptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}
             </select>
-            <label class="form-label">جهة النقل إلى</label>
+            <label class="form-label">تاريخ النقل للداخل</label>
+            <input type="date" class="form-control" ${disabledAttr} value="${o.transferDate||''}" onchange="updateOfficer(${o.id},'transferDate',this.value)">
+          </div>
+        </div>
+        <div class="row g-2" id="off_${o.id}_off_transfer_out_fields" style="display:${transferOutVisible?'block':'none'};">
+          <div class="col-md-12">
+            <label class="form-label">جهة النقل إلى (الإدارات العامة ومديريات الأمن)</label>
             <select class="form-select mb-2" ${disabledAttr} onchange="updateOfficer(${o.id},'transferToDeptId',+this.value||null)">
               <option value="">— اختر جهة —</option>
               ${transferDepts.map(d=>`<option value="${d.id}" ${d.id===o.transferToDeptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}
             </select>
-            <div class="row g-2">
-              <div class="col-md-6"><input type="date" class="form-control" ${disabledAttr} value="${o.transferDate||''}" onchange="updateOfficer(${o.id},'transferDate',this.value)" placeholder="تاريخ النقل من"></div>
-              <div class="col-md-6"><input type="date" class="form-control" ${disabledAttr} value="${o.transferToDate||''}" onchange="updateOfficer(${o.id},'transferToDate',this.value)" placeholder="تاريخ النقل إلى"></div>
-            </div>
+            <label class="form-label">تاريخ النقل للخارج</label>
+            <input type="date" class="form-control" ${disabledAttr} value="${o.transferToDate||''}" onchange="updateOfficer(${o.id},'transferToDate',this.value)">
           </div>
         </div>
         <div class="mb-2"><label class="form-label">العنوان</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.address||'')}" onchange="updateOfficer(${o.id},'address',this.value)"></div>
@@ -2846,10 +2849,9 @@
           <div class="col-md-6" id="new_off_transfer_fields" style="display:none;">
             <div class="d-flex gap-2">
               <select id="new_off_transferDept" class="form-select"><option value="">— جهة النقل من —</option>${getTransferDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select>
-              <select id="new_off_transferToDept" class="form-select"><option value="">— جهة النقل إلى —</option>${getTransferDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select>
-              <input id="new_off_transferDate" type="date" class="form-control" placeholder="تاريخ النقل من">
-              <input id="new_off_transferToDate" type="date" class="form-control" placeholder="تاريخ النقل إلى">
-                    </div>
+              <input id="new_off_transferDate" type="date" class="form-control" placeholder="تاريخ النقل للداخل">
+            </div>
+          </div>
           </div>
         </div>
         <div class="text-end mt-2"><button class="btn btn-secondary" onclick="document.getElementById('officerEditorArea').innerHTML=''">إلغاء</button> <button class="btn btn-primary" onclick="createOfficer()">حفظ</button></div>
@@ -2875,9 +2877,9 @@
      const admissionType = document.getElementById('new_off_admission').value || 'fresh';
       const hiringDate = admissionType !== 'transferred' ? (document.getElementById('new_off_hiringDate').value || '') : '';
       const transferFromDeptId = admissionType === 'transferred' ? (+document.getElementById('new_off_transferDept').value || null) : null;
-      const transferToDeptId = admissionType === 'transferred' ? (+document.getElementById('new_off_transferToDept').value || null) : null;
+       const transferToDeptId = null;
       const transferDate = admissionType === 'transferred' ? (document.getElementById('new_off_transferDate').value || '') : '';
-      const transferToDate = admissionType === 'transferred' ? (document.getElementById('new_off_transferToDate').value || '') : '';
+      const transferToDate = '';
       officers.push({id, name, rank, badge: badgeValue, deptId: +document.getElementById('new_off_dept').value || null, jobTitleId: +document.getElementById('new_off_job').value || null, subs: [], status:'active', transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, admissionType, hiringDate, transferFromDeptId, transferToDeptId, transferDate, transferToDate});
       saveAll();
       document.getElementById('officerEditorArea').innerHTML='';
@@ -2905,7 +2907,7 @@
     function getInternalDepartments(){
       return departments.filter(d=> (d.groupKey || 'internal') !== 'transfer');
     }
-    function toggleTransferFields(prefix){
+     function toggleTransferFields(prefix){
       const type = document.getElementById(`${prefix}_off_admission`)?.value;
       const transferContainer = document.getElementById(`${prefix}_off_transfer_fields`);
       if(transferContainer) transferContainer.style.display = type === 'transferred' ? 'block' : 'none';
@@ -2918,9 +2920,7 @@
       o.admissionType = val;
      if(val !== 'transferred'){
         o.transferFromDeptId = null;
-        o.transferToDeptId = null;
         o.transferDate = '';
-        o.transferToDate = '';
       } else {
         o.hiringDate = '';
       }
@@ -3040,7 +3040,7 @@
             <div class="col-md-6">${transferTree}</div>
             <div class="col-md-6"><div id="departmentFormArea"></div></div>
           </div>
-          <div class="small-muted mt-2">جهات النقل هي الإدارات العامة ومديريات الشرطة، ويتم إدخالها بالاسم فقط ويمكن رفعها عبر ملف CSV.</div>
+          <div class="small-muted mt-2">جهات النقل هي الإدارات العامة ومديريات الأمن، ويتم إدخالها بالاسم فقط ويمكن رفعها عبر ملف CSV.</div>
         </div></div>`;
     }
     function downloadDepartmentsTemplateCSV(){
@@ -3093,29 +3093,41 @@
       };
       reader.readAsText(f);
     }
-    function renderDepartmentGroupTree(parentId,level,groupKey,allowDrag=false,returnTab='departments'){
+     function renderDepartmentGroupTree(parentId,level,groupKey,allowDrag=false,returnTab='departments'){
       const children = departments.filter(d=> (d.parentId||null) === (parentId||null) && d.groupKey===groupKey);
-      if(!children.length && !parentId) return `<p class="text-muted py-3">لا توجد أقسام</p>`;
-      return `<ul class="list-unstyled ms-${level*3}">${children.map(d=>`<li class="mb-2 p-2 border rounded" ${allowDrag ? 'draggable="true" ondragstart="onDeptDragStart(event,'+d.id+')"' : ''}>
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <strong>${escapeHtml(d.name)}</strong> ${renderDeptGroupBadge(d.groupKey)}
-            ${d.headId? '<div class="small text-muted">رئيس: '+escapeHtml((officers.find(o=>o.id===d.headId)||{name:""}).name)+'</div>':''}
-            ${d.upperTitle? '<div class="small text-muted">مسمى إدارة عليا: '+escapeHtml(d.upperTitle) + (d.upperOfficerId? ' — '+escapeHtml((officers.find(o=>o.id===d.upperOfficerId)||{name:""}).name) : '') + '</div>':''}
+      if(!children.length) return parentId ? '' : `<p class="text-muted py-3">لا توجد أقسام</p>`;
+      return `<ul class="list-unstyled ms-${level*3}">${children.map(d=>{
+        const hasChildren = departments.some(ch=> (ch.parentId||null) === d.id && ch.groupKey===groupKey);
+        const collapsed = !!deptCollapseState[d.id];
+        const childTree = hasChildren ? renderDepartmentGroupTree(d.id,level+1,groupKey,allowDrag,returnTab) : '';
+        return `<li class="mb-2 p-2 border rounded" ${allowDrag ? 'draggable="true" ondragstart="onDeptDragStart(event,'+d.id+')"' : ''}>
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                ${hasChildren ? `<button class="btn btn-sm btn-outline-secondary" onclick="toggleDeptCollapse(${d.id},'${returnTab}')">${collapsed ? 'عرض' : 'إخفاء'}</button>` : ''}
+                <strong>${escapeHtml(d.name)}</strong> ${renderDeptGroupBadge(d.groupKey)}
+              </div>
+              ${d.headId? '<div class="small text-muted">رئيس: '+escapeHtml((officers.find(o=>o.id===d.headId)||{name:""}).name)+'</div>':''}
+              ${d.upperTitle? '<div class="small text-muted">مسمى إدارة عليا: '+escapeHtml(d.upperTitle) + (d.upperOfficerId? ' — '+escapeHtml((officers.find(o=>o.id===d.upperOfficerId)||{name:""}).name) : '') + '</div>':''}
+            </div>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="openDepartmentForm('edit',${d.id},null,'${groupKey}','${groupKey}','${returnTab}')">تعديل</button>
+              <button class="btn btn-sm btn-outline-success me-1" onclick="openDepartmentForm('add',null,${d.id},'${groupKey}','${groupKey}','${returnTab}')">وحدة فرعية</button>
+              <button class="btn btn-sm btn-outline-danger me-1" onclick="markDepartmentDelete(${d.id},'${returnTab}')">حذف</button>
+            </div>
           </div>
-          <div>
-            <button class="btn btn-sm btn-outline-primary me-1" onclick="openDepartmentForm('edit',${d.id},null,'${groupKey}','${groupKey}','${returnTab}')">تعديل</button>
-            <button class="btn btn-sm btn-outline-success me-1" onclick="openDepartmentForm('add',null,${d.id},'${groupKey}','${groupKey}','${returnTab}')">وحدة فرعية</button>
-            <button class="btn btn-sm btn-outline-danger me-1" onclick="markDepartmentDelete(${d.id},'${returnTab}')">حذف</button>
-          </div>
-        </div>
-        ${renderDepartmentGroupTree(d.id,level+1,groupKey,allowDrag,returnTab)}
-      </li>`).join('')}</ul>`;
+          ${hasChildren ? `<div style="margin-top:8px;display:${collapsed?'none':'block'};">${childTree}</div>` : ''}
+        </li>`;
+      }).join('')}</ul>`;
     }
     function renderDeptGroupBadge(groupKey){
       const name = (SETTINGS.deptGroups||[]).find(g=>g.key===groupKey)?.name || '';
       const cls = groupKey==='external'?'status-transferred':'status-active';
       return name ? `<span class="badge-status ${cls}" style="margin-inline-start:6px;">${escapeHtml(name)}</span>` : '';
+    }
+    function toggleDeptCollapse(id, returnTab='departments'){
+      deptCollapseState[id] = !deptCollapseState[id];
+      renderTab(returnTab);
     }
     function onDeptDragStart(ev, id){
       ev.dataTransfer.setData('text/plain', id);
@@ -3147,6 +3159,7 @@
        if(mode==='edit' && id){ const d = departments.find(x=>x.id===id); if(d){ name=d.name; headId=d.headId||''; pid=d.parentId||''; upperTitle = d.upperTitle || ''; upperOfficerId = d.upperOfficerId || ''; groupKey = d.groupKey || 'internal'; } }
       else if(mode==='add'){ pid = parentId || ''; groupKey = forcedGroup || 'internal'; }
       if(scopeGroup) groupKey = scopeGroup;
+      const idValue = id ?? 'null';
       const isTransferGroup = groupKey === 'transfer';
       const parentOptions = (scopeGroup ? departments.filter(d=> (d.groupKey||'internal')===scopeGroup) : departments)
         .map(d=>`<option value="${d.id}" ${d.id==pid?'selected':''}>${escapeHtml(d.name)}</option>`).join('');
@@ -3159,11 +3172,16 @@
         <div class="mb-2"><label class="form-label">ضابط الإدارة العليا (اختياري)</label><select id="dept_upperOfficer" class="form-select"><option value="">— لا شيء —</option>${officers.map(o=>`<option value="${o.id}" ${o.id==upperOfficerId?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>`;
       area.innerHTML = `<div class="card"><div class="card-header">${mode==='add'?'إضافة قسم':'تعديل قسم'}</div><div class="card-body">
         ${transferNote}
-        <div class="mb-2"><label class="form-label">اسم</label><input id="dept_name" class="form-control" value="${escapeHtml(name)}"></div>
+        <div class="mb-2"><label class="form-label">اسم</label><input id="dept_name" class="form-control" value="${escapeHtml(name)}" onkeydown="handleDepartmentFormKey(event,'${mode}',${idValue},'${groupKey}','${returnTab}')"></div>
         ${extraFields}
         ${groupSelector}
-        <div class="text-end"><button class="btn btn-secondary" onclick="document.getElementById('departmentFormArea').innerHTML=''">إلغاء</button> <button class="btn btn-primary" onclick="saveDepartment('${mode}',${id||''},'${groupKey}','${returnTab}')">حفظ</button></div>
+        <div class="text-end"><button class="btn btn-secondary" onclick="document.getElementById('departmentFormArea').innerHTML=''">إلغاء</button> <button class="btn btn-primary" onclick="saveDepartment('${mode}',${idValue},'${groupKey}','${returnTab}')">حفظ</button></div>
       </div></div>`;
+    }
+    function handleDepartmentFormKey(event, mode, id, groupKey, returnTab){
+      if(event.key !== 'Enter') return;
+      event.preventDefault();
+      saveDepartment(mode, id, groupKey, returnTab);
     }
     function saveDepartment(mode,id,forcedGroup=null,returnTab='departments'){
       const name = document.getElementById('dept_name').value.trim();
