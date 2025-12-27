@@ -126,14 +126,18 @@
     .relation-card h5 { margin:0 0 8px 0; font-size:15px; color:#1e3a8a; }
     .relation-item { font-size:13px; padding:4px 6px; border-radius:8px; background:#eef2ff; margin-bottom:6px; display:flex; justify-content:space-between; }
     .relation-tag { font-size:11px; color:#64748b; }
+    .relation-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; }
+    .relation-list li { background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:4px 6px; font-size:12px; display:flex; justify-content:space-between; align-items:center; }
+    .compact-checks { display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; }
+    .compact-checks .form-check { margin:0; padding:0 4px; display:flex; align-items:center; gap:4px; }
+    .compact-checks .form-check-input { margin:0; }
    .report-preview-paper { background:#fff; border:1px solid #0f172a; border-radius:8px; padding:16px; box-shadow:0 4px 12px rgba(15,23,42,.08); }
     .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#111; margin-bottom:6px; }
     .report-header { display:flex; justify-content:center; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px; gap:12px; }
     .report-title { font-size:18px; font-weight:700; text-align:center; color:#111; }
-   .report-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:inherit; border:2px solid #0f172a; }
-    .report-table th, .report-table td { border:1px double #0f172a; padding:4px 3px; text-align:center; }
+    .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:2px solid #0f172a; }
+    .report-table th, .report-table td { border:1px double #0f172a; padding:4px 3px; text-align:center; white-space:nowrap; }
     .report-table th { background:#fff; color:#111; font-weight:700; }
-    .report-table td:last-child { width:22%; }
     .report-table .week-separator td { border-top:2px solid #0f172a; }
     .report-signatures { display:flex; justify-content:space-between; gap:18px; margin-top:10px; font-size:13px; line-height:1.5; width:100%; }
     .report-signature { flex:1; text-align:center; min-height:110px; display:flex; flex-direction:column; justify-content:flex-end; }
@@ -993,8 +997,14 @@
       setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(), 400); }, 3600);
     }
     function safeShowToast(msg,type='info'){ try{ showToast(msg,type); } catch(_) { console.log(msg); } }
-    function renderSessionChips(){
-      if(!ACTIVE_SESSIONS.length) return '';
+    function guardSearchInput(event){
+      if(event.key === 'Enter'){
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }
+     function renderSessionChips(){ 
+     if(!ACTIVE_SESSIONS.length) return '';
       return `<div class="d-flex flex-wrap justify-content-center gap-2">${ACTIVE_SESSIONS.map((s,i)=>`<button class="btn btn-outline-primary btn-sm" onclick="switchSession(${i})">${escapeHtml(s.name)} (${s.role})</button>`).join('')}</div>`;
     }
 
@@ -1510,8 +1520,6 @@
       const monthOptions = [`<option value="${savedMonth}">Current: ${savedMonth}</option>`].concat(monthsAvailable.map(m=>`<option value="${m}">${m}</option>`)).join('');
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>الإحصاءات والأرشيف</div><div><button class="btn btn-sm btn-outline-primary" onclick="renderTab('roster')">عودة</button></div></div>
         <div class="card-body">
-          <h5>إحصاء الرتب</h5>
-          <div id="rankStatsBar">${renderRankStatsBar()}</div>
           <h5>إحصاء مجموعات الأقسام</h5>
           <div id="deptGroupStats">${renderDeptGroupStatsTable()}</div>
           <hr/>
@@ -1686,7 +1694,7 @@
                   </div>
                 </div>
                 <div class="row g-2 mb-2">
-                  <div class="col-md-3"><input id="act_filter_action" class="form-control" placeholder="بحث بالحدث" oninput="refreshActivityLogTable()"></div>
+                  <<div class="col-md-3"><input id="act_filter_action" class="form-control" placeholder="بحث بالحدث" oninput="refreshActivityLogTable()" onkeydown="guardSearchInput(event)"></div>
                   <div class="col-md-3"><select id="act_filter_user" class="form-select" onchange="refreshActivityLogTable()"><option value="">كل المستخدمين</option>${Array.from(new Set(activityLog.map(l=>l.user||'مجهول'))).map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join('')}</select></div>
                   <div class="col-md-3"><input id="act_filter_from" type="date" class="form-control" onchange="refreshActivityLogTable()"></div>
                   <div class="col-md-3"><input id="act_filter_to" type="date" class="form-control" onchange="refreshActivityLogTable()"></div>
@@ -1819,7 +1827,7 @@
     }
     function adminGenerateViewerUsersForAll(resetPasswords=false){
       if(!officers.length) return showToast('لا يوجد ضباط لإنشاء المستخدمين', 'warning');
-      if(!confirm(resetPasswords ? 'سيتم تحديث كلمات المرور لكل مستخدم مشاهد مرتبط بضابط. متابعة؟' : 'سيتم إنشاء حسابات مشاهدة للضباط الذين لا يملكون حساباً. متابعة؟')) return;
+      showToast(resetPasswords ? 'يتم تحديث كلمات مرور المشاهدين...' : 'يتم إنشاء حسابات المشاهدة...', 'info');
       SETTINGS.users = SETTINGS.users || [];
       let created = 0;
       let updated = 0;
@@ -2464,10 +2472,9 @@
           @page{size:A4 portrait;margin:8mm}
           body{font-family:${fontFamily},"Fanan","Sultan bold","PT Bold Heading","Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm;${includeBackground ? 'background:#fff;' : ''}}
           .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid}
-          .report-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:${fontSize}px;border:2px solid #0f172a}
-          .report-table th,.report-table td{border:1px double #0f172a;padding:4px 3px;text-align:center}
+           .report-table{width:100%;border-collapse:collapse;table-layout:auto;font-size:${fontSize}px;border:2px solid #0f172a}
+          .report-table th,.report-table td{border:1px double #0f172a;padding:4px 3px;text-align:center;white-space:nowrap}
           .report-table th{background:#fff;color:#111;font-weight:700}
-          .report-table td:last-child{width:22%}
           .report-table .week-separator td{border-top:2px solid #0f172a}
           tr{page-break-inside:avoid}
           h2,h3{margin:0}
@@ -2649,7 +2656,11 @@
       let ids = [];
       try { ids = JSON.parse(sessionStorage.getItem('selectedReportDutyIds')) || []; } catch(_) { ids = []; }
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth');
-      if(!ids.length) return showToast('اختر تقريراً من تبويب التقرير أولاً','warning');
+      if(!ids.length){
+        ids = duties.map(d=>d.id);
+        if(!ids.length) return showToast('لا توجد أنواع خدمات للطباعة','warning');
+        showToast('لم يتم تحديد أنواع في التقرير، سيتم طباعة الكل','info');
+      }
       const html = buildReportHtmlDocument(ids, month);
       triggerIframePrint(html);
     }
@@ -2746,8 +2757,8 @@
       const isUpper = jobTitles.find(j=>j.id===o.jobTitleId)?.isUpper;
       const deptDisabled = isUpper ? 'disabled' : disabledAttr;
       const transferDepts = getTransferDepartments();
-      const transferInVisible = o.admissionType === 'transferred';
-      const transferOutVisible = o.status === 'transferred';
+      const transferInVisible = o.admissionType === 'transferred' || o.status === 'transferred' || o.transferFromDeptId || o.transferDate;
+      const transferOutVisible = o.status === 'transferred' || o.transferToDeptId || o.transferToDate;
       const [badgeFirst, badgeSecond, badgeThird] = splitBadgeParts(o.badge);
       return `<div class="card sticky-panel"><div class="card-header">تفاصيل الضابط</div><div class="card-body">
         <div class="mb-2"><label class="form-label">الاسم</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.name)}" onchange="updateOfficer(${o.id},'name',this.value)"></div>
@@ -3071,13 +3082,19 @@
       };
       reader.readAsText(f);
     }
-    function importTransferDepartmentsCSV(input){
+     function importTransferDepartmentsCSV(input){
       const f = input.files && input.files[0]; if(!f) return;
       const reader = new FileReader(); reader.onload = ()=>{
         const rows = reader.result.split(/\r?\n/).slice(1).filter(Boolean);
+        let added = 0;
+        let skipped = 0;
         rows.forEach(line=>{
           const [name] = line.split(',');
           if(!name) return;
+          if(isDuplicateTransferDepartment(name.trim())){
+            skipped++;
+            return;
+          }
           departments.push({
             id: Date.now() + Math.random(),
             name: name.trim(),
@@ -3087,9 +3104,15 @@
             upperTitle: '',
             upperOfficerId: null
           });
+          added++;
         });
         saveAll();
         renderTab('transfer-departments');
+        if(skipped){
+          showToast(`تم تجاهل ${skipped} جهة مكررة`, 'warning');
+        } else if(added){
+          showToast('تم استيراد جهات النقل', 'success');
+        }
       };
       reader.readAsText(f);
     }
@@ -3183,6 +3206,11 @@
       event.preventDefault();
       saveDepartment(mode, id, groupKey, returnTab);
     }
+    function isDuplicateTransferDepartment(name, ignoreId=null){
+      const target = (name || '').trim().toLowerCase();
+      if(!target) return false;
+      return departments.some(d => d.groupKey === 'transfer' && d.id !== ignoreId && (d.name || '').trim().toLowerCase() === target);
+    }
     function saveDepartment(mode,id,forcedGroup=null,returnTab='departments'){
       const name = document.getElementById('dept_name').value.trim();
       const parentEl = document.getElementById('dept_parent');
@@ -3195,6 +3223,9 @@
       const upperOfficerId = upperOfficerEl && upperOfficerEl.value ? +upperOfficerEl.value : null;
       const groupKey = forcedGroup || (document.getElementById('dept_group') ? document.getElementById('dept_group').value : 'internal');
       if(!name) return showToast('أدخل اسم القسم','danger');
+      if(groupKey === 'transfer' && isDuplicateTransferDepartment(name, mode === 'edit' ? id : null)){
+        return showToast('الجهة موجودة بالفعل','warning');
+      }
       if(mode==='add'){ departments.push({id:Date.now(),name,parentId,headId,upperTitle,upperOfficerId,groupKey}); }
       else if(mode==='edit'){ const d = departments.find(x=>x.id===id); if(d){ d.name=name; d.parentId=parentId; d.headId=headId; d.upperTitle=upperTitle; d.upperOfficerId=upperOfficerId; d.groupKey=groupKey; } }
       saveAll(); document.getElementById('departmentFormArea').innerHTML=''; renderTab(returnTab);
@@ -3317,7 +3348,7 @@
         </div></div>`;
     }
     function renderDutyEditor(d){
-      const allowedRanksHtml = ranks.map(r=>`<div class="form-check me-3"><input class="form-check-input" type="checkbox" id="dr_${d.id}_${r}" ${d.allowedRanks && d.allowedRanks.includes(r)?'checked':''} onchange="toggleDutyRank(${d.id},'${r}',this.checked)"><label class="form-check-label" for="dr_${d.id}_${r}">${r}</label></div>`).join('');
+      const allowedRanksHtml = ranks.map(r=>`<div class="form-check"><input class="form-check-input" type="checkbox" id="dr_${d.id}_${r}" ${d.allowedRanks && d.allowedRanks.includes(r)?'checked':''} onchange="toggleDutyRank(${d.id},'${r}',this.checked)"><label class="form-check-label" for="dr_${d.id}_${r}">${r}</label></div>`).join('');
       return `<div class="border rounded p-3 mb-3" id="duty_editor_${d.id}">
         <div class="row g-2 align-items-center">
           <div class="col-md-3"><label class="form-label">الاسم</label><input class="form-control" value="${escapeHtml(d.name)}" onchange="updateDuty(${d.id},'name',this.value)"></div>
@@ -3328,7 +3359,7 @@
           <div class="col-md-1 text-end"><label class="form-label d-block">&nbsp;</label><button class="btn btn-danger" onclick="if(confirm('حذف؟')) deleteDuty(${d.id})">حذف</button></div>
         </div>
 
-        <div class="mt-3"><label class="form-label fw-bold">الرتب المسموحة</label><div>${allowedRanksHtml}</div></div>
+       <div class="mt-3"><label class="form-label fw-bold">الرتب المسموحة</label><div class="compact-checks">${allowedRanksHtml}</div></div>
       </div>`;
     }
     function addDuty(){ duties.push({id:Date.now(),name:"نوع مناوبة",printLabel:"نوع مناوبة",color:"primary",duration:8,restHours:24,allowedRanks:[],signingJobTitleIds:[]}); saveAll(); renderTab('duties'); }
@@ -3486,12 +3517,18 @@
       const deptCards = departments.map(d=>{
         const parent = departments.find(p=>p.id===d.parentId);
         const head = d.headId ? officers.find(o=>o.id===d.headId) : null;
-        const count = officers.filter(o=>o.deptId===d.id).length;
+        const upperOfficer = d.upperOfficerId ? officers.find(o=>o.id===d.upperOfficerId) : null;
+        const deptOfficers = officers.filter(o=>o.deptId===d.id);
+        const officersList = deptOfficers.length
+          ? `<ul class="relation-list">${deptOfficers.map(o=>`<li><span>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</span><span class="relation-tag">${escapeHtml(o.status || 'active')}</span></li>`).join('')}</ul>`
+          : '<div class="text-muted">لا يوجد ضباط بالقسم.</div>';
         return `<div class="relation-card">
           <h5>${escapeHtml(d.name)}</h5>
-          <div class="relation-item"><span>العدد</span><span class="relation-tag">${count}</span></div>
           <div class="relation-item"><span>يتبع</span><span class="relation-tag">${parent ? escapeHtml(parent.name) : '—'}</span></div>
-          <div class="relation-item"><span>المسؤول</span><span class="relation-tag">${head ? escapeHtml(head.name) : 'غير محدد'}</span></div>
+          <div class="relation-item"><span>رئيس القسم</span><span class="relation-tag">${head ? escapeHtml(head.name) : 'غير محدد'}</span></div>
+          ${d.upperTitle || upperOfficer ? `<div class="relation-item"><span>إدارة عليا</span><span class="relation-tag">${escapeHtml(d.upperTitle || '')}${upperOfficer ? ` — ${escapeHtml(upperOfficer.name)}` : ''}</span></div>` : ''}
+          <div class="relation-item"><span>الضباط</span><span class="relation-tag">${deptOfficers.length}</span></div>
+          <div class="mt-2">${officersList}</div>
         </div>`;
       }).join('');
       const titleCards = jobTitles.map(t=>{
@@ -3504,17 +3541,7 @@
           <div class="relation-item"><span>قيادي</span><span class="relation-tag">${t.isUpper ? 'نعم' : 'لا'}</span></div>
         </div>`;
       }).join('');
-      const officerCards = officers.map(o=>{
-        const dept = departments.find(d=>d.id===o.deptId);
-        const title = jobTitles.find(t=>t.id===o.jobTitleId);
-        return `<div class="relation-card">
-          <h5>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</h5>
-          <div class="relation-item"><span>القسم</span><span class="relation-tag">${dept ? escapeHtml(dept.name) : '—'}</span></div>
-          <div class="relation-item"><span>المسمى</span><span class="relation-tag">${title ? escapeHtml(title.name) : '—'}</span></div>
-          <div class="relation-item"><span>الحالة</span><span class="relation-tag">${escapeHtml(o.status || 'active')}</span></div>
-        </div>`;
-      }).join('');
-      return `<div class="card">
+     return `<div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <div>Organizational structure — الأقسام والمسميات والضباط</div>
           <div class="small text-muted">عرض مخطط تنظيمي للهيكل الإداري</div>
@@ -3528,10 +3555,6 @@
             <div class="relations-column">
               <h5 class="mb-2">المسميات الوظيفية</h5>
               ${titleCards || '<div class="text-muted">لا توجد مسميات مسجلة.</div>'}
-            </div>
-            <div class="relations-column">
-              <h5 class="mb-2">الضباط</h5>
-              ${officerCards || '<div class="text-muted">لا يوجد ضباط مسجلون.</div>'}
             </div>
           </div>
         </div>
@@ -3554,7 +3577,7 @@
         <div class="card-body">
           <div class="row mb-3">
             <div class="col-md-4"><label class="form-label">شهر</label><input id="rpt_month" type="month" class="form-control" value="${month}" onchange="document.getElementById('rosterMonth').value=this.value; onRosterMonthChange();"></div>
-            <div class="col-md-8"><label class="form-label">اختر أنواع للطباعة/التصدير</label><div>${dutyOptions}</div></div>
+            <div class="col-md-8"><label class="form-label">اختر أنواع للطباعة/التصدير</label><div class="compact-checks">${dutyOptions}</div></div>
           </div>
           <div class="card mb-3">
             <div class="card-header">إعدادات الخط والتخطيط</div>
