@@ -4,8 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>تطبيق خدمات الإدارة العامة للمساعدات الفنية</title>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
    :root { --brand: #1e40af; --brand-dark:#0f172a; --bg:#f0f9ff; --text:#111; --app-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --form-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --tab-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; }
     * { box-sizing: border-box; }
@@ -133,8 +131,10 @@
     .compact-checks .form-check-input { margin:0; }
    .report-preview-paper { background:#fff; border:1px solid #0f172a; border-radius:8px; padding:16px; box-shadow:0 4px 12px rgba(15,23,42,.08); }
     .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#111; margin-bottom:6px; }
-    .report-header { display:flex; justify-content:center; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px; gap:12px; }
+     .report-header { position:relative; display:flex; justify-content:center; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px; gap:12px; }
     .report-title { font-size:18px; font-weight:700; text-align:center; color:#111; }
+    .report-logo { position:absolute; top:0; right:0; display:flex; align-items:center; justify-content:center; }
+    .report-logo img { max-height:36px; width:auto; height:auto; }
     .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:2px solid #0f172a; }
     .report-table th, .report-table td { border:1px double #0f172a; padding:4px 3px; text-align:center; white-space:nowrap; }
     .report-table th { background:#fff; color:#111; font-weight:700; }
@@ -212,8 +212,7 @@
       <li class="nav-item"><button class="nav-link" data-tab="duties" onclick="renderTab('duties')">أنواع الخدمات</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="limits" onclick="renderTab('limits')">حدود الضباط</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="exceptions" onclick="renderTab('exceptions')">القواعد</button></li>
-      <li class="nav-item"><button class="nav-link" data-tab="relations" onclick="renderTab('relations')">الهيكل التنظيمي</button></li>
-      <li class="nav-item"><button class="nav-link" data-tab="report" onclick="renderTab('report')">التقرير</button></li>
+       <li class="nav-item"><button class="nav-link" data-tab="report" onclick="renderTab('report')">التقرير</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="stats" onclick="renderTab('stats')">إحصاءات/أرشيف</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="account" onclick="renderTab('account')">الملف الشخصي</button></li>
       <li class="nav-item"><button class="nav-link" data-tab="admin" onclick="renderTab('admin')">لوحة التحكم</button></li>
@@ -322,7 +321,7 @@
       signatures: [{name:"",title:"",place:""},{name:"",title:"",place:""},{name:"",title:"",place:""}],
       authEnabled: false,
       users: [],
-      printFontSize: 10,
+      printFontSize: 8,
       reportFontFamily: 'Fanan',
       appFontFamily: 'Arial',
       formFontFamily: 'Arial',
@@ -338,15 +337,15 @@
         { key: 'transfer', name: 'جهات النقل (إدارات عامة ومديريات الأمن)' }
       ]
     };
-    const REPORT_MAX_FONT_SIZE = 9;
+    const REPORT_MAX_FONT_SIZE = 8;
     let SETTINGS = Object.assign({}, defaultSettings);
     let CURRENT_USER = null;
     let ACTIVE_SESSIONS = [];
       const ROLE_TABS = {
-    admin: ['roster','officers','ranks','departments','transfer-departments','jobtitles','duties','limits','exceptions','relations','report','stats','admin','settings','account','about'],
-      editor: ['roster','report','stats','officers','relations','account','about'], // no org/rules edits
-      user: ['roster','relations','account','about'],
-      viewer: ['roster','relations','account','about']
+    admin: ['roster','officers','ranks','departments','transfer-departments','jobtitles','duties','limits','exceptions','report','stats','admin','settings','account','about'],
+      editor: ['roster','report','stats','officers','account','about'], // no org/rules edits
+      user: ['roster','account','about'],
+      viewer: ['roster','account','about']
     };
 
     /* ========= Persistence ========= */
@@ -730,7 +729,6 @@
         case 'duties': c.innerHTML = renderDutiesTab(); break;
         case 'limits': c.innerHTML = renderOfficerLimitsTab(); break;
         case 'exceptions': c.innerHTML = renderExceptionsTab(); clearExceptionForm(); break;
-        case 'relations': c.innerHTML = renderRelationsTab(); break;
         case 'report': c.innerHTML = renderReportTab(); break;
         case 'stats': c.innerHTML = renderStatsArchiveTab(); break;
         case 'account': c.innerHTML = renderAccountTab(); break;
@@ -1569,8 +1567,6 @@
     /* ========= Admin / Backup ========= */
     function renderAdminTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول للوصول للوحة التحكم.</div>';
-      const stats = computeRankStats();
-      const badges = Object.keys(stats).map(r=>`<span class="badge bg-light text-dark border me-1">${escapeHtml(r)}: ${stats[r]}</span>`).join('');
       const summary = `ضباط: ${officers.length} • أقسام: ${departments.length} • مسميات: ${jobTitles.length} • أنواع خدمات: ${duties.length}`;
       const pendingReq = supportRequests.filter(r=>r.status==='pending').length;
       const authSummary = `مستخدمون: ${(SETTINGS.users||[]).length} • جلسات مفعلة: ${ACTIVE_SESSIONS.length} • طلبات مساعدة قيد الانتظار: ${pendingReq}`;
@@ -1578,10 +1574,9 @@
         <div class="card-header d-flex justify-content-between align-items-center">
           <div>لوحة التحكم والنسخ الاحتياطية</div>
           <div class="text-muted small">${new Date().toLocaleString('ar-EG')}</div>
-        </div>
+       </div>
         <div class="card-body">
           <div class="mb-3"><strong>ملخص البيانات:</strong> ${summary}</div>
-          <div class="mb-2">${badges || '<span class="text-muted">لا رتب معرفة</span>'}</div>
           <div class="small-muted mb-3">${authSummary}</div>
           <div class="row g-3">
             <div class="col-md-6">
@@ -1601,25 +1596,9 @@
                 <button class="btn btn-outline-danger" onclick="resetAllData()">تفريغ كل البيانات وإعادتها للوضع الافتراضي</button>
               </div>
             </div>
-          </div>
+           </div>
           <div class="row g-3 mt-3">
-            <div class="col-md-6">
-              <div class="border rounded p-3 h-100">
-                <h6>تحرير سريع للرتب</h6>
-                <div class="input-group mb-2">
-                  <input id="admin_rank_new" class="form-control" placeholder="اسم رتبة جديدة">
-                  <button class="btn btn-success" onclick="adminAddRankQuick()">إضافة</button>
-                </div>
-                <div class="small text-muted mb-2">تعديل الاسم ينعكس على الضباط فوراً، والحذف غير مسموح للرتب المستخدمة.</div>
-                <ul class="list-group">
-                  ${ranks.map((r,i)=>`<li class="list-group-item d-flex align-items-center justify-content-between">
-                    <input class="form-control form-control-sm me-2" value="${escapeHtml(r)}" onblur="adminRenameRank(${i}, this.value)">
-                    <button class="btn btn-sm btn-outline-danger" onclick="adminDeleteRank(${i})"><i class="bi bi-trash"></i></button>
-                  </li>`).join('') || '<li class="list-group-item text-muted">لا رتب</li>'}
-                </ul>
-              </div>
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-12">
               <div class="border rounded p-3 h-100">
                 <h6>تنظيف وتحكم سريع بالجداول</h6>
                 <p class="small text-muted">استخدم هذه الأدوات لإدارة الجداول بسرعة دون التأثير على الضباط أو الرتب.</p>
@@ -2478,9 +2457,11 @@
           .report-table .week-separator td{border-top:2px solid #0f172a}
           tr{page-break-inside:avoid}
           h2,h3{margin:0}
-          .report-header{display:flex;justify-content:center;align-items:center;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:6px;margin-bottom:8px}
+          .report-header{position:relative;display:flex;justify-content:center;align-items:center;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:6px;margin-bottom:8px}
           .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#111;margin-bottom:6px}
           .report-title{font-size:16px;font-weight:700;text-align:center;color:#111}
+          .report-logo{position:absolute;top:0;right:0;display:flex;align-items:center;justify-content:center}
+          .report-logo img{max-height:32px;width:auto;height:auto}
           .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
           .report-signatures{display:flex;justify-content:space-between;gap:18px;margin-top:10px;font-size:12px;line-height:1.5;width:100%}
           .report-signature{flex:1;text-align:center;min-height:110px;display:flex;flex-direction:column;justify-content:flex-end}
@@ -2501,14 +2482,16 @@
       table += '</tbody></table>';
       return table;
     }
-    function buildReportHeader(duty, effectiveMonth){
+     function buildReportHeader(duty, effectiveMonth){
       const monthTitle = new Date(effectiveMonth+'-01').toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
       const title = `${escapeHtml(duty.printLabel || duty.name)}`;
+      const logoHtml = SETTINGS.logoData ? `<div class="report-logo"><img src="${SETTINGS.logoData}" alt="logo"></div>` : '';
       return `
         <div class="report-header">
           <div style="flex:1;text-align:center;">
             <div class="report-title">${title}</div>
           </div>
+          ${logoHtml}
         </div>
         <div class="report-meta">
           <div>الشهر: ${monthTitle}</div>
@@ -2556,26 +2539,8 @@
 
 
    function buildDutyHtmlForExport(dutyId, month){
-      const duty = duties.find(d=>d.id===dutyId);
       const effectiveMonth = month || (document.getElementById('rpt_month')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7));
-      const rows = roster[effectiveMonth]?.[dutyId] || [];
-      const sigs = SETTINGS.signatures || [];
-      const headerBlock = buildHeaderHtml();
-      const reportHeader = buildReportHeader(duty, effectiveMonth);
-      const fontFamily = getReportFontFamily();
-      const fontSize = getReportPrintFontSize();
-      const signatureHtml = buildSignatureHtml(fontFamily, fontSize);
-      const footer = buildFooterHtml(signatureHtml, true);
-      const watermark = buildReportWatermarkHtml();
-      let html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${escapeHtml(duty.printLabel || duty.name)}</title>
-        <style>
-          ${buildReportStyles({fontFamily, fontSize, includeBackground: false})}
-          body{height:297mm;box-sizing:border-box}
-        </style>
-      </head><body><div class="one-duty-page">${watermark}<div class="duty-content" style="font-size:${fontSize}px;">`;
-      html += `${headerBlock ? `<div style="margin-bottom:6px;">${headerBlock}</div>` : ''}${reportHeader}`;
-      html += `${buildDutyTableHtml(rows, effectiveMonth)}<div style="margin-top:8px">${signatureHtml}</div></div></div></body></html>`;
-      return html;
+      return buildReportHtmlDocument([dutyId], effectiveMonth);
     }
     function triggerIframePrint(html){
       const iframe = document.createElement('iframe');
