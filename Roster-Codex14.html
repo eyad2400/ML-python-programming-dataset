@@ -29,7 +29,7 @@
     .btn-outline-light { background: transparent; color:#fff; border-color:#fff; }
     .btn-sm { padding: 4px 10px; font-size: 13px; }
     .container-fluid { width: 100%; padding: 0 16px; }
-    .nav-tabs { display:flex; gap:8px; border-bottom: 1px solid #ddd; padding:4px 0 10px; margin:0; list-style:none; overflow-x:auto; }
+    .nav-tabs { display:flex; flex-wrap:wrap; gap:8px; row-gap:6px; border-bottom: 1px solid #ddd; padding:4px 0 10px; margin:0; list-style:none; }
     .nav-tabs .nav-item { flex:0 0 auto; }
     .nav-link { padding: 12px 16px; border: 1px solid #c7d2fe; border-radius:12px 12px 0 0; background:linear-gradient(180deg,#fff,#eef2ff); font-weight:700; color:#111; box-shadow:0 4px 10px rgba(0,0,0,.08); transform:translateY(4px); transition:all .15s ease; font-family: var(--tab-font); display:inline-flex; align-items:center; gap:6px; }
     .nav-link::before { content: attr(data-icon); font-size: 16px; line-height:1; }
@@ -68,7 +68,7 @@
     .me-1{margin-right:4px;} .me-2{margin-right:8px;}
     .ms-2{margin-inline-start:8px;}
     .text-center{text-align:center;} .text-end{text-align:end;} .text-white{color:#fff;} .text-muted{color:#6b7280;} .text-warning{color:#facc15;}
-    .badge { display:inline-block; padding:4px 8px; border-radius:999px; }
+     .badge { display:inline-block; padding:4px 8px; border-radius:999px; }
     .badge-stat { background:#fff; border:1px solid #ddd; padding:6px 10px; border-radius:8px; margin-right:6px; }
     .small-muted { font-size:12px; color:#666; }
     .blocked { background:#fff4f4; border-left:6px solid #dc2626; }
@@ -142,9 +142,16 @@
     .report-table th { background:#e5e7eb; color:#111; font-weight:700; }
     .report-table .col-index { background:#e5e7eb; font-weight:700; }
     .report-table .week-separator td { border-top:3px double #0f172a; }
-    .report-signatures { display:flex; justify-content:space-between; gap:18px; margin-top:10px; font-size:13px; line-height:1.5; width:100%; }
-    .report-signature { flex:1; text-align:center; min-height:110px; display:flex; flex-direction:column; justify-content:flex-end; }
+    .report-signatures { display:flex; flex-direction:column; gap:12px; margin-top:10px; font-size:13px; line-height:0.5; width:100%; }
+    .report-signatures-row { display:flex; justify-content:space-between; gap:18px; width:100%; }
+    .report-signature { flex:1; text-align:center; min-height:95px; display:flex; flex-direction:column; justify-content:flex-end; }
+    .report-signature.align-right { text-align:right; align-items:flex-end; }
+    .report-signature.align-left { text-align:left; align-items:flex-start; }
+    .report-signature.align-center { text-align:center; align-items:center; }
     .report-signature .signature-line { border-top:2px solid #0f172a; margin:12px 26px 6px; }
+    .sub-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+    .sub-tab-btn { border:1px solid #c7d2fe; background:#fff; color:#1f2937; padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:all .15s ease; }
+    .sub-tab-btn.active { background:#1e40af; color:#fff; border-color:#1e40af; box-shadow:0 6px 16px rgba(30,64,175,.2); }
     @keyframes floatLogo { 0%{transform:translateY(0);} 50%{transform:translateY(-6px);} 100%{transform:translateY(0);} }
     @keyframes splashPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
      @keyframes splashBounce { 0%, 80%, 100% { transform: translateY(0); opacity:.6; } 40% { transform: translateY(-8px); opacity:1; } }
@@ -1647,19 +1654,34 @@
     }
 
     /* ========= Admin / Backup ========= */
+    function getAdminSubTab(){
+      return sessionStorage.getItem('adminSubTab') || 'overview';
+    }
+    function setAdminSubTab(id){
+      sessionStorage.setItem('adminSubTab', id);
+      renderTab('admin');
+    }
     function renderAdminTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول للوصول للوحة التحكم.</div>';
       const summary = `ضباط: ${officers.length} • أقسام: ${departments.length} • مسميات: ${jobTitles.length} • أنواع خدمات: ${duties.length}`;
       const pendingReq = supportRequests.filter(r=>r.status==='pending').length;
       const authSummary = `مستخدمون: ${(SETTINGS.users||[]).length} • جلسات مفعلة: ${ACTIVE_SESSIONS.length} • طلبات مساعدة قيد الانتظار: ${pendingReq}`;
-      return `<div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <div>لوحة التحكم والنسخ الاحتياطية</div>
-          <div class="text-muted small">${new Date().toLocaleString('ar-EG')}</div>
-       </div>
-        <div class="card-body">
+      const active = getAdminSubTab();
+      const tabs = [
+        {id:'overview', label:'نظرة عامة'},
+        {id:'backup', label:'النسخ والتهيئة'},
+        {id:'users', label:'المستخدمون'},
+        {id:'viewers', label:'مستخدمي المشاهدة'},
+        {id:'requests', label:'طلبات الدعم'},
+        {id:'activity', label:'سجل النشاط'}
+      ];
+      const tabButtons = `<div class="sub-tabs">${tabs.map(t=>`<button class="sub-tab-btn ${active===t.id?'active':''}" onclick="setAdminSubTab('${t.id}')">${t.label}</button>`).join('')}</div>`;
+      const sections = {
+        overview: `
           <div class="mb-3"><strong>ملخص البيانات:</strong> ${summary}</div>
           <div class="small-muted mb-3">${authSummary}</div>
+        `,
+        backup: `
           <div class="row g-3">
             <div class="col-md-6">
               <div class="border rounded p-3 h-100">
@@ -1678,10 +1700,8 @@
                 <button class="btn btn-outline-danger" onclick="resetAllData()">تفريغ كل البيانات وإعادتها للوضع الافتراضي</button>
               </div>
             </div>
-           </div>
-          <div class="row g-3 mt-3">
             <div class="col-md-12">
-              <div class="border rounded p-3 h-100">
+              <div class="border rounded p-3 h-100 mt-3">
                 <h6>تنظيف وتحكم سريع بالجداول</h6>
                 <p class="small text-muted">استخدم هذه الأدوات لإدارة الجداول بسرعة دون التأثير على الضباط أو الرتب.</p>
                 <div class="mb-2">الشهر النشط: <strong>${sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7)}</strong></div>
@@ -1691,87 +1711,97 @@
                 <button class="btn btn-outline-primary mt-2" onclick="exportArchive()">تصدير الأرشيف</button>
               </div>
             </div>
-            <div class="col-md-12">
-              <div class="border rounded p-3 h-100 mt-3">
-                <h6>إدارة المستخدمين (صلاحيات وأمن)</h6>
-                <div class="row g-2 mb-2">
-                  <div class="col-md-4"><label class="form-label">مدة الخمول قبل تسجيل الخروج (دقائق)</label><input id="admin_idle_minutes" type="number" class="form-control" value="${SETTINGS.idleLogoutMinutes||0}" min="0" onchange="saveIdleMinutes(this.value)"></div>
-                  <div class="col-md-8 d-flex align-items-end small-muted">اضبط 0 لتعطيل الخروج التلقائي. لا يتم حفظ الجلسات في التخزين الدائم لزيادة الأمان.</div>
-                </div>
-                 <div class="row g-2 mb-2">
-                  <div class="col-md-3"><input id="admin_user_name" class="form-control" placeholder="اسم المستخدم"></div>
-                  <div class="col-md-3"><input id="admin_user_pwd" class="form-control" placeholder="كلمة المرور"></div>
-                  <div class="col-md-3"><input id="admin_user_fullName" class="form-control" placeholder="الاسم الكامل"></div>
-                  <div class="col-md-3"><input id="admin_user_email" type="email" class="form-control" placeholder="البريد الإلكتروني"></div>
-                </div>
-               <div class="row g-2">
-                  <div class="col-md-2"><select id="admin_user_role" class="form-select" onchange="updatePrivilegeControlState()"><option value="admin">Admin</option><option value="editor">Editor</option><option value="user">User</option><option value="viewer">Viewer</option></select></div>
-                  <div class="col-md-2"><select id="admin_user_officer" class="form-select"><option value="">ربط بضابط</option>${officers.map(o=>`<option value="${o.id}">${escapeHtml(o.name)} (${escapeHtml(o.rank)})</option>`).join('')}</select></div>
-                  <div class="col-md-2"><input id="admin_user_phone" class="form-control" placeholder="هاتف"></div>
-                  <div class="col-md-3"><input id="admin_user_note" class="form-control" placeholder="ملاحظات"></div>
-                  <div class="col-md-3 text-end"><button class="btn btn-success" onclick="adminAddUser()">إضافة/تعديل</button></div>
-                </div>
-                <div class="mt-2" id="adminTabPrivileges">
-                  <label class="form-label">صلاحيات التبويبات للمستخدمين/المحررين</label>
-                  <div class="compact-checks">
-                    ${TAB_OPTIONS.map(tab=>`<label class="form-check"><input class="form-check-input admin-privilege-chk" type="checkbox" value="${tab.id}"><span>${escapeHtml(tab.label)}</span></label>`).join('')}
-                  </div>
-                  <div class="small text-muted mt-1">عند تحديد الصلاحيات يتم اعتمادها بدلاً من الصلاحيات الافتراضية للدور (User/Editor).</div>
-                </div>
-                <div class="small text-muted mt-1">الربط بضابط يفعّل الصلاحيات الفردية ويظهر الاسم في الشريط العلوي.</div>
-                <div class="mt-3" id="admin_usersTable">${renderUsersTable()}</div>
-              </div>
-            </div>
-            <div class="col-md-12">
-              <div class="border rounded p-3 h-100 mt-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="mb-0">مستخدمي المشاهدة للضباط</h6>
-                  <div>
-                    <button class="btn btn-sm btn-outline-primary me-2" onclick="adminGenerateViewerUsersForAll(false)">إنشاء حسابات المشاهدة</button>
-                    <button class="btn btn-sm btn-outline-warning me-2" onclick="adminGenerateViewerUsersForAll(true)">تحديث كلمات المرور</button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="exportViewerUsersCSV()">تصدير CSV</button>
-                  </div>
-                </div>
-                <div class="small text-muted mb-2">ينشئ النظام حساب مشاهدة لكل ضابط لعرض أيامه المسندة فقط.</div>
-                <div id="viewerUsersSheet">${renderViewerUsersSheet()}</div>
-              </div>
-            </div>
-            <div class="col-md-12">
-              <div class="border rounded p-3 h-100 mt-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="mb-0">رسائل وطلبات المستخدمين</h6>
-                  <div class="small text-muted">تظهر طلبات استعادة الدخول والتنبيهات المرسلة للإدارة.</div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div class="badge-stat">بانتظار الإجراء: ${supportRequests.filter(r=>r.status==='pending').length}</div>
-                  <div class="text-end">
-                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="refreshSupportRequestsTable()">تحديث</button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="clearResolvedRequests()">أرشفة الطلبات المكتملة</button>
-                  </div>
-                </div>
-                <div id="supportRequestsTable">${renderSupportRequestsTable()}</div>
-              </div>
-            </div>
-            <div class="col-md-12">
-              <div class="border rounded p-3 h-100 mt-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="mb-0">سجل النشاط</h6>
-                  <div>
-                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="exportActivityLog()">تصدير السجل</button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="clearActivityLog()">مسح السجل</button>
-                  </div>
-                </div>
-                <div class="row g-2 mb-2">
-                  <<div class="col-md-3"><input id="act_filter_action" class="form-control" placeholder="بحث بالحدث" oninput="refreshActivityLogTable()" onkeydown="guardSearchInput(event)"></div>
-                  <div class="col-md-3"><select id="act_filter_user" class="form-select" onchange="refreshActivityLogTable()"><option value="">كل المستخدمين</option>${Array.from(new Set(activityLog.map(l=>l.user||'مجهول'))).map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join('')}</select></div>
-                  <div class="col-md-3"><input id="act_filter_from" type="date" class="form-control" onchange="refreshActivityLogTable()"></div>
-                  <div class="col-md-3"><input id="act_filter_to" type="date" class="form-control" onchange="refreshActivityLogTable()"></div>
-                </div>
-                <div class="small text-muted mb-2">عرض لما تم، متى تم، ومن قام به (يمكن التصفية حسب الحدث، المستخدم، أو الفترة الزمنية).</div>
-                <div id="activityLogTableArea">${renderActivityLogTable()}</div>
-              </div>
-            </div>
           </div>
+        `,
+        users: `
+          <div class="border rounded p-3 h-100">
+            <h6>إدارة المستخدمين (صلاحيات وأمن)</h6>
+            <div class="row g-2 mb-2">
+              <div class="col-md-4"><label class="form-label">مدة الخمول قبل تسجيل الخروج (دقائق)</label><input id="admin_idle_minutes" type="number" class="form-control" value="${SETTINGS.idleLogoutMinutes||0}" min="0" onchange="saveIdleMinutes(this.value)"></div>
+              <div class="col-md-8 d-flex align-items-end small-muted">اضبط 0 لتعطيل الخروج التلقائي. لا يتم حفظ الجلسات في التخزين الدائم لزيادة الأمان.</div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-md-3"><input id="admin_user_name" class="form-control" placeholder="اسم المستخدم"></div>
+              <div class="col-md-3"><input id="admin_user_pwd" class="form-control" placeholder="كلمة المرور"></div>
+              <div class="col-md-3"><input id="admin_user_fullName" class="form-control" placeholder="الاسم الكامل"></div>
+              <div class="col-md-3"><input id="admin_user_email" type="email" class="form-control" placeholder="البريد الإلكتروني"></div>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-2"><select id="admin_user_role" class="form-select" onchange="updatePrivilegeControlState()"><option value="admin">Admin</option><option value="editor">Editor</option><option value="user">User</option><option value="viewer">Viewer</option></select></div>
+              <div class="col-md-2"><select id="admin_user_officer" class="form-select"><option value="">ربط بضابط</option>${officers.map(o=>`<option value="${o.id}">${escapeHtml(o.name)} (${escapeHtml(o.rank)})</option>`).join('')}</select></div>
+              <div class="col-md-2"><input id="admin_user_phone" class="form-control" placeholder="هاتف"></div>
+              <div class="col-md-3"><input id="admin_user_note" class="form-control" placeholder="ملاحظات"></div>
+              <div class="col-md-3 text-end"><button class="btn btn-success" onclick="adminAddUser()">إضافة/تعديل</button></div>
+            </div>
+            <div class="mt-2" id="adminTabPrivileges">
+              <label class="form-label">صلاحيات التبويبات للمستخدمين/المحررين</label>
+              <div class="compact-checks">
+                ${TAB_OPTIONS.map(tab=>`<label class="form-check"><input class="form-check-input admin-privilege-chk" type="checkbox" value="${tab.id}"><span>${escapeHtml(tab.label)}</span></label>`).join('')}
+              </div>
+              <div class="small text-muted mt-1">عند تحديد الصلاحيات يتم اعتمادها بدلاً من الصلاحيات الافتراضية للدور (User/Editor).</div>
+            </div>
+            <div class="small text-muted mt-1">الربط بضابط يفعّل الصلاحيات الفردية ويظهر الاسم في الشريط العلوي.</div>
+            <div class="mt-3" id="admin_usersTable">${renderUsersTable()}</div>
+          </div>
+        `,
+        viewers: `
+          <div class="border rounded p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">مستخدمي المشاهدة للضباط</h6>
+              <div>
+                <button class="btn btn-sm btn-outline-primary me-2" onclick="adminGenerateViewerUsersForAll(false)">إنشاء حسابات المشاهدة</button>
+                <button class="btn btn-sm btn-outline-warning me-2" onclick="adminGenerateViewerUsersForAll(true)">تحديث كلمات المرور</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="exportViewerUsersCSV()">تصدير CSV</button>
+              </div>
+            </div>
+            <div class="small text-muted mb-2">ينشئ النظام حساب مشاهدة لكل ضابط لعرض أيامه المسندة فقط.</div>
+            <div id="viewerUsersSheet">${renderViewerUsersSheet()}</div>
+          </div>
+        `,
+        requests: `
+          <div class="border rounded p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">رسائل وطلبات المستخدمين</h6>
+              <div class="small text-muted">تظهر طلبات استعادة الدخول والتنبيهات المرسلة للإدارة.</div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="badge-stat">بانتظار الإجراء: ${supportRequests.filter(r=>r.status==='pending').length}</div>
+              <div class="text-end">
+                <button class="btn btn-sm btn-outline-secondary me-2" onclick="refreshSupportRequestsTable()">تحديث</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="clearResolvedRequests()">أرشفة الطلبات المكتملة</button>
+              </div>
+            </div>
+            <div id="supportRequestsTable">${renderSupportRequestsTable()}</div>
+          </div>
+        `,
+        activity: `
+          <div class="border rounded p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">سجل النشاط</h6>
+              <div>
+                <button class="btn btn-sm btn-outline-secondary me-2" onclick="exportActivityLog()">تصدير السجل</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="clearActivityLog()">مسح السجل</button>
+              </div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-md-3"><input id="act_filter_action" class="form-control" placeholder="بحث بالحدث" oninput="refreshActivityLogTable()" onkeydown="guardSearchInput(event)"></div>
+              <div class="col-md-3"><select id="act_filter_user" class="form-select" onchange="refreshActivityLogTable()"><option value="">كل المستخدمين</option>${Array.from(new Set(activityLog.map(l=>l.user||'مجهول'))).map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join('')}</select></div>
+              <div class="col-md-3"><input id="act_filter_from" type="date" class="form-control" onchange="refreshActivityLogTable()"></div>
+              <div class="col-md-3"><input id="act_filter_to" type="date" class="form-control" onchange="refreshActivityLogTable()"></div>
+            </div>
+            <div class="small text-muted mb-2">عرض لما تم، متى تم، ومن قام به (يمكن التصفية حسب الحدث، المستخدم، أو الفترة الزمنية).</div>
+            <div id="activityLogTableArea">${renderActivityLogTable()}</div>
+          </div>
+        `
+      };
+      return `<div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>لوحة التحكم والنسخ الاحتياطية</div>
+          <div class="text-muted small">${new Date().toLocaleString('ar-EG')}</div>
+       </div>
+        <div class="card-body">
+          ${tabButtons}
+          ${sections[active] || ''}
         </div>
       </div>`;
     }
@@ -2559,8 +2589,12 @@
           .report-logo{position:absolute;top:0;right:0;display:flex;align-items:center;justify-content:center}
           .report-logo img{max-height:32px;width:auto;height:auto}
           .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
-          .report-signatures{display:flex;justify-content:space-between;gap:18px;margin-top:10px;font-size:12px;line-height:1.5;width:100%}
-          .report-signature{flex:1;text-align:center;min-height:110px;display:flex;flex-direction:column;justify-content:flex-end}
+          .report-signatures{display:flex;flex-direction:column;gap:12px;margin-top:10px;font-size:12px;line-height:1.5;width:100%}
+          .report-signatures-row{display:flex;justify-content:space-between;gap:18px;width:100%}
+          .report-signature{flex:1;text-align:center;min-height:95px;display:flex;flex-direction:column;justify-content:flex-end}
+          .report-signature.align-right{text-align:right;align-items:flex-end}
+          .report-signature.align-left{text-align:left;align-items:flex-start}
+          .report-signature.align-center{text-align:center;align-items:center}
           .report-signature .signature-line{border-top:2px solid #0f172a;margin:12px 26px 6px}
       `;
     }
@@ -2598,24 +2632,28 @@
     function buildSignatureHtml(fontFamily, fontSize){
       const sigs = SETTINGS.signatures || [];
       const sigFont = fontFamily ? `font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;font-size:${fontSize}px;` : '';
-      return `<div class="report-signatures" style="${sigFont}">
-        <div class="report-signature">
-          <div>${escapeHtml(sigs[0]?.place||'')}</div>
-          <div class="signature-line"></div>
-          <div>${escapeHtml(sigs[0]?.name||'')}</div>
-          <div>${escapeHtml(sigs[0]?.title||'')}</div>
+     return `<div class="report-signatures" style="${sigFont}">
+        <div class="report-signatures-row">
+          <div class="report-signature align-right">
+            <div>${escapeHtml(sigs[0]?.place||'')}</div>
+            <div class="signature-line"></div>
+            <div>${escapeHtml(sigs[0]?.name||'')}</div>
+            <div>${escapeHtml(sigs[0]?.title||'')}</div>
+          </div>
+          <div class="report-signature align-left">
+            <div>${escapeHtml(sigs[1]?.place||'')}</div>
+            <div class="signature-line"></div>
+            <div>${escapeHtml(sigs[1]?.name||'')}</div>
+            <div>${escapeHtml(sigs[1]?.title||'')}</div>
+          </div>
         </div>
-        <div class="report-signature">
-          <div>${escapeHtml(sigs[1]?.place||'')}</div>
-          <div class="signature-line"></div>
-          <div>${escapeHtml(sigs[1]?.name||'')}</div>
-          <div>${escapeHtml(sigs[1]?.title||'')}</div>
-        </div>
-        <div class="report-signature" style="font-weight:700;">
-          <div>${escapeHtml(sigs[2]?.place||'')}</div>
-          <div class="signature-line"></div>
-          <div style="font-weight:800">${escapeHtml(sigs[2]?.name||'')}</div>
-          <div>${escapeHtml(sigs[2]?.title||'')}</div>
+        <div class="report-signatures-row">
+          <div class="report-signature align-center" style="font-weight:700;">
+            <div>${escapeHtml(sigs[2]?.place||'')}</div>
+            <div class="signature-line"></div>
+            <div style="font-weight:800">${escapeHtml(sigs[2]?.name||'')}</div>
+            <div>${escapeHtml(sigs[2]?.title||'')}</div>
+          </div>
         </div>
       </div>`;
     }
@@ -2799,32 +2837,16 @@
     /* ========= Officers Tab ========= */
     function getOfficerFilterState(){
       return {
-        search: sessionStorage.getItem('officerSearch') || '',
-        dept: sessionStorage.getItem('officerDeptFilter') || '',
-        rank: sessionStorage.getItem('officerRankFilter') || '',
-        badgeMid: sessionStorage.getItem('officerBadgeMidFilter') || '',
-        status: sessionStorage.getItem('officerStatusFilter') || 'active'
+        search: sessionStorage.getItem('officerSearch') || ''
       };
     }
     function updateOfficerFilters(){
       const search = document.getElementById('officerSearch')?.value || '';
-      const dept = document.getElementById('officerDeptFilter')?.value || '';
-      const rank = document.getElementById('officerRankFilter')?.value || '';
-      const badgeMid = document.getElementById('officerBadgeMidFilter')?.value || '';
-      const status = document.getElementById('officerStatusFilter')?.value || 'active';
       sessionStorage.setItem('officerSearch', search);
-      sessionStorage.setItem('officerDeptFilter', dept);
-      sessionStorage.setItem('officerRankFilter', rank);
-      sessionStorage.setItem('officerBadgeMidFilter', badgeMid);
-      sessionStorage.setItem('officerStatusFilter', status);
       renderTab('officers');
     }
     function resetOfficerFilters(){
       sessionStorage.removeItem('officerSearch');
-      sessionStorage.removeItem('officerDeptFilter');
-      sessionStorage.removeItem('officerRankFilter');
-      sessionStorage.removeItem('officerBadgeMidFilter');
-      sessionStorage.removeItem('officerStatusFilter');
       renderTab('officers');
     }
     function renderOfficersTab(){
@@ -2838,13 +2860,9 @@
         <div class="card-body">
           ${statsBar}
           <div class="row mb-2 g-2">
-            <div class="col-md-3"><input id="officerSearch" class="form-control" placeholder="بحث بالاسم أو الرقم" value="${escapeHtml(filters.search)}" oninput="updateOfficerFilters()" onkeydown="guardSearchInput(event)"></div>
-            <div class="col-md-2"><select id="officerRankFilter" class="form-select" onchange="updateOfficerFilters()"><option value="">كل الرتب</option>${ranks.map(r=>`<option value="${r}" ${filters.rank===r?'selected':''}>${r}</option>`).join('')}</select></div>
-            <div class="col-md-2"><input id="officerBadgeMidFilter" class="form-control" placeholder="رقم الأقدمية الأوسط" value="${escapeHtml(filters.badgeMid)}" oninput="updateOfficerFilters()" onkeydown="guardSearchInput(event)"></div>
-            <div class="col-md-2"><select id="officerDeptFilter" class="form-select" onchange="updateOfficerFilters()"><option value="">كل الأقسام</option>${getInternalDepartments().map(d=>`<option value="${d.id}" ${String(d.id)===String(filters.dept)?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select></div>
-            <div class="col-md-2"><select id="officerStatusFilter" class="form-select" onchange="updateOfficerFilters()"><option value="active" ${filters.status==='active'?'selected':''}>نشط</option><option value="retired" ${filters.status==='retired'?'selected':''}>متقاعد</option><option value="transferred" ${filters.status==='transferred'?'selected':''}>منقول</option><option value="all" ${filters.status==='all'?'selected':''}>الكل</option></select></div>
-            <div class="col-md-1"><button class="btn btn-outline-secondary" onclick="resetOfficerFilters()">إعادة ضبط</button></div>
-            <div class="col-md-6 text-end">
+            <div class="col-md-6"><input id="officerSearch" class="form-control" placeholder="ابحث بالاسم، الرتبة، الرقم، القسم، أو الحالة" value="${escapeHtml(filters.search)}" oninput="updateOfficerFilters()" onkeydown="guardSearchInput(event)"></div>
+            <div class="col-md-2"><button class="btn btn-outline-secondary" onclick="resetOfficerFilters()">إعادة ضبط</button></div>
+            <div class="col-md-4 text-end">
               ${canManage?`<button class="btn btn-outline-secondary" onclick="exportOfficersCSV()">تصدير CSV</button>
               <button class="btn btn-outline-secondary ms-2" onclick="exportOfficersFullCSV()">تصدير CSV كامل</button>
               <button class="btn btn-outline-info ms-2" onclick="downloadOfficersTemplateCSV()">تحميل قالب CSV</button>
@@ -2859,24 +2877,20 @@
         </div></div>
         <div id="officerEditorArea"></div>`;
    }
-    function renderOfficersList(){
+     function renderOfficersList(){
       const filters = getOfficerFilterState();
       const q = (filters.search || '').toLowerCase();
-      const deptFilter = filters.dept ? +filters.dept : null;
-      const rankFilter = filters.rank || '';
-      const badgeMidFilter = (filters.badgeMid || '').trim();
-      const statusFilter = filters.status || 'active';
       const list = officers.filter(o=>{
-        if(deptFilter && o.deptId !== deptFilter) return false;
-        if(rankFilter && o.rank !== rankFilter) return false;
-        if(statusFilter && statusFilter !== 'all' && (o.status || 'active') !== statusFilter) return false;
-        if(badgeMidFilter){
-          const [, mid] = splitBadgeParts(o.badge);
-          if(!mid || !mid.includes(badgeMidFilter)) return false;
-        }
         if(!q) return true;
         const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
-        return o.name?.toLowerCase().includes(q) || o.rank?.toLowerCase().includes(q) || (o.badge||'').toLowerCase().includes(q) || deptName.toLowerCase().includes(q);
+        const statusLabel = renderStatusBadge(o.status||'active').replace(/<[^>]+>/g,'');
+        const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
+        return o.name?.toLowerCase().includes(q)
+          || o.rank?.toLowerCase().includes(q)
+          || (o.badge||'').toLowerCase().includes(q)
+          || deptName.toLowerCase().includes(q)
+          || statusLabel.toLowerCase().includes(q)
+          || jobTitle.toLowerCase().includes(q);
       });
       if(!list.length) return `<p class="text-center text-muted py-3">لا توجد نتائج</p>`;
       const rows = list.map(o=>`<tr onclick="SELECTED_OFFICER_ID=${o.id};renderTab('officers');" style="cursor:pointer;${SELECTED_OFFICER_ID===o.id?'background:#eef2ff;':''}">
@@ -3960,63 +3974,154 @@
         return;
       }
       showToast('صيغة التصدير غير مدعومة حالياً','warning');
-    }
+  }
 
     /* ========= Settings ========= */
+    function getSettingsSubTab(){
+      return sessionStorage.getItem('settingsSubTab') || 'general';
+    }
+    function setSettingsSubTab(id){
+      sessionStorage.setItem('settingsSubTab', id);
+      renderTab('settings');
+    }
+    function exportSettingsBackup(){
+      const payload = { settings: SETTINGS, meta:{ type:'settings', exportedAt: new Date().toISOString() } };
+      downloadJSONFile(`settings_backup_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(payload, null, 2));
+      showToast('تم تنزيل نسخة الإعدادات','success');
+    }
+    function importSettingsBackup(file){
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const data = JSON.parse(reader.result);
+          if(!data.settings) throw new Error('Invalid settings backup');
+          SETTINGS = Object.assign({}, defaultSettings, data.settings || {});
+          saveAll();
+          loadAll();
+          applyTheme();
+          applyFontSettings();
+          updateNavLogo();
+          renderTab('settings');
+          showToast('تمت استعادة إعدادات النظام','success');
+        }catch(err){
+          console.error(err);
+          showToast('ملف الإعدادات غير صالح','danger');
+        }
+      };
+      reader.readAsText(file);
+    }
     function renderSettingsTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول لإدارة الإعدادات.</div>';
-      return `<div class="card"><div class="card-header">الإعدادات العامة</div><div class="card-body">
-        <div class="row g-2">
-          <div class="col-md-4"><label class="form-label">اسم التطبيق</label><input id="set_appName" class="form-control" value="${escapeHtml(SETTINGS.appName)}"></div>
-          <div class="col-md-4"><label class="form-label">عنوان ثانوي</label><input id="set_appSubtitle" class="form-control" value="${escapeHtml(SETTINGS.appSubtitle)}"></div>
-          <div class="col-md-4"><label class="form-label">شعار (تحميل)</label><input id="set_logo" type="file" class="form-control" accept="image/*"></div>
-          <div class="col-md-4"><label class="form-label">السمة</label><select id="set_theme" class="form-select">${Object.keys(THEMES).map(k=>`<option value="${k}" ${SETTINGS.themeKey===k?'selected':''}>${THEMES[k].name}</option>`).join('')}</select></div>
-          <div class="col-md-4"><label class="form-label">تخطيط شاشة الدخول</label><select id="set_loginLayout" class="form-select"><option value="stacked" ${SETTINGS.loginLayout==='stacked'?'selected':''}>مكدس (شعار فوق البطاقة)</option><option value="inline" ${SETTINGS.loginLayout==='inline'?'selected':''}>عرض مضغوط</option></select></div>
-          <div class="col-md-4"><label class="form-label">خط التطبيق</label><select id="set_appFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.appFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
-          <div class="col-md-4"><label class="form-label">خط الحقول النصية</label><select id="set_formFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.formFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
-          <div class="col-md-4"><label class="form-label">خط التبويبات</label><select id="set_tabFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.tabFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
-        <div class="col-12"><label class="form-label">رأس التقرير (HTML)</label><textarea id="set_header" class="form-control" rows="3">${escapeHtml(SETTINGS.headerHtml)}</textarea></div>
-        <div class="col-12"><label class="form-label">تذييل التقرير (HTML)</label><textarea id="set_footer" class="form-control" rows="2">${escapeHtml(SETTINGS.footerHtml)}</textarea></div>
-        <div class="col-md-3 form-check"><input id="set_incHeader" class="form-check-input" type="checkbox" ${SETTINGS.includeHeaderOnPrint?'checked':''}><label class="form-check-label">تضمين الرأس</label></div>
-        <div class="col-md-3 form-check"><input id="set_incFooter" class="form-check-input" type="checkbox" ${SETTINGS.includeFooterOnPrint?'checked':''}><label class="form-check-label">تضمين العلامة المائية</label></div>
-          <div class="col-md-6 form-check"><input id="set_auth" class="form-check-input" type="checkbox" ${SETTINGS.authEnabled?'checked':''}><label class="form-check-label">تمكين نظام المستخدمين</label></div>
-
-          <div class="col-12 mt-2"><label class="form-label">توقيعات افتراضية</label>
-            <div class="row g-2">
-              <div class="col-md-4"><input id="sig1n" class="form-control" placeholder="الاسم 1" value="${escapeHtml(SETTINGS.signatures[0]?.name||'')}"></div>
-              <div class="col-md-4"><input id="sig1t" class="form-control" placeholder="الصفة 1" value="${escapeHtml(SETTINGS.signatures[0]?.title||'')}"></div>
-              <div class="col-md-4"><input id="sig1p" class="form-control" placeholder="مكان 1" value="${escapeHtml(SETTINGS.signatures[0]?.place||'')}"></div>
-              <div class="col-md-4"><input id="sig2n" class="form-control" placeholder="الاسم 2" value="${escapeHtml(SETTINGS.signatures[1]?.name||'')}"></div>
-              <div class="col-md-4"><input id="sig2t" class="form-control" placeholder="الصفة 2" value="${escapeHtml(SETTINGS.signatures[1]?.title||'')}"></div>
-              <div class="col-md-4"><input id="sig2p" class="form-control" placeholder="مكان 2" value="${escapeHtml(SETTINGS.signatures[1]?.place||'')}"></div>
-              <div class="col-md-4"><input id="sig3n" class="form-control" placeholder="الاسم 3" value="${escapeHtml(SETTINGS.signatures[2]?.name||'')}"></div>
-              <div class="col-md-4"><input id="sig3t" class="form-control" placeholder="الصفة 3" value="${escapeHtml(SETTINGS.signatures[2]?.title||'')}"></div>
-              <div class="col-md-4"><input id="sig3p" class="form-control" placeholder="مكان 3" value="${escapeHtml(SETTINGS.signatures[2]?.place||'')}"></div>
+      const active = getSettingsSubTab();
+      const tabs = [
+        {id:'general', label:'عام'},
+        {id:'appearance', label:'المظهر والخطوط'},
+        {id:'reports', label:'التقارير والطباعة'},
+        {id:'signatures', label:'التوقيعات'},
+        {id:'backup', label:'نسخ/استعادة'}
+      ];
+      const tabButtons = `<div class="sub-tabs">${tabs.map(t=>`<button class="sub-tab-btn ${active===t.id?'active':''}" onclick="setSettingsSubTab('${t.id}')">${t.label}</button>`).join('')}</div>`;
+      const sections = {
+        general: `
+          <div class="row g-2">
+            <div class="col-md-6"><label class="form-label">اسم التطبيق</label><input id="set_appName" class="form-control" value="${escapeHtml(SETTINGS.appName)}"></div>
+            <div class="col-md-6"><label class="form-label">عنوان ثانوي</label><input id="set_appSubtitle" class="form-control" value="${escapeHtml(SETTINGS.appSubtitle)}"></div>
+            <div class="col-md-6"><label class="form-label">تخطيط شاشة الدخول</label><select id="set_loginLayout" class="form-select"><option value="stacked" ${SETTINGS.loginLayout==='stacked'?'selected':''}>مكدس (شعار فوق البطاقة)</option><option value="inline" ${SETTINGS.loginLayout==='inline'?'selected':''}>عرض مضغوط</option></select></div>
+            <div class="col-md-6 form-check align-items-center d-flex"><input id="set_auth" class="form-check-input" type="checkbox" ${SETTINGS.authEnabled?'checked':''}><label class="form-check-label ms-2">تمكين نظام المستخدمين</label></div>
+          </div>
+        `,
+        appearance: `
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">شعار (تحميل)</label><input id="set_logo" type="file" class="form-control" accept="image/*"></div>
+            <div class="col-md-4"><label class="form-label">السمة</label><select id="set_theme" class="form-select">${Object.keys(THEMES).map(k=>`<option value="${k}" ${SETTINGS.themeKey===k?'selected':''}>${THEMES[k].name}</option>`).join('')}</select></div>
+            <div class="col-md-4"><label class="form-label">خط التطبيق</label><select id="set_appFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.appFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
+            <div class="col-md-4"><label class="form-label">خط الحقول النصية</label><select id="set_formFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.formFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
+            <div class="col-md-4"><label class="form-label">خط التبويبات</label><select id="set_tabFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.tabFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
+          </div>
+        `,
+        reports: `
+          <div class="row g-2">
+            <div class="col-12"><label class="form-label">رأس التقرير (HTML)</label><textarea id="set_header" class="form-control" rows="3">${escapeHtml(SETTINGS.headerHtml)}</textarea></div>
+            <div class="col-12"><label class="form-label">تذييل التقرير (HTML)</label><textarea id="set_footer" class="form-control" rows="2">${escapeHtml(SETTINGS.footerHtml)}</textarea></div>
+            <div class="col-md-3 form-check"><input id="set_incHeader" class="form-check-input" type="checkbox" ${SETTINGS.includeHeaderOnPrint?'checked':''}><label class="form-check-label">تضمين الرأس</label></div>
+            <div class="col-md-3 form-check"><input id="set_incFooter" class="form-check-input" type="checkbox" ${SETTINGS.includeFooterOnPrint?'checked':''}><label class="form-check-label">تضمين العلامة المائية</label></div>
+          </div>
+        `,
+        signatures: `
+          <div class="row g-2">
+            <div class="col-md-4"><input id="sig1n" class="form-control" placeholder="الاسم 1" value="${escapeHtml(SETTINGS.signatures[0]?.name||'')}"></div>
+            <div class="col-md-4"><input id="sig1t" class="form-control" placeholder="الصفة 1" value="${escapeHtml(SETTINGS.signatures[0]?.title||'')}"></div>
+            <div class="col-md-4"><input id="sig1p" class="form-control" placeholder="مكان 1" value="${escapeHtml(SETTINGS.signatures[0]?.place||'')}"></div>
+            <div class="col-md-4"><input id="sig2n" class="form-control" placeholder="الاسم 2" value="${escapeHtml(SETTINGS.signatures[1]?.name||'')}"></div>
+            <div class="col-md-4"><input id="sig2t" class="form-control" placeholder="الصفة 2" value="${escapeHtml(SETTINGS.signatures[1]?.title||'')}"></div>
+            <div class="col-md-4"><input id="sig2p" class="form-control" placeholder="مكان 2" value="${escapeHtml(SETTINGS.signatures[1]?.place||'')}"></div>
+            <div class="col-md-4"><input id="sig3n" class="form-control" placeholder="الاسم 3" value="${escapeHtml(SETTINGS.signatures[2]?.name||'')}"></div>
+            <div class="col-md-4"><input id="sig3t" class="form-control" placeholder="الصفة 3" value="${escapeHtml(SETTINGS.signatures[2]?.title||'')}"></div>
+            <div class="col-md-4"><input id="sig3p" class="form-control" placeholder="مكان 3" value="${escapeHtml(SETTINGS.signatures[2]?.place||'')}"></div>
+          </div>
+        `,
+        backup: `
+          <div class="row g-2">
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <h6>نسخ احتياطي للإعدادات</h6>
+                <p class="small text-muted">يشمل السمات، الخطوط، الشعار، وتفضيلات التقارير.</p>
+                <button class="btn btn-outline-primary" onclick="exportSettingsBackup()">تنزيل نسخة الإعدادات</button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <h6>استعادة إعدادات النظام</h6>
+                <p class="small text-muted">استيراد ملف JSON يحتوي على إعدادات الواجهة والطباعة.</p>
+                <input type="file" class="form-control" accept="application/json" onchange="importSettingsBackup(this.files[0])">
+              </div>
             </div>
           </div>
-
-        <div class="col-12 text-end mt-3"><button class="btn btn-secondary" onclick="loadAll();renderTab('settings')">إلغاء</button> <button class="btn btn-primary" onclick="saveSettingsFromForm()">حفظ</button></div>
-      </div>
-    </div></div>`;
+        `
+      };
+      const saveControls = active === 'backup' ? '' : `<div class="col-12 text-end mt-3"><button class="btn btn-secondary" onclick="loadAll();renderTab('settings')">إلغاء</button> <button class="btn btn-primary" onclick="saveSettingsFromForm()">حفظ</button></div>`;
+      return `<div class="card"><div class="card-header">إعدادات النظام</div><div class="card-body">
+        ${tabButtons}
+        ${sections[active] || ''}
+        ${saveControls}
+      </div></div>`;
     }
     function saveSettingsFromForm(){
-      SETTINGS.appName = document.getElementById('set_appName').value || SETTINGS.appName;
-      SETTINGS.appSubtitle = document.getElementById('set_appSubtitle').value || '';
-      SETTINGS.headerHtml = document.getElementById('set_header').value || '';
-      SETTINGS.footerHtml = document.getElementById('set_footer').value || '';
-      SETTINGS.includeHeaderOnPrint = !!document.getElementById('set_incHeader').checked;
-      SETTINGS.includeFooterOnPrint = !!document.getElementById('set_incFooter').checked;
-      SETTINGS.authEnabled = !!document.getElementById('set_auth').checked;
-      SETTINGS.themeKey = document.getElementById('set_theme').value || 'classic';
-      SETTINGS.loginLayout = document.getElementById('set_loginLayout').value || 'stacked';
-      SETTINGS.appFontFamily = document.getElementById('set_appFont').value || SETTINGS.appFontFamily;
-      SETTINGS.formFontFamily = document.getElementById('set_formFont').value || SETTINGS.formFontFamily;
-      SETTINGS.tabFontFamily = document.getElementById('set_tabFont').value || SETTINGS.tabFontFamily;
-      SETTINGS.signatures = [
-        {name: document.getElementById('sig1n').value, title: document.getElementById('sig1t').value, place: document.getElementById('sig1p').value},
-        {name: document.getElementById('sig2n').value, title: document.getElementById('sig2t').value, place: document.getElementById('sig2p').value},
-        {name: document.getElementById('sig3n').value, title: document.getElementById('sig3t').value, place: document.getElementById('sig3p').value}
-     ];
+      const appName = document.getElementById('set_appName');
+      if(appName) SETTINGS.appName = appName.value || SETTINGS.appName;
+      const appSubtitle = document.getElementById('set_appSubtitle');
+      if(appSubtitle) SETTINGS.appSubtitle = appSubtitle.value || '';
+      const header = document.getElementById('set_header');
+      if(header) SETTINGS.headerHtml = header.value || '';
+      const footerField = document.getElementById('set_footer');
+      if(footerField) SETTINGS.footerHtml = footerField.value || '';
+      const incHeader = document.getElementById('set_incHeader');
+      if(incHeader) SETTINGS.includeHeaderOnPrint = !!incHeader.checked;
+      const incFooter = document.getElementById('set_incFooter');
+      if(incFooter) SETTINGS.includeFooterOnPrint = !!incFooter.checked;
+      const auth = document.getElementById('set_auth');
+      if(auth) SETTINGS.authEnabled = !!auth.checked;
+      const theme = document.getElementById('set_theme');
+      if(theme) SETTINGS.themeKey = theme.value || 'classic';
+      const loginLayout = document.getElementById('set_loginLayout');
+      if(loginLayout) SETTINGS.loginLayout = loginLayout.value || 'stacked';
+      const appFont = document.getElementById('set_appFont');
+      if(appFont) SETTINGS.appFontFamily = appFont.value || SETTINGS.appFontFamily;
+      const formFont = document.getElementById('set_formFont');
+      if(formFont) SETTINGS.formFontFamily = formFont.value || SETTINGS.formFontFamily;
+      const tabFont = document.getElementById('set_tabFont');
+      if(tabFont) SETTINGS.tabFontFamily = tabFont.value || SETTINGS.tabFontFamily;
+      const sig1n = document.getElementById('sig1n');
+      const sig2n = document.getElementById('sig2n');
+      const sig3n = document.getElementById('sig3n');
+      if(sig1n || sig2n || sig3n){
+        SETTINGS.signatures = [
+          {name: document.getElementById('sig1n')?.value || '', title: document.getElementById('sig1t')?.value || '', place: document.getElementById('sig1p')?.value || ''},
+          {name: document.getElementById('sig2n')?.value || '', title: document.getElementById('sig2t')?.value || '', place: document.getElementById('sig2p')?.value || ''},
+          {name: document.getElementById('sig3n')?.value || '', title: document.getElementById('sig3t')?.value || '', place: document.getElementById('sig3p')?.value || ''}
+        ];
+      }
       const f = document.getElementById('set_logo')?.files?.[0];
        if(f){
         const r = new FileReader();
@@ -4261,19 +4366,30 @@
     }
 
     /* ========= About ========= */
-    function renderAboutTab(){
+     function renderAboutTab(){
       return `<div class="card">
         <div class="card-header">حول التطبيق</div>
         <div class="card-body">
-          <p>نظام خدمات الإدارة العامة للمساعدات الفنية المطور.</p>
-          <ul>
-            <li>توليد جداول شهرية ذكية تراعي الرتب، أوقات الراحة، والاستثناءات.</li>
-            <li>تخصيص السمات والألوان، الشعار، وتخطيط شاشة الدخول.</li>
-            <li>لوحة تحكم للنسخ الاحتياطي، الاستعادة، وإدارة المستخدمين.</li>
-            <li>سجل نشاط كامل مع التصدير والتنظيف.</li>
-            <li>تقارير طباعة A4 مع توقيعات وعلامة مائية.</li>
-          </ul>
-          <div class="mt-3"><strong>الإصدار:</strong> 1.0 (واجهة أحادية الملف)</div>
+          <p class="mb-3">منصة تنظيم وإدارة خدمات الإدارة العامة للمساعدات الفنية، مصممة لتقديم تجربة موثوقة ومتكاملة لإدارة الجداول، الضباط، والعمليات الداعمة.</p>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <h6 class="mb-2">قدرات تشغيلية</h6>
+              <ul>
+                <li>توليد جداول شهرية ذكية تراعي الرتب، أوقات الراحة، والاستثناءات.</li>
+                <li>تقارير جاهزة للطباعة A4 مع تواقيع وعلامة مائية.</li>
+                <li>أرشفة شهرية واستعراض إحصاءات الخدمة حسب الضباط.</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6 class="mb-2">حوكمة وإدارة</h6>
+              <ul>
+                <li>لوحة تحكم لنسخ احتياطي واستعادة البيانات.</li>
+                <li>صلاحيات متعددة للمستخدمين مع سجل نشاط شامل.</li>
+                <li>تخصيص السمات والخطوط والشعار بما يتناسب مع الهوية المؤسسية.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="mt-3"><strong>الإصدار:</strong> 1.0 — إصدار تشغيلي موحد</div>
         </div>
       </div>`;
     }
