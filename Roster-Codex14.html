@@ -95,6 +95,14 @@
     .alert-danger { background:#fee2e2; border-color:#dc2626; color:#991b1b; }
     .list-group { list-style:none; padding:0; margin:0; }
     .list-group-item { padding:8px 10px; border:1px solid #e5e7eb; margin-bottom:6px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
+    .first-run-card { max-width:880px; margin:24px auto; border:1px solid #c7d2fe; background:linear-gradient(135deg,#fff,#eef2ff); }
+    .first-run-card .card-header { background:linear-gradient(135deg,#1e40af,#60a5fa); color:#fff; }
+    .first-run-actions { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; }
+    .first-run-option { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(15,23,42,.08); display:flex; flex-direction:column; gap:12px; }
+    .first-run-option h4 { margin:0; color:#1e3a8a; }
+    .first-run-option p { margin:0; color:#475569; font-size:14px; line-height:1.7; }
+    .first-run-option .btn { width:100%; justify-content:center; }
+    .first-run-option input[type="file"] { border:1px dashed #cbd5f5; background:#f8fafc; }
     .one-duty-page { position:relative; min-height:270mm; }
     .duty-content { position:relative; z-index:2; }
     .watermark { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:64px; color:var(--brand-dark); opacity:0.08; white-space:pre-wrap; text-align:center; width:160%; pointer-events:none; z-index:1; user-select:none; }
@@ -283,12 +291,12 @@
     let activityLog = [];
     let SELECTED_OFFICER_ID = null;
     let supportRequests = [];
+    const FIRST_RUN_KEY = 'rosterFirstRunDone';
     const OFFICER_RANDOMNESS = {};
     const dutyCollapseState = {};
     const dutySwapState = {};
     const deptCollapseState = {};
     let ADMIN_RECOVERY_CONTEXT = null;
-
     function parseBadgeSegment(val){
       const n = parseInt(val, 10);
       return isNaN(n) ? Number.MAX_SAFE_INTEGER : n;
@@ -403,10 +411,46 @@
     ];
 
     /* ========= Persistence ========= */
+    function safeLoadFromStorage(key, fallback){
+      try {
+        const raw = localStorage.getItem(key);
+        if(raw === null || raw === undefined) return fallback;
+        const parsed = JSON.parse(raw);
+        return parsed === null || parsed === undefined ? fallback : parsed;
+      } catch(_) {
+        return fallback;
+      }
+    }
+    function shouldShowFirstRunPrompt(){
+      if(localStorage.getItem(FIRST_RUN_KEY) === 'true') return false;
+      const keys = ['officers','departments','jobTitles','duties','roster','exceptions','ranks','settings'];
+      const hasAnyStored = keys.some(key => localStorage.getItem(key) !== null);
+      if(!hasAnyStored) return true;
+      const storedOfficers = safeLoadFromStorage('officers', []);
+      const storedRoster = safeLoadFromStorage('roster', {});
+      const storedSettings = safeLoadFromStorage('settings', {});
+      const storedUsers = Array.isArray(storedSettings.users) ? storedSettings.users : [];
+      const hasRoster = storedRoster && typeof storedRoster === 'object' && Object.keys(storedRoster).length > 0;
+      return !(Array.isArray(storedOfficers) && storedOfficers.length) && !hasRoster && !storedUsers.length;
+    }
+    function completeFirstRunSetup(){
+      localStorage.setItem(FIRST_RUN_KEY, 'true');
+      saveAll();
+      showToast('تم إعداد النظام للبدء.', 'success');
+      renderTab('roster');
+    }
+    function handleFirstRunRestore(file){
+      if(!file) return;
+      importFullBackup(file, {
+        onComplete: () => {
+          localStorage.setItem(FIRST_RUN_KEY, 'true');
+          renderTab('roster');
+        }
+      });
+    }
     function getDefaultDuties(){
       return [
-        {id:1,name:"إدارية",printLabel:"إدارية",color:"danger",duration:8,restHours:24,allowedRanks:[],signingJobTitleIds:[]},
-        {id:2,name:"ميدانية",printLabel:"ميدانية",color:"success",duration:12,restHours:36,allowedRanks:[],signingJobTitleIds:[]},
+        {id:1,name:"إدارية",printLabel:"إدارية",color:"danger",duration:8,restHours:24,allowedRanks:[],signingJobTitleIds:[]},{id:2,name:"ميدانية",printLabel:"ميدانية",color:"success",duration:12,restHours:36,allowedRanks:[],signingJobTitleIds:[]},
         {id:3,name:"احتياط",printLabel:"احتياط",color:"warning",duration:24,restHours:48,allowedRanks:[],signingJobTitleIds:[]},
         {id:4,name:"ليلية",printLabel:"ليلية",color:"dark",duration:10,restHours:38,allowedRanks:[],signingJobTitleIds:[]}
       ];
@@ -779,7 +823,43 @@
 
     /* ========= Tabs ========= */
     function clearActiveTab(){ document.querySelectorAll('#mainTabs .nav-link').forEach(n=>n.classList.remove('active')); }
+    function renderFirstRunPrompt(){
+      const logoSize = Math.min(220, window.innerWidth * 0.4);
+      const logo = SETTINGS.logoData
+        ? `<img src="${SETTINGS.logoData}" class="logo logo-hero" style="width:${logoSize}px;height:${logoSize}px;border-radius:50%;box-shadow:0 12px 28px rgba(30,64,175,.2);" alt="logo">`
+        : `<div class="logo logo-hero" style="width:${logoSize}px;height:${logoSize}px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#c7d2fe);box-shadow:0 12px 28px rgba(30,64,175,.2);"></div>`;
+      return `
+        <div class="card first-run-card">
+          <div class="card-header">
+            <div>إعداد أولي للنظام</div>
+            <div class="small-muted">البدء لأول مرة</div>
+          </div>
+          <div class="card-body">
+            <div class="text-center mb-4">${logo}</div>
+            <h3 class="text-center mb-2">مرحباً بك في ${escapeHtml(SETTINGS.appName || 'النظام')}</h3>
+            <p class="text-center text-muted mb-4">لم نعثر على بيانات محفوظة بعد. اختر كيفية البدء.</p>
+            <div class="first-run-actions">
+              <div class="first-run-option">
+                <h4>ابدأ تشغيل النظام لأول مرة</h4>
+                <p>سننشئ الهيكل الأساسي والبيانات الافتراضية لتبدأ بإضافة الضباط والخدمات مباشرة.</p>
+                <button class="btn btn-success" onclick="completeFirstRunSetup()">بدء التشغيل</button>
+              </div>
+              <div class="first-run-option">
+                <h4>استعادة البيانات من ملف</h4>
+                <p>قم بتحميل نسخة احتياطية محفوظة مسبقاً لاستعادة جميع الأقسام والضباط والإعدادات.</p>
+                <input type="file" class="form-control" accept="application/json" onchange="handleFirstRunRestore(this.files[0])">
+                <button class="btn btn-outline-primary" onclick="this.previousElementSibling?.click()">اختيار ملف النسخة الاحتياطية</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
     function renderTab(tab){
+      if(shouldShowFirstRunPrompt()){
+        clearActiveTab();
+        document.getElementById('mainContent').innerHTML = renderFirstRunPrompt();
+        return;
+      }
       if(SETTINGS.authEnabled && !CURRENT_USER){
         document.getElementById('mainContent').innerHTML = renderLandingView();
         return;
@@ -1867,8 +1947,10 @@
       logActivity('تصدير نسخة احتياطية', {month: sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7)});
       showToast('تم إنشاء النسخة الاحتياطية','success');
     }
-    function importFullBackup(file){
+     function importFullBackup(file, options = {}){
       if(!file) return;
+      const onComplete = typeof options.onComplete === 'function' ? options.onComplete : null;
+      const targetTab = options.targetTab || 'admin';
       const reader = new FileReader();
       reader.onload = e => {
         try {
@@ -1884,7 +1966,11 @@
           CURRENT_USER = null;
           saveAll();
           loadAll();
-          renderTab('admin');
+          if(onComplete){
+            onComplete();
+          } else {
+            renderTab(targetTab);
+          }
           logActivity('استيراد نسخة احتياطية', {file: file?.name || 'upload'});
           showToast('تم الاستيراد بنجاح','success');
         } catch(err){
