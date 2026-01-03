@@ -29,7 +29,7 @@
     .btn-outline-light { background: transparent; color:#fff; border-color:#fff; }
     .btn-sm { padding: 4px 10px; font-size: 13px; }
     .container-fluid { width: 100%; padding: 0 16px; }
-    .nav-tabs { display:flex; flex-wrap:wrap; gap:8px; row-gap:6px; border-bottom: 1px solid #ddd; padding:4px 0 10px; margin:0; list-style:none; }
+    .nav-tabs { display:flex; flex-wrap:wrap; gap:8px; row-gap:6px; border-bottom: 1px solid #ddd; padding:4px 0 10px; margin:0; list-style:none; position:sticky; top:72px; z-index:950; background:rgba(240,249,255,0.98); }
     .nav-tabs .nav-item { flex:0 0 auto; }
     .nav-link { padding: 12px 16px; border: 1px solid #c7d2fe; border-radius:12px 12px 0 0; background:linear-gradient(180deg,#fff,#eef2ff); font-weight:700; color:#111; box-shadow:0 4px 10px rgba(0,0,0,.08); transform:translateY(4px); transition:all .15s ease; font-family: var(--tab-font); display:inline-flex; align-items:center; gap:6px; }
     .nav-link::before { content: attr(data-icon); font-size: 16px; line-height:1; }
@@ -144,11 +144,14 @@
     .report-table .week-separator td { border-top:3px double #0f172a; }
     .report-signatures { display:flex; flex-direction:column; gap:12px; margin-top:10px; font-size:13px; line-height:0.5; width:100%; }
     .report-signatures-row { display:flex; justify-content:space-between; gap:18px; width:100%; }
-    .report-signature { flex:1; text-align:center; min-height:95px; display:flex; flex-direction:column; justify-content:flex-end; }
+     .report-signature { flex:1; text-align:center; min-height:95px; display:flex; flex-direction:column; justify-content:flex-end; }
+    .report-signature.edge { align-items:stretch; }
     .report-signature.align-right { text-align:right; align-items:flex-end; }
     .report-signature.align-left { text-align:left; align-items:flex-start; }
+    .report-signature.align-right.edge, .report-signature.align-left.edge { align-items:stretch; }
     .report-signature.align-center { text-align:center; align-items:center; }
-    .report-signature .signature-line { border-top:2px solid #0f172a; margin:12px 26px 6px; }
+     .report-signature .signature-line { border-top:2px solid #0f172a; margin:12px 26px 6px; width:100%; }
+    .report-signature.edge .signature-line { margin-inline:0; }
     .sub-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
     .sub-tab-btn { border:1px solid #c7d2fe; background:#fff; color:#1f2937; padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:all .15s ease; }
     .sub-tab-btn.active { background:#1e40af; color:#fff; border-color:#1e40af; box-shadow:0 6px 16px rgba(30,64,175,.2); }
@@ -262,7 +265,7 @@
 
     let officers = [];
     let officerLimits = {};
-    const officerLimitFilters = { hiddenRanks: [], hideInternal: false, hideExternal: false };
+    const officerLimitFilters = { hiddenRanks: [], hideInternal: false, hideExternal: false, rankLimitExcluded: [] };
     let departments = [];
     let jobTitles = [];
     let duties = [];
@@ -1509,7 +1512,7 @@
       const d = new Date(y, m-1, 1); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0,7);
     }
     function computeRankStats(){ const counts = {}; for(const r of ranks) counts[r] = 0; for(const o of officers){ if(!o || !o.rank) continue; counts[o.rank] = (counts[o.rank] || 0) + 1; } return counts; }
-    function renderRankStatsBar(){ const stats = computeRankStats(); return `<div class="mb-3 d-flex flex-wrap gap-2" style="align-items:center">${Object.keys(stats).map(rank => `<div class="badge-stat"><div style="font-size:12px">${escapeHtml(rank)}</div><div class="fw-bold">${stats[rank]}</div></div>`).join('')}</div>`; }
+    function renderRankStatsBar(){ const stats = computeRankStats(); const total = officers.length; return `<div class="mb-3 d-flex flex-wrap gap-2" style="align-items:center"><div class="badge-stat"><div style="font-size:12px">إجمالي الضباط</div><div class="fw-bold">${total}</div></div>${Object.keys(stats).map(rank => `<div class="badge-stat"><div style="font-size:12px">${escapeHtml(rank)}</div><div class="fw-bold">${stats[rank]}</div></div>`).join('')}</div>`; }
     function computeDeptGroupStats(){
       const groupDefs = SETTINGS.deptGroups || [{key:'internal', name:'المجموعة الداخلية'},{key:'external', name:'المجموعة الخارجية'}];
       const stats = {};
@@ -2592,10 +2595,13 @@
           .report-signatures{display:flex;flex-direction:column;gap:12px;margin-top:10px;font-size:12px;line-height:1.5;width:100%}
           .report-signatures-row{display:flex;justify-content:space-between;gap:18px;width:100%}
           .report-signature{flex:1;text-align:center;min-height:95px;display:flex;flex-direction:column;justify-content:flex-end}
+          .report-signature.edge{align-items:stretch}
           .report-signature.align-right{text-align:right;align-items:flex-end}
           .report-signature.align-left{text-align:left;align-items:flex-start}
+          .report-signature.align-right.edge,.report-signature.align-left.edge{align-items:stretch}
           .report-signature.align-center{text-align:center;align-items:center}
-          .report-signature .signature-line{border-top:2px solid #0f172a;margin:12px 26px 6px}
+          .report-signature .signature-line{border-top:2px solid #0f172a;margin:12px 26px 6px;width:100%}
+          .report-signature.edge .signature-line{margin-inline:0}
       `;
     }
     function buildDutyTableHtml(rows, effectiveMonth){
@@ -2634,13 +2640,13 @@
       const sigFont = fontFamily ? `font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;font-size:${fontSize}px;` : '';
      return `<div class="report-signatures" style="${sigFont}">
         <div class="report-signatures-row">
-          <div class="report-signature align-right">
+          <div class="report-signature align-right edge">
             <div>${escapeHtml(sigs[0]?.place||'')}</div>
             <div class="signature-line"></div>
             <div>${escapeHtml(sigs[0]?.name||'')}</div>
             <div>${escapeHtml(sigs[0]?.title||'')}</div>
           </div>
-          <div class="report-signature align-left">
+         <div class="report-signature align-left edge">
             <div>${escapeHtml(sigs[1]?.place||'')}</div>
             <div class="signature-line"></div>
             <div>${escapeHtml(sigs[1]?.name||'')}</div>
@@ -2843,7 +2849,8 @@
     function updateOfficerFilters(){
       const search = document.getElementById('officerSearch')?.value || '';
       sessionStorage.setItem('officerSearch', search);
-      renderTab('officers');
+      const list = document.getElementById('officerList');
+      if(list){ list.innerHTML = renderOfficersList(); }
     }
     function resetOfficerFilters(){
       sessionStorage.removeItem('officerSearch');
@@ -3156,8 +3163,9 @@
       const f = input.files && input.files[0]; if(!f) return;
       const reader = new FileReader(); reader.onload = ()=>{
         const rows = reader.result.split(/\r?\n/).slice(1).filter(Boolean);
-        let added = 0;
+         let added = 0;
         let skipped = 0;
+        let merged = 0;
         rows.forEach(line=>{
            const [id,name,rank,badge,deptId,jobTitleId,phone,gender,birth,address,emgName,emgPhone,status,admissionType,hiringDate,transferFromDeptId,transferToDeptId,transferDate,transferToDate] = line.split(',');
           if(!name) return;
@@ -3165,7 +3173,53 @@
           const cleanRank = (rank || ranks[0]).trim();
           const cleanBadge = (badge || '').trim();
           if(isDuplicateOfficer(cleanName, cleanRank, cleanBadge)){
-            skipped++;
+            const existing = officers.find(o=>normalizeOfficerKey(o.name, o.rank, o.badge) === normalizeOfficerKey(cleanName, cleanRank, cleanBadge));
+            if(existing){
+              const mergedFields = {
+                deptId: deptId? +deptId : null,
+                jobTitleId: jobTitleId? +jobTitleId : null,
+                phone: phone || '',
+                gender: gender || '',
+                birth: birth || '',
+                address: address || '',
+                emgName: emgName || '',
+                emgPhone: emgPhone || '',
+                status: status || '',
+                admissionType: admissionType || '',
+                hiringDate: hiringDate || '',
+                transferFromDeptId: transferFromDeptId ? +transferFromDeptId : null,
+                transferToDeptId: transferToDeptId ? +transferToDeptId : null,
+                transferDate: transferDate || '',
+                transferToDate: transferToDate || ''
+              };
+              const fieldsToUpdate = [
+                ['deptId', v=> v != null],
+                ['jobTitleId', v=> v != null],
+                ['phone', v=> v],
+                ['gender', v=> v],
+                ['birth', v=> v],
+                ['address', v=> v],
+                ['emgName', v=> v],
+                ['emgPhone', v=> v],
+                ['status', v=> v],
+                ['admissionType', v=> v],
+                ['hiringDate', v=> v],
+                ['transferFromDeptId', v=> v != null],
+                ['transferToDeptId', v=> v != null],
+                ['transferDate', v=> v],
+                ['transferToDate', v=> v]
+              ];
+              let updated = false;
+              fieldsToUpdate.forEach(([key, hasValue])=>{
+                if((existing[key] == null || existing[key] === '') && hasValue(mergedFields[key])){
+                  existing[key] = mergedFields[key];
+                  updated = true;
+                }
+              });
+              if(updated) merged++;
+            } else {
+              skipped++;
+            }
             return;
           }
           officers.push({
@@ -3187,12 +3241,15 @@
             hiringDate: hiringDate || '',
            transferFromDeptId: transferFromDeptId ? +transferFromDeptId : null,
             transferToDeptId: transferToDeptId ? +transferToDeptId : null,
-            transferDate: transferDate || '',
+           transferDate: transferDate || '',
             transferToDate: transferToDate || ''
           });
           added++;
         });
         saveAll(); renderTab('officers');
+        if(merged){
+          showToast(`تم دمج بيانات ${merged} ضابط مكرر`, 'info');
+        }
         if(skipped){
           showToast(`تم تجاهل ${skipped} ضابط مكرر`, 'warning');
         } else if(added){
@@ -3534,11 +3591,26 @@
         return `<tr><td>${escapeHtml(o.rank)}</td><td>${escapeHtml(o.name)}</td>${dutyInputs}<td><input type="number" min="0" class="form-control form-control-sm" value="${totalVal==null?'':totalVal}" onchange="setOfficerTotalLimit(${o.id},this.value)"></td></tr>`;
       }).join('');
       const rankToggles = ranks.map(r=>`<label class="form-check me-2"><input type="checkbox" ${officerLimitFilters.hiddenRanks.includes(r)?'checked':''} onchange="toggleLimitRankFilter('${r}', this.checked)"> إخفاء ${escapeHtml(r)}</label>`).join('');
+      const visibleRanks = ranks.filter(r=>!officerLimitFilters.hiddenRanks.includes(r));
+      const rankLimitTargets = `<option value="total">الإجمالي الشهري</option>` + duties.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+      const rankLimitOptions = visibleRanks.map(r=>`<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+      const rankLimitExcluded = officerLimitFilters.rankLimitExcluded || [];
+      const rankLimitExcludedOptions = officers.map(o=>`<option value="${o.id}" ${rankLimitExcluded.includes(o.id)?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('');
       const deptFilters = `
         <label class="form-check me-3"><input type="checkbox" ${officerLimitFilters.hideInternal?'checked':''} onchange="setLimitDeptVisibility('internal', this.checked)"> إخفاء أقسام داخلية</label>
         <label class="form-check"><input type="checkbox" ${officerLimitFilters.hideExternal?'checked':''} onchange="setLimitDeptVisibility('external', this.checked)"> إخفاء أقسام خارجية</label>`;
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>حدود الخدمات لكل ضابط</div><div class="small-muted">تُطبق أثناء التوزيع الآلي والقوائم المنسدلة</div></div><div class="card-body">`+
              `<div class="alert alert-info"><div class="fw-bold mb-1">خيارات إخفاء من القائمة</div><div class="d-flex flex-wrap gap-2 align-items-center">${rankToggles || '<span class="text-muted">لا توجد رتب</span>'} ${deptFilters}</div></div>`+
+             `<div class="alert alert-warning"><div class="fw-bold mb-2">تطبيق حد لرتبة</div>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-3"><label class="form-label">الرتبة</label><select id="rank_limit_rank" class="form-select">${rankLimitOptions || '<option value="">لا توجد رتب متاحة</option>'}</select></div>
+                <div class="col-md-3"><label class="form-label">نوع الحد</label><select id="rank_limit_target" class="form-select">${rankLimitTargets}</select></div>
+                <div class="col-md-2"><label class="form-label">الحد</label><input id="rank_limit_value" type="number" min="0" class="form-control"></div>
+                <div class="col-md-2 text-end"><button class="btn btn-outline-primary" onclick="applyRankLimit()">تطبيق</button></div>
+              </div>
+              <div class="mt-2"><label class="form-label">استثناء ضباط</label><select id="rank_limit_excluded" multiple class="form-select" style="min-height:88px" onchange="updateRankLimitExclusions()">${rankLimitExcludedOptions}</select></div>
+              <div class="small-muted mt-1">لن يتم تطبيق الحد على الرتب المخفية أو الضباط المستثنين.</div>
+             </div>`+
              `<p class="small-muted">اترك الخانة فارغة لعدم وجود حد. خانة الإجمالي تضبط إجمالي الخدمات لكل الضابط في الشهر.</p>`+
              `<div class="table-responsive"><table class="table table-bordered table-sm"><thead class="table-dark"><tr><th>الرتبة</th><th>الاسم</th>${dutyHeaders}<th>الإجمالي الشهري</th></tr></thead><tbody>${rows || '<tr><td colspan="${duties.length+2}" class="text-center text-muted">لا يوجد ضباط بعد تطبيق عوامل الإخفاء</td></tr>'}</tbody></table></div></div></div>`;
     }
@@ -3555,6 +3627,41 @@
       if(key==='external') officerLimitFilters.hideExternal = hidden;
       saveAll();
       renderTab('limits');
+    }
+    function updateRankLimitExclusions(){
+      const selected = Array.from(document.getElementById('rank_limit_excluded')?.selectedOptions || []).map(opt=>+opt.value);
+      officerLimitFilters.rankLimitExcluded = selected;
+      saveAll();
+    }
+    function applyRankLimit(){
+      const rank = document.getElementById('rank_limit_rank')?.value || '';
+      const target = document.getElementById('rank_limit_target')?.value || 'total';
+      const rawVal = document.getElementById('rank_limit_value')?.value;
+      if(!rank) return showToast('اختر رتبة لتطبيق الحد', 'warning');
+      if(officerLimitFilters.hiddenRanks.includes(rank)) return showToast('الرتبة مخفية ولن يتم تطبيق الحد عليها', 'warning');
+      const normalized = normalizeLimit(rawVal);
+      const excluded = new Set((officerLimitFilters.rankLimitExcluded || []).map(Number));
+      let updated = 0;
+      officers.forEach(o=>{
+        if(o.rank !== rank) return;
+        if(officerLimitFilters.hiddenRanks.includes(o.rank)) return;
+        if(excluded.has(o.id)) return;
+        ensureOfficerLimit(o.id);
+        if(target === 'total'){
+          officerLimits[o.id].total = normalized;
+        } else {
+          const dutyId = +target;
+          officerLimits[o.id].duties[dutyId] = normalized;
+        }
+        updated++;
+      });
+      saveAll();
+      renderTab('limits');
+      if(updated){
+        showToast(`تم تطبيق الحد على ${updated} ضابط`, 'success');
+      } else {
+        showToast('لا يوجد ضباط مطابقون للتطبيق', 'warning');
+      }
     }
 
     /* ========= Duties ========= */
@@ -4000,6 +4107,7 @@
           saveAll();
           loadAll();
           applyTheme();
+          applyCustomFont();
           applyFontSettings();
           updateNavLogo();
           renderTab('settings');
