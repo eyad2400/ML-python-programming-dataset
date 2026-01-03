@@ -154,7 +154,7 @@
     .report-signature.align-right.edge, .report-signature.align-left.edge { align-items:center; }
     .report-signature.align-center { text-align:center; align-items:center; }
     .report-signature.emphasis { font-size:1.3em; font-weight:800; }
-    .report-signature .signature-name-block { display:inline-flex; flex-direction:column; align-items:center; align-self:center; width:100%; }
+    .report-signature .signature-name-block { display:inline-flex; flex-direction:column; align-items:center; align-self:center; width:max-content; }
     .report-signature .signature-line { border-top:2px solid #0f172a; margin:12px 0 6px; width:100%; }
     .report-signature .signature-place { text-align:right; width:100%; align-self:flex-end; }
    .report-signature .signature-name { text-align:center; width:100%; }
@@ -2614,12 +2614,11 @@
           .report-signature.align-right.edge,.report-signature.align-left.edge{align-items:center}
           .report-signature.align-center{text-align:center;align-items:center}
           .report-signature.emphasis{font-size:1.3em;font-weight:800}
-          .report-signature{flex:0 0 auto;text-align:center;min-height:95px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:fit-content;max-width:100%}
-          .report-signature.edge{align-items:center}
-          .report-signature.align-right{text-align:center;align-items:center}
-           .report-signature.align-left{text-align:center;align-items:center}
-          .report-signature.align-right.edge,.report-signature.align-left.edge{align-items:center}
-          .report-signature.align-center{text-align:center;align-items:center}
+          .report-signature .signature-name-block{display:inline-flex;flex-direction:column;align-items:center;align-self:center;width:max-content}
+          .report-signature .signature-line{border-top:2px solid #0f172a;margin:12px 0 6px;width:100%}
+          .report-signature .signature-place{text-align:right;width:100%;align-self:flex-end}
+          .report-signature .signature-name{text-align:center;width:100%}
+          .report-signature .signature-title{text-align:center;width:100%}
           .report-signature.edge .signature-line{margin-inline:0}
       `;
     }
