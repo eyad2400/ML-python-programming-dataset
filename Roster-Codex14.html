@@ -158,7 +158,7 @@
     .report-signature .signature-line { border-top:2px solid #0f172a; margin:12px 0 6px; width:100%; }
     .report-signature .signature-place { text-align:right; width:max-content; align-self:flex-end; }
     .report-signature .signature-name { text-align:center; width:100%; }
-    .report-signature .signature-title { text-align:right; width:100%; }
+     .report-signature .signature-title { text-align:center; width:100%; }
     .report-signature.edge .signature-line { margin-inline:0; }
     .sub-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
     .sub-tab-btn { border:1px solid #c7d2fe; background:#fff; color:#1f2937; padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:all .15s ease; }
@@ -2618,7 +2618,7 @@
           .report-signature .signature-line{border-top:2px solid #0f172a;margin:12px 0 6px;width:100%}
           .report-signature .signature-place{text-align:right;width:max-content;align-self:flex-end}
           .report-signature .signature-name{text-align:center;width:100%}
-          .report-signature .signature-title{text-align:right;width:100%}
+          .report-signature .signature-title{text-align:center;width:100%}
           .report-signature.edge .signature-line{margin-inline:0}
       `;
     }
@@ -2659,7 +2659,7 @@
       const sigFont = fontFamily ? `font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;font-size:${signatureFontSize || fontSize}px;` : '';
      return `<div class="report-signatures" style="${sigFont}">
         <div class="report-signatures-row edge-spacing">
-          <div class="report-signature align-right edge">
+          <div class="report-signature align-left edge">
             <div class="signature-place">${escapeHtml(sigs[0]?.place||'')}</div>
             <div class="signature-name-block">
               <div class="signature-line"></div>
@@ -2667,7 +2667,7 @@
             </div>
             <div class="signature-title">${escapeHtml(sigs[0]?.title||'')}</div>
           </div>
-           <div class="report-signature align-left edge">
+           <div class="report-signature align-right edge">
             <div class="signature-place">${escapeHtml(sigs[1]?.place||'')}</div>
             <div class="signature-name-block">
               <div class="signature-line"></div>
