@@ -138,23 +138,24 @@
     .report-logo { position:absolute; top:0; right:0; display:flex; align-items:center; justify-content:center; }
     .report-logo img { max-height:36px; width:auto; height:auto; }
     .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:4px double #0f172a; }
-    .report-table th, .report-table td { border:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:nowrap; }
+    .report-table th, .report-table td { border-top:1px solid #0f172a; border-bottom:1px solid #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:nowrap; }
     .report-table th { background:#d1d5db; color:#111; font-weight:700; border:4px double #0f172a; }
-    .report-table .col-index { background:#d1d5db; font-weight:700; border:4px double #0f172a; }
+    .report-table .col-index { background:#d1d5db; font-weight:700; border-left:4px double #0f172a; border-right:4px double #0f172a; }
     .report-table .week-separator td { border-top:4px double #0f172a; }
     .report-signatures { display:flex; flex-direction:column; gap:12px; margin-top:10px; font-size:13px; line-height:0.5; width:100%; align-items:center; text-align:center; }
     .report-signatures-row { display:flex; justify-content:space-between; gap:18px; width:100%; }
     .report-signatures-row.edge-spacing { padding-inline:2.5cm; }
     .report-signatures-row.centered { justify-content:center; }
-     .report-signature { flex:0 0 auto; text-align:center; min-height:95px; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; width:fit-content; max-width:100%; }
+    .report-signature { flex:0 0 auto; text-align:center; min-height:95px; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; width:fit-content; max-width:100%; }
     .report-signature.edge { align-items:center; }
     .report-signature.align-right { text-align:center; align-items:center; }
-    .report-signature.align-left { text-align:center; align-items:center; }
-    .report-signature.align-right.edge, .report-signature.align-left.edge { align-items:center; }
+   .report-signature.align-left { text-align:center; align-items:flex-end; }
+    .report-signature.align-right.edge, .report-signature.align-left.edge { align-items:flex-end; }
     .report-signature.align-center { text-align:center; align-items:center; }
     .report-signature.emphasis { font-size:1.3em; font-weight:800; }
-    ..report-signature .signature-name-block { display:inline-flex; flex-direction:column; align-items:stretch; width:max-content; }
+    .report-signature .signature-name-block { display:inline-flex; flex-direction:column; align-items:stretch; width:max-content; }
     .report-signature .signature-line { border-top:2px solid #0f172a; margin:12px 0 6px; width:100%; }
+    .report-signature .signature-place { text-align:right; width:max-content; align-self:flex-end; }
     .report-signature .signature-title { text-align:right; width:100%; }
     .report-signature.edge .signature-line { margin-inline:0; }
     .sub-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
@@ -2587,9 +2588,9 @@
           body{font-family:${fontFamily},"Fanan","Sultan bold","PT Bold Heading","Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm;${includeBackground ? 'background:#fff;' : ''}}
           .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid}
              .report-table{width:100%;border-collapse:collapse;table-layout:auto;font-size:${fontSize}px;border:4px double #0f172a}
-          .report-table th,.report-table td{border:2px solid #0f172a;padding:4px 3px;text-align:center;white-space:nowrap}
+           .report-table th,.report-table td{border-top:1px solid #0f172a;border-bottom:1px solid #0f172a;border-left:2px solid #0f172a;border-right:2px solid #0f172a;padding:4px 3px;text-align:center;white-space:nowrap}
           .report-table th{background:#d1d5db;color:#111;font-weight:700;border:4px double #0f172a}
-          .report-table .col-index{background:#d1d5db;font-weight:700;border:4px double #0f172a}
+          .report-table .col-index{background:#d1d5db;font-weight:700;border-left:4px double #0f172a;border-right:4px double #0f172a}
           .report-table .week-separator td{border-top:4px double #0f172a}
           tr{page-break-inside:avoid}
           h2,h3{margin:0}
@@ -2603,16 +2604,17 @@
           .report-signatures-row{display:flex;justify-content:space-between;gap:18px;width:100%}
           .report-signatures-row.edge-spacing{padding-inline:2.5cm}
           .report-signatures-row.centered{justify-content:center}
-           .report-signature{flex:0 0 auto;text-align:center;min-height:95px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:fit-content;max-width:100%}
+            .report-signature{flex:0 0 auto;text-align:center;min-height:95px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;width:fit-content;max-width:100%}
           .report-signature.edge{align-items:center}
           .report-signature.align-right{text-align:center;align-items:center}
-          .report-signature.align-left{text-align:center;align-items:center}
-          .report-signature.align-right.edge,.report-signature.align-left.edge{align-items:center}
+           .report-signature.align-left{text-align:center;align-items:flex-end}
+          .report-signature.align-right.edge,.report-signature.align-left.edge{align-items:flex-end}
           .report-signature.align-center{text-align:center;align-items:center}
           .report-signature.emphasis{font-size:1.3em;font-weight:800}
           .report-signature .signature-name-block{display:inline-flex;flex-direction:column;align-items:stretch;width:max-content}
           .report-signature .signature-line{border-top:2px solid #0f172a;margin:12px 0 6px;width:100%}
-          .report-signature .signature-title{text-align:right;width:100%}
+        .report-signature .signature-title{text-align:right;width:100%}
+          .report-signature .signature-place{text-align:right;width:max-content;align-self:flex-end}
           .report-signature.edge .signature-line{margin-inline:0}
       `;
     }
@@ -2654,7 +2656,7 @@
      return `<div class="report-signatures" style="${sigFont}">
         <div class="report-signatures-row edge-spacing">
           <div class="report-signature align-right edge">
-            <div>${escapeHtml(sigs[0]?.place||'')}</div>
+            <div class="signature-place">${escapeHtml(sigs[0]?.place||'')}</div>
             <div class="signature-name-block">
               <div class="signature-line"></div>
               <div>${escapeHtml(sigs[0]?.name||'')}</div>
@@ -2662,7 +2664,7 @@
             <div class="signature-title">${escapeHtml(sigs[0]?.title||'')}</div>
           </div>
          <div class="report-signature align-left edge">
-            <div>${escapeHtml(sigs[1]?.place||'')}</div>
+            <div class="signature-place">${escapeHtml(sigs[1]?.place||'')}</div>
             <div class="signature-name-block">
               <div class="signature-line"></div>
               <div>${escapeHtml(sigs[1]?.name||'')}</div>
@@ -2671,8 +2673,8 @@
           </div>
         </div>
         <div class="report-signatures-row centered">
-          <div class="report-signature align-center emphasis">
-            <div>${escapeHtml(sigs[2]?.place||'')}</div>
+           <div class="report-signature align-center emphasis">
+            <div class="signature-place">${escapeHtml(sigs[2]?.place||'')}</div>
             <div class="signature-name-block">
               <div class="signature-line"></div>
               <div>${escapeHtml(sigs[2]?.name||'')}</div>
