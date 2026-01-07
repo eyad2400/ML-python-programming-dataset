@@ -238,11 +238,15 @@
       <li class="nav-item"><button class="nav-link" data-icon="⬆️" data-tab="promotions" onclick="renderTab('promotions')">الترقيات</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="🔁" data-tab="transfers" onclick="renderTab('transfers')">النقل والندب</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="⚖️" data-tab="disciplinary" onclick="renderTab('disciplinary')">الجزاءات والقضايا</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')">الرتب والدرجات</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')">سلم الرتب والترتيب</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🗂️" data-tab="archive" onclick="renderTab('archive')">الأرشيف</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="🌴" data-tab="departments" onclick="renderTab('departments')">الأقسام والإدارات</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="⏱️" data-tab="transfer-departments" onclick="renderTab('transfer-departments')">جهات النقل</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="📝" data-tab="jobtitles" onclick="renderTab('jobtitles')">المسميات الوظيفية</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="⚙️" data-tab="settings" onclick="renderTab('settings')">الإعدادات</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🧭" data-tab="admin" onclick="renderTab('admin')">لوحة التحكم</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="🔐" data-tab="account" onclick="renderTab('account')">الأمن والصلاحيات</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="ℹ️" data-tab="about" onclick="renderTab('about')">حول التطبيق</button></li>
     </ul>
       <div id="mainContent" class="p-3"></div>
   </div>
@@ -252,7 +256,14 @@
   <script>
     /* Single-file HRMS app: employee records, training, and administrative workflows */
     const defaultRanks = ["ملازم","ملازم أول","نقيب","رائد","مقدم","عقيد","عميد","لواء"];
+    const defaultRankLadders = {
+      officers: defaultRanks.slice(),
+      personnel: ["فرد","عريف","رقيب","رقيب أول","مساعد"],
+      civil: ["أخصائي","كبير أخصائي","خبير","كبير خبراء"],
+      draftees: ["مجند","جندي أول","عريف مجند","رقيب مجند"]
+    };
     let ranks = [];
+    let rankLadders = {};
     const weekdays = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
      const THEMES = {
       classic: { name:'كلاسيكي', brand:'#1e40af', brandDark:'#0f172a', bg:'#f0f9ff', text:'#111' },
@@ -280,6 +291,13 @@
       { id: 'personnel', label: 'الأفراد' },
       { id: 'civil', label: 'الموظفين المدنيين' },
       { id: 'draftees', label: 'المجندين' }
+    ];
+    const EDITOR_SCOPES = [
+      { id: 'training', label: 'التدريب' },
+      { id: 'officers', label: 'الضباط' },
+      { id: 'personnel', label: 'الأفراد' },
+      { id: 'civil', label: 'الموظفون المدنيون' },
+      { id: 'draftees', label: 'المجندون' }
     ];
     let officers = [];
     let departments = [];
@@ -336,7 +354,40 @@
       return (a.name||'').localeCompare(b.name||'');
     }
     function getRoleLabel(role){
-      return {admin:'مشرف', editor:'محرر', user:'مستخدم', viewer:'مشاهد'}[role] || role;
+      return {admin:'مشرف', editor:'محرر', user:'مستخدم'}[role] || role;
+    }
+    function getEmployeeLabel(categoryId, form='singular'){
+      const labels = {
+        officers: {singular:'الضابط', plural:'الضباط'},
+        personnel: {singular:'الفرد', plural:'الأفراد'},
+        civil: {singular:'الموظف المدني', plural:'الموظفون المدنيون'},
+        draftees: {singular:'المجند', plural:'المجندون'}
+      };
+      return labels[categoryId]?.[form] || (form === 'plural' ? 'العاملون' : 'الموظف');
+    }
+    function getCategoryRankLadder(categoryId){
+      const ladder = rankLadders[categoryId];
+      return Array.isArray(ladder) && ladder.length ? ladder : (defaultRankLadders[categoryId] || []);
+    }
+    function getEditorScope(){
+      return currentUserRecord()?.editorScope || '';
+    }
+    function canEditTraining(){
+      if(!SETTINGS.authEnabled) return true;
+      const role = currentRole();
+      if(role === 'admin') return true;
+      if(role === 'editor') return getEditorScope() === 'training';
+      return false;
+    }
+    function canEditCategory(categoryId){
+      if(!SETTINGS.authEnabled) return true;
+      const role = currentRole();
+      if(role === 'admin') return true;
+      if(role === 'editor') return getEditorScope() === categoryId;
+      return false;
+    }
+    function canEditCategoryRecords(categoryId){
+      return canEditCategory(categoryId);
     }
     function getWeekIndexForDate(dateObj){
       if(!dateObj) return 0;
@@ -354,12 +405,13 @@
       if(rule.weekday == null) return true;
       return +rule.weekday === Number(weekday);
     }
-    function normalizeOfficerKey(name, rank, badge){
-      return [name || '', rank || '', badge || ''].map(v=>String(v).trim().toLowerCase()).join('|');
+    function normalizeOfficerKey(name, rank, badge, nationalId){
+      const identity = badge || nationalId || '';
+      return [name || '', rank || '', identity || ''].map(v=>String(v).trim().toLowerCase()).join('|');
     }
-    function isDuplicateOfficer(name, rank, badge, ignoreId=null){
-      const key = normalizeOfficerKey(name, rank, badge);
-      return officers.some(o => o.id !== ignoreId && normalizeOfficerKey(o.name, o.rank, o.badge) === key);
+    function isDuplicateOfficer(name, rank, badge, nationalId=null, ignoreId=null){
+      const key = normalizeOfficerKey(name, rank, badge, nationalId);
+      return officers.some(o => o.id !== ignoreId && normalizeOfficerKey(o.name, o.rank, o.badge, o.nationalId) === key);
     }
    
     const defaultSettings = {
@@ -381,6 +433,7 @@
       includeFooterOnPrint: true,
       idleLogoutMinutes: 0,
       themeKey: 'classic',
+      darkMode: false,
       loginLayout: 'stacked',
        deptGroups: [
         { key: 'internal', name: 'الإدارة العامة للمساعدات الفنية - ديوان الإدارة' },
@@ -454,12 +507,22 @@
       },
       {
         id: 'ranks',
-        label: 'الرتب والدرجات',
-        description: 'إعداد قائمة الرتب وترتيبها.',
+        label: 'سلم الرتب والترتيب',
+        description: 'إعداد سلم الرتب حسب الفئات وترتيبه.',
         options: [
           'إضافة وتعديل وحذف الرتب',
           'ترتيب الرتب بالأولوية',
-          'إحصاء عدد الموظفين لكل رتبة'
+          'ضبط تسلسل الترقيات'
+        ]
+      },
+      {
+        id: 'archive',
+        label: 'الأرشيف',
+        description: 'أرشفة البيانات حسب فئات القوى العاملة.',
+        options: [
+          'عرض المؤرشفين لكل فئة',
+          'تتبع تاريخ الأرشفة',
+          'إحصاء حالات النقل والتقاعد'
         ]
       },
       {
@@ -494,6 +557,26 @@
         ]
       },
       {
+        id: 'settings',
+        label: 'الإعدادات',
+        description: 'ضبط السمات والهوية وتجربة الاستخدام.',
+        options: [
+          'إدارة السمات والوضع الداكن',
+          'تخصيص الخطوط والمظهر',
+          'نسخ احتياطي للإعدادات'
+        ]
+      },
+      {
+        id: 'admin',
+        label: 'لوحة التحكم',
+        description: 'إدارة المستخدمين والنسخ الاحتياطية.',
+        options: [
+          'إضافة وتعديل وحذف المستخدمين',
+          'تخصيص الصلاحيات',
+          'مراجعة سجل النشاط'
+        ]
+      },
+      {
         id: 'account',
         label: 'الأمن والصلاحيات',
         description: 'إدارة المستخدمين والصلاحيات وسجل النشاط.',
@@ -503,14 +586,23 @@
           'لوحة التحكم والنسخ الاحتياطي',
           'سجل النشاط والتدقيق'
         ]
+      },
+      {
+        id: 'about',
+        label: 'حول التطبيق',
+        description: 'معلومات موجزة عن المنصة.',
+        options: [
+          'تعريف بالمنصة',
+          'أبرز القدرات',
+          'بيانات الإصدار'
+        ]
       }
     ];
     const HRMS_TAB_IDS = HRMS_CATEGORIES.map(category => category.id);
       const ROLE_TABS = {
     admin: HRMS_TAB_IDS,
       editor: HRMS_TAB_IDS,
-      user: HRMS_TAB_IDS,
-      viewer: HRMS_TAB_IDS
+      user: HRMS_TAB_IDS
     };
     const TAB_OPTIONS = HRMS_CATEGORIES.map(category => ({
       id: category.id,
@@ -598,25 +690,32 @@
       disciplinaryRecords = Object.assign({ officers: [], personnel: [], civil: [], draftees: [] }, disciplinaryRecords || {});
       try { activityLog = JSON.parse(localStorage.getItem('activityLog')) || []; } catch(_) { activityLog = []; }
       try { ranks = JSON.parse(localStorage.getItem('ranks')) || defaultRanks.slice(); } catch(_) { ranks = defaultRanks.slice(); }
+      try { rankLadders = JSON.parse(localStorage.getItem('rankLadders')) || {}; } catch(_) { rankLadders = {}; }
       if(!Array.isArray(ranks) || !ranks.length) ranks = defaultRanks.slice();
+      rankLadders = Object.assign({}, defaultRankLadders, rankLadders || {});
+      rankLadders.officers = Array.isArray(rankLadders.officers) && rankLadders.officers.length ? rankLadders.officers : ranks.slice();
+      ranks = rankLadders.officers.slice();
       try { SETTINGS = Object.assign(SETTINGS, JSON.parse(localStorage.getItem('settings')) || {}); } catch(_) {}
       if(!Array.isArray(SETTINGS.users)) SETTINGS.users = [];
       SETTINGS.users = (SETTINGS.users||[]).map(u=>({
         name: u.name||'',
         pwd: u.pwd||'',
-        role: u.role||'user',
+        role: (['admin','editor','user'].includes(u.role) ? u.role : 'user'),
         officerId: u.officerId ?? null,
         phone: u.phone||'',
         note: u.note||'',
         fullName: u.fullName || u.name || '',
         email: u.email || '',
         tabPrivileges: Array.isArray(u.tabPrivileges) ? u.tabPrivileges : [],
+        editorScope: u.editorScope || '',
         createdAt: u.createdAt || new Date().toISOString(),
         lastLoginAt: u.lastLoginAt || null,
         mustChangePassword: u.mustChangePassword === undefined ? !(u.lastLoginAt) : !!u.mustChangePassword
       }));
       if(!Array.isArray(SETTINGS.deptGroups) || !SETTINGS.deptGroups.length) SETTINGS.deptGroups = defaultSettings.deptGroups.slice();
       if(!SETTINGS.themeKey || !THEMES[SETTINGS.themeKey]) SETTINGS.themeKey = defaultSettings.themeKey;
+      if(SETTINGS.darkMode === undefined || SETTINGS.darkMode === null) SETTINGS.darkMode = defaultSettings.darkMode;
+      if(SETTINGS.darkMode) SETTINGS.themeKey = 'night';
       if(!SETTINGS.loginLayout) SETTINGS.loginLayout = defaultSettings.loginLayout;
       if(!SETTINGS.reportFontFamily) SETTINGS.reportFontFamily = defaultSettings.reportFontFamily;
       if(!SETTINGS.appFontFamily) SETTINGS.appFontFamily = defaultSettings.appFontFamily;
@@ -645,7 +744,7 @@
         }
       }
          officers = officers.map(o=>{
-          const normalized = Object.assign({status:'active',category:'officers',trainings:[],transferNote:'',phone:'',gender:'',birth:'',address:'',emgName:'',emgPhone:'',admissionType:'fresh',hiringDate:'',transferFromDeptId:null,transferToDeptId:null,transferDate:'',transferToDate:'', archivedAt:null}, o);
+          const normalized = Object.assign({status:'active',category:'officers',trainings:[],transferNote:'',phone:'',gender:'',birth:'',address:'',emgName:'',emgPhone:'',admissionType:'fresh',hiringDate:'',transferFromDeptId:null,transferToDeptId:null,transferDate:'',transferToDate:'', archivedAt:null, badge:'', nationalId:''}, o);
         if(!normalized.transferDate && normalized.transferFromDate) normalized.transferDate = normalized.transferFromDate;
         return normalized;
       });
@@ -663,6 +762,7 @@
       localStorage.setItem('departments', JSON.stringify(departments));
       localStorage.setItem('jobTitles', JSON.stringify(jobTitles));
       localStorage.setItem('ranks', JSON.stringify(ranks));
+      localStorage.setItem('rankLadders', JSON.stringify(rankLadders));
       localStorage.setItem('trainingCatalog', JSON.stringify(trainingCatalog));
       localStorage.setItem('annualReviews', JSON.stringify(annualReviews));
       localStorage.setItem('promotions', JSON.stringify(promotions));
@@ -876,8 +976,8 @@
       return d?.groupKey || 'internal';
     }
     function canEditRoster(){ const r=currentRole(); return !SETTINGS.authEnabled || r==='admin' || r==='editor'; }
-    function isViewerUser(){ return SETTINGS.authEnabled && currentRole()==='viewer'; }
-    function isViewOnlyUser(){ return SETTINGS.authEnabled && (currentRole()==='user' || currentRole()==='viewer'); }
+    function isViewerUser(){ return false; }
+    function isViewOnlyUser(){ return SETTINGS.authEnabled && currentRole()==='user'; }
     // Offline fallbacks for missing libs
     // Lightweight html2canvas alternative using SVG foreignObject to avoid external dependencies
     if (typeof window.html2canvas === 'undefined') {
@@ -1036,6 +1136,9 @@
         case 'ranks':
           c.innerHTML = renderRanksTab();
           break;
+        case 'archive':
+          c.innerHTML = renderArchiveTab();
+          break;
         case 'departments':
           c.innerHTML = renderDepartmentsTab();
           break;
@@ -1069,35 +1172,40 @@
     /* ========= Ranks Tab ========= */
     function renderRanksTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول لإدارة الرتب.</div>';
-      const stats = computeRankStats();
-      const rows = ranks.map((r,i)=>`
+      const activeCategory = getActiveCategory('ranksCategory', 'officers');
+      const ladder = getCategoryRankLadder(activeCategory);
+      const stats = computeRankStats(activeCategory);
+      const subTabs = renderCategorySubTabs('ranksCategory', activeCategory, 'ranks');
+      const employeePlural = getEmployeeLabel(activeCategory, 'plural');
+      const rows = ladder.map((r,i)=>`
         <tr>
           <td class="align-middle">${i+1}</td>
           <td><input class="form-control" value="${escapeHtml(r)}" onchange="updateRankName(${i}, this.value)"></td>
           <td class="text-center">${stats[r] || 0}</td>
           <td class="text-nowrap text-end">
             <button class="btn btn-sm btn-outline-secondary me-1" ${i===0?'disabled':''} onclick="moveRank(${i}, -1)"><i class="bi bi-arrow-up"></i></button>
-            <button class="btn btn-sm btn-outline-secondary me-1" ${i===ranks.length-1?'disabled':''} onclick="moveRank(${i}, 1)"><i class="bi bi-arrow-down"></i></button>
+            <button class="btn btn-sm btn-outline-secondary me-1" ${i===ladder.length-1?'disabled':''} onclick="moveRank(${i}, 1)"><i class="bi bi-arrow-down"></i></button>
             <button class="btn btn-sm btn-danger" onclick="deleteRank(${i})">حذف</button>
           </td>
         </tr>`).join('');
 
       return `<div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <div>إدارة الرتب العسكرية</div>
+          <div>سلم الرتب والترتيب حسب الفئات</div>
           <div>
             <button class="btn btn-outline-primary btn-sm me-2" onclick="restoreDefaultRanks()">استعادة الافتراضي</button>
             <button class="btn btn-success btn-sm" onclick="addRankFromForm()">إضافة رتبة</button>
           </div>
         </div>
         <div class="card-body">
+          ${subTabs}
           <div class="row g-2 mb-3">
             <div class="col-md-6"><input id="new_rank_name" class="form-control" placeholder="اسم رتبة جديدة"></div>
-            <div class="col-md-6 text-muted d-flex align-items-center">إجمالي الرتب: ${ranks.length}</div>
+            <div class="col-md-6 text-muted d-flex align-items-center">إجمالي الرتب: ${ladder.length}</div>
           </div>
           <div class="table-responsive">
             <table class="table table-hover align-middle">
-              <thead class="table-dark"><tr><th style="width:70px">#</th><th>الاسم</th><th style="width:120px">عدد الضباط</th><th style="width:220px" class="text-end">إجراءات</th></tr></thead>
+              <thead class="table-dark"><tr><th style="width:70px">#</th><th>الاسم</th><th style="width:160px">عدد ${employeePlural}</th><th style="width:220px" class="text-end">إجراءات</th></tr></thead>
               <tbody>${rows || '<tr><td colspan="4" class="text-center text-muted">لا توجد رتب</td></tr>'}</tbody>
             </table>
           </div>
@@ -1106,43 +1214,63 @@
     }
     function addRankFromForm(){
       const name = (document.getElementById('new_rank_name')?.value || '').trim();
+      const categoryId = getActiveCategory('ranksCategory', 'officers');
+      const ladder = getCategoryRankLadder(categoryId).slice();
       if(!name) return showToast('أدخل اسم رتبة', 'danger');
-      if(ranks.includes(name)) return showToast('الرتبة موجودة بالفعل', 'danger');
-      ranks.push(name);
+      if(ladder.includes(name)) return showToast('الرتبة موجودة بالفعل', 'danger');
+      ladder.push(name);
+      rankLadders[categoryId] = ladder;
+      if(categoryId === 'officers') ranks = ladder.slice();
       saveAll();
       showToast('تمت إضافة الرتبة', 'success');
       renderTab('ranks');
     }
     function updateRankName(idx, val){
+      const categoryId = getActiveCategory('ranksCategory', 'officers');
+      const ladder = getCategoryRankLadder(categoryId).slice();
       const name = (val || '').trim();
       if(!name) return showToast('الاسم مطلوب', 'danger');
-      if(ranks.some((r,i)=>r===name && i!==idx)) return showToast('اسم مكرر', 'danger');
-      const old = ranks[idx];
-      ranks[idx] = name;
-      officers.forEach(o=>{ if(o.rank===old) o.rank = name; });
+      if(ladder.some((r,i)=>r===name && i!==idx)) return showToast('اسم مكرر', 'danger');
+      const old = ladder[idx];
+      ladder[idx] = name;
+      officers.forEach(o=>{ if(o.rank===old && o.category===categoryId) o.rank = name; });
+      rankLadders[categoryId] = ladder;
+      if(categoryId === 'officers') ranks = ladder.slice();
       saveAll();
       renderTab('ranks');
     }
     function deleteRank(idx){
-      const name = ranks[idx];
-      if(officers.some(o=>o.rank===name)) return showToast('لا يمكن حذف رتبة مستخدمة', 'danger');
-      ranks.splice(idx,1);
+      const categoryId = getActiveCategory('ranksCategory', 'officers');
+      const ladder = getCategoryRankLadder(categoryId).slice();
+      if(!confirm('حذف الرتبة؟')) return;
+      const name = ladder[idx];
+      if(officers.some(o=>o.rank===name && o.category===categoryId)) return showToast('لا يمكن حذف رتبة مستخدمة', 'danger');
+      ladder.splice(idx,1);
+      rankLadders[categoryId] = ladder;
+      if(categoryId === 'officers') ranks = ladder.slice();
       saveAll();
+      showToast('تم حذف الرتبة', 'warning');
       renderTab('ranks');
     }
     function moveRank(idx, dir){
-      const target = idx + dir;
-      if(target < 0 || target >= ranks.length) return;
-      const temp = ranks[target]; ranks[target] = ranks[idx]; ranks[idx] = temp;
+      const categoryId = getActiveCategory('ranksCategory', 'officers');
+      const ladder = getCategoryRankLadder(categoryId).slice();
+      const newIdx = idx + dir;
+      if(newIdx<0 || newIdx>=ladder.length) return;
+      const item = ladder.splice(idx,1)[0];
+      ladder.splice(newIdx,0,item);
+      rankLadders[categoryId] = ladder;
+      if(categoryId === 'officers') ranks = ladder.slice();
       saveAll();
       renderTab('ranks');
     }
     function restoreDefaultRanks(){
+      const categoryId = getActiveCategory('ranksCategory', 'officers');
       if(!confirm('سيتم استبدال الرتب الحالية بالقائمة الافتراضية. متابعة؟')) return;
-      ranks = defaultRanks.slice();
+      rankLadders[categoryId] = (defaultRankLadders[categoryId] || []).slice();
+      if(categoryId === 'officers') ranks = rankLadders[categoryId].slice();
       saveAll();
       renderTab('ranks');
-      showToast('تمت الاستعادة', 'success');
     }
 
     /* ========= Auth ========= */
@@ -1380,6 +1508,10 @@
         <div class="small-muted mb-3">القوائم تعرض فقط الضباط المؤهلين لذلك اليوم/النوع وفق القواعد، وحدود الراحة، وحدود الضباط المخصصة.</div>
         ${duties.map(d=>renderDutySection(d)).join('')}
       </div></div>`;
+    }
+    function clearSelectedOfficer(){
+      SELECTED_OFFICER_ID = null;
+      renderTab('employees');
     }
     function renderLandingView(){
       const logoSize = 288;
@@ -1772,8 +1904,37 @@
       const [y,m] = monthStr.split('-').map(Number);
       const d = new Date(y, m-1, 1); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0,7);
     }
-    function computeRankStats(){ const counts = {}; for(const r of ranks) counts[r] = 0; for(const o of officers){ if(!o || !o.rank) continue; counts[o.rank] = (counts[o.rank] || 0) + 1; } return counts; }
-    function renderRankStatsBar(){ const stats = computeRankStats(); const total = officers.length; return `<div class="mb-3 d-flex flex-wrap gap-2" style="align-items:center"><div class="badge-stat"><div style="font-size:12px">إجمالي الموظفين</div><div class="fw-bold">${total}</div></div>${Object.keys(stats).map(rank => `<div class="badge-stat"><div style="font-size:12px">${escapeHtml(rank)}</div><div class="fw-bold">${stats[rank]}</div></div>`).join('')}</div>`; }
+    function computeRankStats(categoryId){
+      const counts = {};
+      const ladder = getCategoryRankLadder(categoryId);
+      for(const r of ladder) counts[r] = 0;
+      for(const o of officers){
+        if(!o || !o.rank) continue;
+        if(categoryId && o.category !== categoryId) continue;
+        counts[o.rank] = (counts[o.rank] || 0) + 1;
+      }
+      return counts;
+    }
+    function renderManpowerStatsBar(){
+      const total = officers.length;
+      const categoryCounts = EMPLOYEE_CATEGORIES.map(cat => ({
+        id: cat.id,
+        label: cat.label,
+        count: officers.filter(o=>o.category === cat.id).length
+      }));
+      return `<div class="mb-3 d-flex flex-wrap gap-2" style="align-items:center">
+        <div class="badge-stat"><div style="font-size:12px">إجمالي القوة البشرية</div><div class="fw-bold">${total}</div></div>
+        ${categoryCounts.map(cat => `<div class="badge-stat"><div style="font-size:12px">${escapeHtml(cat.label)}</div><div class="fw-bold">${cat.count}</div></div>`).join('')}
+      </div>`;
+    }
+    function renderRankStatsBar(categoryId){
+      const stats = computeRankStats(categoryId);
+      const hasRanks = Object.keys(stats).length;
+      if(!hasRanks) return '';
+      return `<div class="mb-3 d-flex flex-wrap gap-2" style="align-items:center">
+        ${Object.keys(stats).map(rank => `<div class="badge-stat"><div style="font-size:12px">${escapeHtml(rank)}</div><div class="fw-bold">${stats[rank]}</div></div>`).join('')}
+      </div>`;
+    }
     function computeDeptGroupStats(){
       const groupDefs = SETTINGS.deptGroups || [{key:'internal', name:'المجموعة الداخلية'},{key:'external', name:'المجموعة الخارجية'}];
       const stats = {};
@@ -1839,27 +2000,30 @@
       return result;
     }
 
-    function renderOfficersArchiveTable(){
-      const archived = officers.filter(o=> (o.status || 'active') !== 'active');
-      if(!archived.length) return '<div class="text-muted">لا يوجد ضباط مؤرشفون حالياً.</div>';
+    function renderEmployeeArchiveTable(categoryId){
+      const archived = officers.filter(o=>o.category === categoryId && (o.status || 'active') !== 'active');
+      if(!archived.length) return `<div class="text-muted">لا يوجد ${getEmployeeLabel(categoryId, 'plural')} مؤرشفون حالياً.</div>`;
+      const idLabel = categoryId === 'civil' ? 'الرقم القومي' : 'رقم الأقدمية';
       const rows = archived
         .slice()
         .sort((a,b)=> String(b.archivedAt || '').localeCompare(String(a.archivedAt || '')))
         .map(o=>{
           const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
           const archivedAt = o.archivedAt ? new Date(o.archivedAt).toLocaleDateString('ar-EG') : '';
-          const [, mid] = splitBadgeParts(o.badge);
+          const idNumber = categoryId === 'civil' ? (o.nationalId || '') : (o.badge || '');
           return `<tr>
             <td>${escapeHtml(o.name)}</td>
             <td>${escapeHtml(o.rank)}</td>
-            <td>${escapeHtml(o.badge || '')}</td>
-            <td>${escapeHtml(mid || '')}</td>
+            <td>${escapeHtml(idNumber)}</td>
             <td>${escapeHtml(deptName)}</td>
             <td>${renderStatusBadge(o.status || 'active')}</td>
             <td>${escapeHtml(archivedAt)}</td>
           </tr>`;
         }).join('');
-      return `<div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-dark"><tr><th>الاسم</th><th>الرتبة</th><th>رقم الأقدمية</th><th>الأوسط</th><th>القسم السابق</th><th>الحالة</th><th>تاريخ الأرشفة</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      return `<div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-dark"><tr><th>الاسم</th><th>الرتبة</th><th>${idLabel}</th><th>القسم السابق</th><th>الحالة</th><th>تاريخ الأرشفة</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
+    function renderOfficersArchiveTable(){
+      return renderEmployeeArchiveTable('officers');
     }
     function renderStatsArchiveTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للإحصاءات.</div>';
@@ -1885,6 +2049,18 @@
           <h5>أرشيف الضباط (متقاعد/منقول)</h5>
           <div id="officerArchiveTable">${renderOfficersArchiveTable()}</div>
         </div></div>`;
+    }
+    function renderArchiveTab(){
+      if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للأرشيف.</div>';
+      const activeCategory = getActiveCategory('archiveCategory', 'officers');
+      const subTabs = renderCategorySubTabs('archiveCategory', activeCategory, 'archive');
+      return `<div class="card">
+        <div class="card-header">الأرشيف حسب الفئات</div>
+        <div class="card-body">
+          ${subTabs}
+          ${renderEmployeeArchiveTable(activeCategory)}
+        </div>
+      </div>`;
     }
     function renderStatsForSelectedMonth(){
       const month = document.getElementById('statsMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
@@ -1935,7 +2111,6 @@
         {id:'overview', label:'نظرة عامة'},
         {id:'backup', label:'النسخ والتهيئة'},
         {id:'users', label:'المستخدمون'},
-        {id:'viewers', label:'مستخدمي المشاهدة'},
         {id:'requests', label:'طلبات الدعم'},
         {id:'activity', label:'سجل النشاط'}
       ];
@@ -1987,11 +2162,12 @@
               <div class="col-md-3"><input id="admin_user_email" type="email" class="form-control" placeholder="البريد الإلكتروني"></div>
             </div>
             <div class="row g-2">
-              <div class="col-md-2"><select id="admin_user_role" class="form-select" onchange="updatePrivilegeControlState()"><option value="admin">مشرف</option><option value="editor">محرر</option><option value="user">مستخدم</option><option value="viewer">مشاهد</option></select></div>
+              <div class="col-md-2"><select id="admin_user_role" class="form-select" onchange="updatePrivilegeControlState()"><option value="admin">مشرف</option><option value="editor">محرر</option><option value="user">مستخدم</option></select></div>
+              <div class="col-md-3"><select id="admin_user_scope" class="form-select" onchange="updatePrivilegeControlState()"><option value="">نطاق المحرر</option>${EDITOR_SCOPES.map(scope=>`<option value="${scope.id}">${escapeHtml(scope.label)}</option>`).join('')}</select></div>
               <div class="col-md-2"><select id="admin_user_officer" class="form-select"><option value="">ربط بموظف</option>${officers.map(o=>`<option value="${o.id}">${escapeHtml(o.name)} (${escapeHtml(o.rank)})</option>`).join('')}</select></div>
               <div class="col-md-2"><input id="admin_user_phone" class="form-control" placeholder="هاتف"></div>
-              <div class="col-md-3"><input id="admin_user_note" class="form-control" placeholder="ملاحظات"></div>
-              <div class="col-md-3 text-end"><button class="btn btn-success" onclick="adminAddUser()">إضافة/تعديل</button></div>
+              <div class="col-md-2"><input id="admin_user_note" class="form-control" placeholder="ملاحظات"></div>
+              <div class="col-md-1 text-end"><button class="btn btn-success" onclick="adminAddUser()">إضافة/تعديل</button></div>
             </div>
             <div class="mt-2" id="adminTabPrivileges">
               <label class="form-label">صلاحيات التبويبات للمستخدمين/المحررين</label>
@@ -2002,20 +2178,6 @@
             </div>
             <div class="small text-muted mt-1">الربط بموظف يفعّل الصلاحيات الفردية ويظهر الاسم في الشريط العلوي.</div>
             <div class="mt-3" id="admin_usersTable">${renderUsersTable()}</div>
-          </div>
-        `,
-        viewers: `
-          <div class="border rounded p-3 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="mb-0">مستخدمي المشاهدة للموظفين</h6>
-              <div>
-                <button class="btn btn-sm btn-outline-primary me-2" onclick="adminGenerateViewerUsersForAll(false)">إنشاء حسابات المشاهدة</button>
-                <button class="btn btn-sm btn-outline-warning me-2" onclick="adminGenerateViewerUsersForAll(true)">تحديث كلمات المرور</button>
-                <button class="btn btn-sm btn-outline-secondary" onclick="exportViewerUsersCSV()">تصدير CSV</button>
-              </div>
-            </div>
-            <div class="small text-muted mb-2">ينشئ النظام حساب مشاهدة لكل موظف لعرض بياناته الأساسية فقط.</div>
-            <div id="viewerUsersSheet">${renderViewerUsersSheet()}</div>
           </div>
         `,
         requests: `
@@ -2111,7 +2273,7 @@
       safeShowToast('تم تنزيل سجل النشاط','success');
     }
     function exportFullBackup(){
-      const payload = { officers, departments, jobTitles, trainingCatalog, annualReviews, promotions, transferRecords, disciplinaryRecords, ranks, settings: SETTINGS, meta:{ exportedAt: new Date().toISOString() } };
+      const payload = { officers, departments, jobTitles, trainingCatalog, annualReviews, promotions, transferRecords, disciplinaryRecords, ranks, rankLadders, settings: SETTINGS, meta:{ exportedAt: new Date().toISOString() } };
       downloadJSONFile(`hrms_backup_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(payload, null, 2));
       logActivity('تصدير نسخة احتياطية', {source: 'hrms'});
       showToast('تم إنشاء النسخة الاحتياطية','success');
@@ -2133,6 +2295,8 @@
           transferRecords = data.transferRecords || transferRecords;
           disciplinaryRecords = data.disciplinaryRecords || disciplinaryRecords;
           ranks = Array.isArray(data.ranks) && data.ranks.length ? data.ranks : ranks;
+          rankLadders = Object.assign({}, defaultRankLadders, data.rankLadders || rankLadders);
+          rankLadders.officers = Array.isArray(rankLadders.officers) && rankLadders.officers.length ? rankLadders.officers : ranks.slice();
           SETTINGS = Object.assign({}, defaultSettings, data.settings || {});
           CURRENT_USER = null;
           saveAll();
@@ -2241,15 +2405,17 @@
       const fullName=document.getElementById('admin_user_fullName').value.trim();
       const email=document.getElementById('admin_user_email').value.trim();
       const role=document.getElementById('admin_user_role').value;
+      const editorScope=document.getElementById('admin_user_scope')?.value || '';
       const officerId=document.getElementById('admin_user_officer').value? +document.getElementById('admin_user_officer').value : null;
       const phone=document.getElementById('admin_user_phone').value;
       const note=document.getElementById('admin_user_note').value;
       if(!name||!pwd) return showToast('ادخل اسم وكلمة مرور','danger');
+      if(role === 'editor' && !editorScope) return showToast('اختر نطاق المحرر','warning');
       SETTINGS.users=SETTINGS.users||[];
       const editIdx = document.getElementById('admin_user_name').dataset.editIndex;
       const existing = (SETTINGS.users||[])[editIdx] || {};
       const selectedTabs = (role === 'user' || role === 'editor') ? getSelectedPrivilegeTabs() : [];
-      const payload = {name,pwd,role,officerId,phone,note,fullName,email,tabPrivileges:selectedTabs,createdAt: existing.createdAt || new Date().toISOString()};
+      const payload = {name,pwd,role,editorScope: role === 'editor' ? editorScope : '',officerId,phone,note,fullName,email,tabPrivileges:selectedTabs,createdAt: existing.createdAt || new Date().toISOString()};
       if(editIdx!==undefined && editIdx!==''){
         SETTINGS.users[+editIdx] = payload;
         delete document.getElementById('admin_user_name').dataset.editIndex;
@@ -2259,6 +2425,7 @@
       document.getElementById('admin_user_name').value='';
       document.getElementById('admin_user_pwd').value='';
       if(document.getElementById('admin_user_officer')) document.getElementById('admin_user_officer').value='';
+      if(document.getElementById('admin_user_scope')) document.getElementById('admin_user_scope').value='';
       document.getElementById('admin_user_phone').value='';
       document.getElementById('admin_user_note').value='';
       document.getElementById('admin_user_fullName').value='';
@@ -2267,8 +2434,6 @@
       updatePrivilegeControlState();
       saveAll();
       document.getElementById('admin_usersTable').innerHTML = renderUsersTable();
-      const viewerSheet = document.getElementById('viewerUsersSheet');
-      if(viewerSheet) viewerSheet.innerHTML = renderViewerUsersSheet();
       logActivity(editIdx!==undefined && editIdx!=='' ? 'تعديل مستخدم' : 'إضافة مستخدم', {target: name, role});
       showToast('تم إضافة المستخدم','success');
     }
@@ -3137,16 +3302,18 @@
     }
     function renderOfficersTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول لسجلات الموظفين.</div>';
-      if(SETTINGS.authEnabled && (currentRole()==='user' || currentRole()==='viewer')) return '<div class="alert alert-warning">وضع عرض فقط. تواصل مع المشرف للصلاحيات.</div>';
-      const statsBar = renderRankStatsBar();
-      const canManage = currentRole()==='admin' || currentRole()==='editor';
-      const filters = getOfficerFilterState();
       const activeCategory = getActiveCategory('employeeCategory', 'officers');
+      if(SETTINGS.authEnabled && currentRole()==='user') return '<div class="alert alert-warning">وضع عرض فقط. تواصل مع المشرف للصلاحيات.</div>';
+      const manpowerStats = renderManpowerStatsBar();
+      const canManage = canEditCategory(activeCategory);
+      const categoryLabelSingular = getEmployeeLabel(activeCategory, 'singular');
+      const filters = getOfficerFilterState();
       const subTabs = renderCategorySubTabs('employeeCategory', activeCategory, 'employees');
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>العاملين بالإدارة العامة للمساعدات الفنية</div>
-        <div>${canManage?`<button class="btn btn-success btn-sm" onclick="addOfficerForm()">إضافة موظف</button>`:''}</div></div>
+        <div>${canManage?`<button class="btn btn-success btn-sm" onclick="addOfficerForm()">${`إضافة ${categoryLabelSingular}`}</button>`:''}</div></div>
         <div class="card-body">
-          ${statsBar}
+          ${manpowerStats}
+          ${renderRankStatsBar(activeCategory)}
           ${subTabs}
           <div class="row mb-2 g-2">
             <div class="col-md-6"><input id="officerSearch" class="form-control" placeholder="ابحث بالاسم، الرتبة، الرقم، القسم، أو الحالة" value="${escapeHtml(filters.search)}" oninput="updateOfficerFilters()" onkeydown="guardSearchInput(event)"></div>
@@ -3178,6 +3345,7 @@
         return o.name?.toLowerCase().includes(q)
           || o.rank?.toLowerCase().includes(q)
           || (o.badge||'').toLowerCase().includes(q)
+          || (o.nationalId||'').toLowerCase().includes(q)
           || deptName.toLowerCase().includes(q)
           || statusLabel.toLowerCase().includes(q)
           || jobTitle.toLowerCase().includes(q);
@@ -3198,9 +3366,9 @@
     }
     function renderOfficerDetail(categoryId){
       const list = categoryId ? officers.filter(o=>o.category===categoryId) : officers;
-      const o = list.find(x=>x.id===SELECTED_OFFICER_ID) || list[0] || officers[0];
-      if(!o) return '<div class="text-muted">اختر موظفاً لعرض التفاصيل</div>';
-      const canManage = currentRole()==='admin' || currentRole()==='editor';
+      const o = list.find(x=>x.id===SELECTED_OFFICER_ID);
+      if(!o) return `<div class="text-muted">اختر ${getEmployeeLabel(categoryId, 'singular')} لعرض التفاصيل</div>`;
+      const canManage = canEditCategory(o.category);
       const disabledAttr = canManage ? '' : 'disabled';
       const isUpper = jobTitles.find(j=>j.id===o.jobTitleId)?.isUpper;
       const deptDisabled = isUpper ? 'disabled' : disabledAttr;
@@ -3208,18 +3376,13 @@
       const transferInVisible = o.admissionType === 'transferred' || o.status === 'transferred' || o.transferFromDeptId || o.transferDate;
       const transferOutVisible = o.status === 'transferred' || o.transferToDeptId || o.transferToDate;
       const [badgeFirst, badgeSecond, badgeThird] = splitBadgeParts(o.badge);
-      const officerTitle = `${escapeHtml(o.rank)} ${escapeHtml(o.name)}`;
+      const officerTitle = `${escapeHtml(o.rank || '')} ${escapeHtml(o.name)}`.trim();
+      const categoryLabel = getEmployeeLabel(o.category, 'singular');
+      const rankOptions = getCategoryRankLadder(o.category);
       const trainings = Array.isArray(o.trainings) ? o.trainings : [];
       const trainingsMarkup = trainings.length ? trainings.map(t=>`<li class="list-group-item"><span>${escapeHtml(t.name)}</span><span class="relation-tag">${escapeHtml(t.startDate)} → ${escapeHtml(t.endDate)} | ${escapeHtml(t.location)}</span></li>`).join('') : '<li class="list-group-item text-muted">لا توجد دورات مسندة</li>';
-      return `<div class="card sticky-panel"><div class="card-header d-flex justify-content-between align-items-center"><div>تفاصيل الموظف</div><div class="badge-stat">${officerTitle}</div></div><div class="card-body">
-        <div class="mb-2"><label class="form-label">الاسم</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.name)}" onchange="updateOfficer(${o.id},'name',this.value)"></div>
-        <div class="mb-2"><label class="form-label">الفئة الوظيفية</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'category',this.value)">${EMPLOYEE_CATEGORIES.map(c=>`<option value="${c.id}" ${c.id===o.category?'selected':''}>${c.label}</option>`).join('')}</select></div>
-        <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">الرتبة</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'rank',this.value)">${ranks.map(r=>`<option ${r===o.rank?'selected':''}>${r}</option>`).join('')}</select></div>
-          <div class="col-md-6"><label class="form-label">القسم</label><select class="form-select" ${deptDisabled} onchange="updateOfficer(${o.id},'deptId',+this.value||null)"><option value="">— قسم —</option>${getInternalDepartments().map(d=>`<option value="${d.id}" ${d.id===o.deptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select>${isUpper?'<div class="small-muted">حامل مسمى إدارة عليا - القسم معطل</div>':''}</div>
-        </div>
-        <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">المسمى الوظيفي</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'jobTitleId',+this.value||null)"><option value="">— مسمى —</option>${jobTitles.map(j=>`<option value="${j.id}" ${j.id===o.jobTitleId?'selected':''}>${escapeHtml(j.name)}</option>`).join('')}</select></div>
+      const badgeField = o.category === 'officers'
+        ? `
           <div class="col-md-6"><label class="form-label">رقم الأقدمية</label>
             <div class="d-flex align-items-center gap-1">
               <input id="badge_${o.id}_1" class="form-control" ${disabledAttr} value="${escapeHtml(badgeFirst)}" placeholder="رقم 1" required onchange="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
@@ -3229,6 +3392,28 @@
               <input id="badge_${o.id}_3" class="form-control" ${disabledAttr} value="${escapeHtml(badgeThird)}" placeholder="اختياري" onchange="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
             </div>
           </div>
+        `
+        : o.category === 'civil'
+          ? `
+            <div class="col-md-6"><label class="form-label">الرقم القومي</label>
+              <input class="form-control" ${disabledAttr} value="${escapeHtml(o.nationalId||'')}" onchange="updateOfficer(${o.id},'nationalId',this.value)">
+            </div>
+          `
+          : `
+            <div class="col-md-6"><label class="form-label">رقم الأقدمية</label>
+              <input class="form-control" ${disabledAttr} value="${escapeHtml(o.badge||'')}" onchange="updateOfficer(${o.id},'badge',this.value)">
+            </div>
+          `;
+      return `<div class="card sticky-panel"><div class="card-header d-flex justify-content-between align-items-center"><div>تفاصيل ${categoryLabel}</div><div class="d-flex align-items-center gap-2"><div class="badge-stat">${officerTitle}</div><button class="btn btn-sm btn-outline-secondary" onclick="clearSelectedOfficer()">إغلاق</button></div></div><div class="card-body">
+        <div class="mb-2"><label class="form-label">الاسم</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.name)}" onchange="updateOfficer(${o.id},'name',this.value)"></div>
+        <div class="mb-2"><label class="form-label">الفئة الوظيفية</label><select class="form-select" ${disabledAttr} onchange="updateOfficerCategory(${o.id},this.value)">${EMPLOYEE_CATEGORIES.map(c=>`<option value="${c.id}" ${c.id===o.category?'selected':''}>${c.label}</option>`).join('')}</select></div>
+        <div class="row g-2">
+          <div class="col-md-6"><label class="form-label">الرتبة</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'rank',this.value)">${rankOptions.map(r=>`<option ${r===o.rank?'selected':''}>${r}</option>`).join('')}</select></div>
+          <div class="col-md-6"><label class="form-label">القسم</label><select class="form-select" ${deptDisabled} onchange="updateOfficer(${o.id},'deptId',+this.value||null)"><option value="">— قسم —</option>${getInternalDepartments().map(d=>`<option value="${d.id}" ${d.id===o.deptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select>${isUpper?'<div class="small-muted">حامل مسمى إدارة عليا - القسم معطل</div>':''}</div>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-6"><label class="form-label">المسمى الوظيفي</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'jobTitleId',+this.value||null)"><option value="">— مسمى —</option>${jobTitles.map(j=>`<option value="${j.id}" ${j.id===o.jobTitleId?'selected':''}>${escapeHtml(j.name)}</option>`).join('')}</select></div>
+          ${badgeField}
         </div>
         <div class="row g-2">
           <div class="col-md-6"><label class="form-label">هاتف</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.phone||'')}" onchange="updateOfficer(${o.id},'phone',this.value)"></div>
@@ -3299,20 +3484,12 @@
     }
     function addOfficerForm(){
       const area = document.getElementById('officerEditorArea');
-      area.innerHTML = `<div class="card mt-2"><div class="card-header">موظف جديد</div><div class="card-body">
+      area.innerHTML = `<div class="card mt-2"><div class="card-header">سجل جديد</div><div class="card-body">
         <div class="row g-2">
           <div class="col-md-4"><input id="new_off_name" class="form-control" placeholder="الاسم"></div>
-          <div class="col-md-3"><select id="new_off_category" class="form-select"><option value="">— الفئة —</option>${EMPLOYEE_CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}</select></div>
-          <div class="col-md-2"><select id="new_off_rank" class="form-select">${ranks.map(r=>`<option>${r}</option>`).join('')}</select></div>
-          <div class="col-md-2">
-            <div class="d-flex align-items-center gap-1">
-              <input id="new_off_badge_1" class="form-control" placeholder="رقم 1" required style="min-width:0;">
-              <span class="text-muted">/</span>
-              <input id="new_off_badge_2" class="form-control" placeholder="رقم 2" required style="min-width:0;">
-              <span class="text-muted">/</span>
-              <input id="new_off_badge_3" class="form-control" placeholder="اختياري" style="min-width:0;">
-            </div>
-          </div>
+          <div class="col-md-3"><select id="new_off_category" class="form-select" onchange="updateNewOfficerCategoryFields()"><option value="">— الفئة —</option>${EMPLOYEE_CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}</select></div>
+          <div class="col-md-2"><select id="new_off_rank" class="form-select"></select></div>
+          <div class="col-md-3" id="new_off_badge_fields"></div>
            <div class="col-md-2"><select id="new_off_dept" class="form-select"><option value="">قسم</option>${getInternalDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select></div>
           <div class="col-md-2"><select id="new_off_job" class="form-select"><option value="">مسمى</option>${jobTitles.map(j=>`<option value="${j.id}">${escapeHtml(j.name)}</option>`).join('')}</select></div>
            <div class="col-md-2"><input id="new_off_phone" class="form-control" placeholder="هاتف"></div>
@@ -3335,26 +3512,65 @@
         </div>
         <div class="text-end mt-2"><button class="btn btn-secondary" onclick="document.getElementById('officerEditorArea').innerHTML=''">إلغاء</button> <button class="btn btn-primary" onclick="createOfficer()">حفظ</button></div>
       </div></div>`;
+      updateNewOfficerCategoryFields();
       toggleTransferFields('new');
+    }
+    function renderNewOfficerBadgeFields(categoryId){
+      if(categoryId === 'officers'){
+        return `
+          <label class="form-label">رقم الأقدمية</label>
+          <div class="d-flex align-items-center gap-1">
+            <input id="new_off_badge_1" class="form-control" placeholder="رقم 1" required style="min-width:0;">
+            <span class="text-muted">/</span>
+            <input id="new_off_badge_2" class="form-control" placeholder="رقم 2" required style="min-width:0;">
+            <span class="text-muted">/</span>
+            <input id="new_off_badge_3" class="form-control" placeholder="اختياري" style="min-width:0;">
+          </div>
+        `;
+      }
+      if(categoryId === 'civil'){
+        return `<label class="form-label">الرقم القومي</label><input id="new_off_national" class="form-control" placeholder="الرقم القومي">`;
+      }
+      return `<label class="form-label">رقم الأقدمية</label><input id="new_off_badge_single" class="form-control" placeholder="رقم الأقدمية">`;
+    }
+    function updateNewOfficerCategoryFields(){
+      const categoryId = document.getElementById('new_off_category')?.value || 'officers';
+      const badgeContainer = document.getElementById('new_off_badge_fields');
+      if(badgeContainer) badgeContainer.innerHTML = renderNewOfficerBadgeFields(categoryId);
+      const rankSelect = document.getElementById('new_off_rank');
+      if(rankSelect){
+        const options = getCategoryRankLadder(categoryId);
+        rankSelect.innerHTML = options.map(r=>`<option>${escapeHtml(r)}</option>`).join('') || '<option value="">—</option>';
+      }
     }
     function createOfficer(){
       const name = document.getElementById('new_off_name').value.trim();
-      const rank = document.getElementById('new_off_rank').value;
       const category = document.getElementById('new_off_category').value || 'officers';
+      const rank = document.getElementById('new_off_rank').value;
       if(!name) return showToast('ادخل الاسم','danger');
-      const badgePart1 = document.getElementById('new_off_badge_1').value;
-      const badgePart2 = document.getElementById('new_off_badge_2').value;
-      const badgePart3 = document.getElementById('new_off_badge_3').value;
-      if(!badgePart1.trim() || !badgePart2.trim()){
-        return showToast('رقما الأقدمية الأول والثاني مطلوبان','danger');
+      let badgeValue = '';
+      let nationalId = '';
+      if(category === 'officers'){
+        const badgePart1 = document.getElementById('new_off_badge_1').value;
+        const badgePart2 = document.getElementById('new_off_badge_2').value;
+        const badgePart3 = document.getElementById('new_off_badge_3').value;
+        if(!badgePart1.trim() || !badgePart2.trim()){
+          return showToast('رقما الأقدمية الأول والثاني مطلوبان','danger');
+        }
+        badgeValue = buildBadgeValue(badgePart1, badgePart2, badgePart3);
+      } else if(category === 'civil'){
+        nationalId = document.getElementById('new_off_national')?.value || '';
+        if(!nationalId.trim()){
+          return showToast('أدخل الرقم القومي','danger');
+        }
+      } else {
+        badgeValue = document.getElementById('new_off_badge_single')?.value || '';
+        if(!badgeValue.trim()){
+          return showToast('أدخل رقم الأقدمية','danger');
+        }
       }
-     const badgeValue = buildBadgeValue(
-        badgePart1,
-        badgePart2,
-        badgePart3
-      );
-      if(isDuplicateOfficer(name, rank, badgeValue)){
-        return showToast('هذا الموظف مسجل بالفعل بنفس الرتبة ورقم الأقدمية','warning');
+      if(isDuplicateOfficer(name, rank, badgeValue, nationalId)){
+        return showToast('هذا السجل مسجل بالفعل بنفس الرتبة ورقم الأقدمية','warning');
       }
      const admissionType = document.getElementById('new_off_admission').value || 'fresh';
       const hiringDate = admissionType !== 'transferred' ? (document.getElementById('new_off_hiringDate').value || '') : '';
@@ -3362,7 +3578,7 @@
        const transferToDeptId = null;
       const transferDate = admissionType === 'transferred' ? (document.getElementById('new_off_transferDate').value || '') : '';
       const transferToDate = '';
-      officers.push({id, name, category, rank, badge: badgeValue, deptId: +document.getElementById('new_off_dept').value || null, jobTitleId: +document.getElementById('new_off_job').value || null, subs: [], status:'active', trainings: [], transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, admissionType, hiringDate, transferFromDeptId, transferToDeptId, transferDate, transferToDate, archivedAt: null});
+      officers.push({id, name, category, rank, badge: badgeValue, nationalId, deptId: +document.getElementById('new_off_dept').value || null, jobTitleId: +document.getElementById('new_off_job').value || null, subs: [], status:'active', trainings: [], transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, admissionType, hiringDate, transferFromDeptId, transferToDeptId, transferDate, transferToDate, archivedAt: null});
       saveAll();
       document.getElementById('officerEditorArea').innerHTML='';
       SELECTED_OFFICER_ID = id;
@@ -3380,6 +3596,10 @@
       updateOfficer(id, 'badge', buildBadgeValue(part1, part2, part3));
     }
     function updateOfficer(id,key,val){ const o = officers.find(x=>x.id===id); if(!o) return; o[key]=val; saveAll(); }
+    function updateOfficerCategory(id, val){
+      updateOfficer(id, 'category', val);
+      renderTab('employees');
+    }
    function getExternalDepartments(){
       return departments.filter(d=> (d.groupKey || 'internal') === 'external');
     }
@@ -3565,7 +3785,8 @@
     }
     function renderTrainingAssignments(categoryId){
       const employees = getEmployeesByCategory(categoryId);
-      if(!employees.length) return '<div class="text-muted">لا توجد بيانات موظفين لهذه الفئة.</div>';
+      const employeeLabel = getEmployeeLabel(categoryId, 'singular');
+      if(!employees.length) return `<div class="text-muted">لا توجد بيانات ${getEmployeeLabel(categoryId, 'plural')} لهذه الفئة.</div>`;
       const rows = employees.flatMap(emp => (emp.trainings || []).map(t=>`
         <tr>
           <td>${escapeHtml(emp.name)}</td>
@@ -3577,21 +3798,22 @@
       `));
       if(!rows.length) return '<div class="text-muted">لا توجد دورات مسندة بعد.</div>';
       return `<div class="table-responsive"><table class="table table-bordered table-sm">
-        <thead class="table-dark"><tr><th>الموظف</th><th>الدورة</th><th>بداية</th><th>نهاية</th><th>الموقع</th></tr></thead>
+        <thead class="table-dark"><tr><th>${employeeLabel}</th><th>الدورة</th><th>بداية</th><th>نهاية</th><th>الموقع</th></tr></thead>
         <tbody>${rows.join('')}</tbody>
       </table></div>`;
     }
     function assignTrainingToEmployee(){
+      if(!canEditTraining()) return showToast('لا تملك صلاحية تعديل التدريب','warning');
       const categoryId = getActiveCategory('trainingCategory', 'officers');
       const employeeId = +document.getElementById('training_employee')?.value;
       const courseId = +document.getElementById('training_course')?.value;
-      if(!employeeId || !courseId) return showToast('اختر الموظف والدورة التدريبية', 'warning');
+      if(!employeeId || !courseId) return showToast(`اختر ${getEmployeeLabel(categoryId, 'singular')} والدورة التدريبية`, 'warning');
       const employee = officers.find(o=>o.id===employeeId);
       const course = (trainingCatalog[categoryId] || []).find(c=>+c.id===courseId);
       if(!employee || !course) return showToast('بيانات التدريب غير مكتملة', 'danger');
       employee.trainings = Array.isArray(employee.trainings) ? employee.trainings : [];
       if(employee.trainings.some(t=>t.courseId===courseId)){
-        return showToast('الدورة مسندة لهذا الموظف بالفعل', 'info');
+        return showToast(`الدورة مسندة لهذا ${getEmployeeLabel(categoryId, 'singular')} بالفعل`, 'info');
       }
       employee.trainings.push({
         courseId: course.id,
@@ -3608,6 +3830,8 @@
     function renderTrainingTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للتدريب.</div>';
       const activeCategory = getActiveCategory('trainingCategory', 'officers');
+      const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
+      const canManage = canEditTraining();
       const subTabs = renderCategorySubTabs('trainingCategory', activeCategory, 'training');
       const courses = trainingCatalog[activeCategory] || [];
       const courseRows = courses.map(course=>`
@@ -3635,9 +3859,9 @@
             <div class="card-header">إسناد دورة تدريبية</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-5"><label class="form-label">الموظف</label><select id="training_employee" class="form-select"><option value="">— اختر موظفاً —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
-                <div class="col-md-5"><label class="form-label">الدورة</label><select id="training_course" class="form-select"><option value="">— اختر دورة —</option>${courses.map(c=>`<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.startDate)} - ${escapeHtml(c.endDate)})</option>`).join('')}</select></div>
-                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="assignTrainingToEmployee()">إسناد</button></div>
+                <div class="col-md-5"><label class="form-label">${employeeLabel}</label><select id="training_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-5"><label class="form-label">الدورة</label><select id="training_course" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر دورة —</option>${courses.map(c=>`<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.startDate)} - ${escapeHtml(c.endDate)})</option>`).join('')}</select></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="assignTrainingToEmployee()" ${canManage ? '' : 'disabled'}>إسناد</button></div>
               </div>
             </div>
           </div>
@@ -3653,6 +3877,8 @@
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للتقارير السنوية.</div>';
       const categories = EMPLOYEE_CATEGORIES.filter(c=>c.id!=='draftees');
       const activeCategory = categories.some(c=>c.id===getActiveCategory('annualReviewCategory', 'officers')) ? getActiveCategory('annualReviewCategory', 'officers') : categories[0].id;
+      const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
+      const canManage = canEditCategoryRecords(activeCategory);
       const subTabs = renderCategorySubTabs('annualReviewCategory', activeCategory, 'annual-review', categories);
       const records = annualReviews[activeCategory] || [];
       const employees = getEmployeesByCategory(activeCategory);
@@ -3660,7 +3886,7 @@
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
           <td>${escapeHtml(r.reportDate)}</td>
-          <td>${escapeHtml(r.rating)}</td>
+          <td>${escapeHtml(r.percentage ?? r.rating)}</td>
           <td>${escapeHtml(r.notes)}</td>
         </tr>
       `).join('');
@@ -3672,30 +3898,31 @@
             <div class="card-header">إضافة تقرير</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-4"><label class="form-label">الموظف</label><select id="annual_employee" class="form-select"><option value="">— اختر موظفاً —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
-                <div class="col-md-3"><label class="form-label">تاريخ التقرير</label><input id="annual_date" type="date" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">التقييم</label><input id="annual_rating" class="form-control" placeholder="ممتاز/جيد/..." ></div>
-                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addAnnualReview()">إضافة</button></div>
+                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="annual_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">تاريخ التقرير</label><input id="annual_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-3"><label class="form-label">نسبة التقييم (%)</label><input id="annual_rating" type="number" min="0" max="100" class="form-control" placeholder="مثال: 92" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addAnnualReview()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
               </div>
-              <div class="mt-2"><label class="form-label">ملاحظات</label><textarea id="annual_notes" rows="2" class="form-control"></textarea></div>
+              <div class="mt-2"><label class="form-label">ملاحظات</label><textarea id="annual_notes" rows="2" class="form-control" ${canManage ? '' : 'disabled'}></textarea></div>
             </div>
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>الموظف</th><th>التاريخ</th><th>التقييم</th><th>ملاحظات</th></tr></thead>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>التاريخ</th><th>نسبة التقييم</th><th>ملاحظات</th></tr></thead>
             <tbody>${rows || '<tr><td colspan="4" class="text-center text-muted">لا توجد تقارير</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
     }
     function addAnnualReview(){
+      if(!canEditCategoryRecords(getActiveCategory('annualReviewCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل التقارير السنوية','warning');
       const categoryId = getActiveCategory('annualReviewCategory', 'officers');
       const employeeId = +document.getElementById('annual_employee')?.value;
       const reportDate = document.getElementById('annual_date')?.value || '';
-      const rating = document.getElementById('annual_rating')?.value || '';
+      const ratingRaw = document.getElementById('annual_rating')?.value || '';
       const notes = document.getElementById('annual_notes')?.value || '';
-      if(!employeeId || !reportDate) return showToast('أدخل الموظف وتاريخ التقرير', 'warning');
+      if(!employeeId || !reportDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ التقرير`, 'warning');
       annualReviews[categoryId] = Array.isArray(annualReviews[categoryId]) ? annualReviews[categoryId] : [];
-      annualReviews[categoryId].push({id: Date.now(), employeeId, reportDate, rating, notes});
+      annualReviews[categoryId].push({id: Date.now(), employeeId, reportDate, percentage: ratingRaw, notes});
       saveAll();
       showToast('تمت إضافة التقرير السنوي', 'success');
       renderTab('annual-review');
@@ -3704,14 +3931,17 @@
     function renderPromotionsTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للترقيات.</div>';
       const activeCategory = getActiveCategory('promotionsCategory', 'officers');
+      const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
+      const canManage = canEditCategoryRecords(activeCategory);
       const subTabs = renderCategorySubTabs('promotionsCategory', activeCategory, 'promotions');
       const records = promotions[activeCategory] || [];
       const employees = getEmployeesByCategory(activeCategory);
+      const ladder = getCategoryRankLadder(activeCategory);
       const rows = records.map(r=>`
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
-          <td>${escapeHtml(r.fromRank)}</td>
-          <td>${escapeHtml(r.toRank)}</td>
+          <td>${escapeHtml(r.fromRank || (Number.isInteger(r.rankIndex) && ladder[r.rankIndex - 1]) || '')}</td>
+          <td>${escapeHtml(r.toRank || (Number.isInteger(r.rankIndex) && ladder[r.rankIndex]) || '')}</td>
           <td>${escapeHtml(r.effectiveDate)}</td>
           <td>${escapeHtml(r.notes)}</td>
         </tr>
@@ -3724,32 +3954,35 @@
             <div class="card-header">تسجيل ترقية</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-4"><label class="form-label">الموظف</label><select id="promotion_employee" class="form-select"><option value="">— اختر موظفاً —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
-                <div class="col-md-2"><label class="form-label">من رتبة</label><input id="promotion_from" class="form-control"></div>
-                <div class="col-md-2"><label class="form-label">إلى رتبة</label><input id="promotion_to" class="form-control"></div>
-                <div class="col-md-2"><label class="form-label">تاريخ السريان</label><input id="promotion_date" type="date" class="form-control"></div>
-                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addPromotion()">إضافة</button></div>
+                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="promotion_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">رتبة السلم الوظيفي</label><select id="promotion_rank_index" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر رتبة —</option>${ladder.map((r, idx)=>`<option value="${idx}">${idx+1} - ${escapeHtml(r)}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">تاريخ السريان</label><input id="promotion_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addPromotion()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
               </div>
-              <div class="mt-2"><label class="form-label">ملاحظات</label><input id="promotion_notes" class="form-control"></div>
+              <div class="mt-2"><label class="form-label">ملاحظات</label><input id="promotion_notes" class="form-control" ${canManage ? '' : 'disabled'}></div>
             </div>
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>الموظف</th><th>من</th><th>إلى</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>من</th><th>إلى</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
             <tbody>${rows || '<tr><td colspan="5" class="text-center text-muted">لا توجد ترقيات</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
     }
     function addPromotion(){
+      if(!canEditCategoryRecords(getActiveCategory('promotionsCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل الترقيات','warning');
       const categoryId = getActiveCategory('promotionsCategory', 'officers');
       const employeeId = +document.getElementById('promotion_employee')?.value;
-      const fromRank = document.getElementById('promotion_from')?.value || '';
-      const toRank = document.getElementById('promotion_to')?.value || '';
+      const rankIndex = document.getElementById('promotion_rank_index')?.value;
+      const ladder = getCategoryRankLadder(categoryId);
+      const toRank = rankIndex !== '' ? ladder[+rankIndex] : '';
+      const fromRank = rankIndex !== '' && +rankIndex > 0 ? ladder[+rankIndex - 1] : '';
       const effectiveDate = document.getElementById('promotion_date')?.value || '';
       const notes = document.getElementById('promotion_notes')?.value || '';
-      if(!employeeId || !effectiveDate) return showToast('أدخل الموظف وتاريخ السريان', 'warning');
+      if(!employeeId || !effectiveDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ السريان`, 'warning');
+      if(!toRank) return showToast('اختر رتبة من سلم الترقيات', 'warning');
       promotions[categoryId] = Array.isArray(promotions[categoryId]) ? promotions[categoryId] : [];
-      promotions[categoryId].push({id: Date.now(), employeeId, fromRank, toRank, effectiveDate, notes});
+      promotions[categoryId].push({id: Date.now(), employeeId, fromRank, toRank, rankIndex: +rankIndex, effectiveDate, notes});
       saveAll();
       showToast('تمت إضافة الترقية', 'success');
       renderTab('promotions');
@@ -3758,6 +3991,8 @@
     function renderTransfersTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للنقل والندب.</div>';
       const activeCategory = getActiveCategory('transfersCategory', 'officers');
+      const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
+      const canManage = canEditCategoryRecords(activeCategory);
       const subTabs = renderCategorySubTabs('transfersCategory', activeCategory, 'transfers');
       const records = transferRecords[activeCategory] || [];
       const employees = getEmployeesByCategory(activeCategory);
@@ -3765,6 +4000,7 @@
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
           <td>${escapeHtml(r.type)}</td>
+          <td>${escapeHtml(r.travelReason || '—')}</td>
           <td>${escapeHtml(r.fromDept)}</td>
           <td>${escapeHtml(r.toDept)}</td>
           <td>${escapeHtml(r.startDate)}</td>
@@ -3780,46 +4016,59 @@
             <div class="card-header">إضافة سجل نقل/ندب</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-3"><label class="form-label">الموظف</label><select id="transfer_employee" class="form-select"><option value="">— اختر موظفاً —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
-                <div class="col-md-2"><label class="form-label">النوع</label><select id="transfer_type" class="form-select"><option value="نقل">نقل</option><option value="ندب">ندب</option></select></div>
-                <div class="col-md-3"><label class="form-label">من جهة</label><input id="transfer_from" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">إلى جهة</label><input id="transfer_to" class="form-control"></div>
-                <div class="col-md-1 align-self-end"><button class="btn btn-primary w-100" onclick="addTransferRecord()">إضافة</button></div>
+                <div class="col-md-3"><label class="form-label">${employeeLabel}</label><select id="transfer_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-2"><label class="form-label">النوع</label><select id="transfer_type" class="form-select" onchange="toggleTransferTravelFields()" ${canManage ? '' : 'disabled'}><option value="نقل">نقل</option><option value="ندب">ندب</option><option value="سفر للخارج">سفر للخارج</option></select></div>
+                <div class="col-md-3" id="transfer_travel_reason_wrap" style="display:none;"><label class="form-label">سبب السفر</label><select id="transfer_travel_reason" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر السبب —</option><option>مهمة رسمية</option><option>دورة تدريبية</option><option>مؤتمر</option><option>علاج</option><option>إجازة معتمدة</option></select></div>
+                <div class="col-md-2"><label class="form-label">من جهة</label><input id="transfer_from" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-2"><label class="form-label">إلى جهة</label><input id="transfer_to" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addTransferRecord()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
               </div>
               <div class="row g-2 mt-2">
-                <div class="col-md-3"><label class="form-label">تاريخ البدء</label><input id="transfer_start" type="date" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">تاريخ الانتهاء</label><input id="transfer_end" type="date" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">ملاحظات</label><input id="transfer_notes" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">تاريخ البدء</label><input id="transfer_start" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-3"><label class="form-label">تاريخ الانتهاء</label><input id="transfer_end" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-6"><label class="form-label">ملاحظات</label><input id="transfer_notes" class="form-control" ${canManage ? '' : 'disabled'}></div>
               </div>
             </div>
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>الموظف</th><th>النوع</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="7" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>النوع</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="8" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
     }
     function addTransferRecord(){
+      if(!canEditCategoryRecords(getActiveCategory('transfersCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل النقل والندب','warning');
       const categoryId = getActiveCategory('transfersCategory', 'officers');
       const employeeId = +document.getElementById('transfer_employee')?.value;
       const type = document.getElementById('transfer_type')?.value || '';
+      const travelReason = document.getElementById('transfer_travel_reason')?.value || '';
       const fromDept = document.getElementById('transfer_from')?.value || '';
       const toDept = document.getElementById('transfer_to')?.value || '';
       const startDate = document.getElementById('transfer_start')?.value || '';
       const endDate = document.getElementById('transfer_end')?.value || '';
       const notes = document.getElementById('transfer_notes')?.value || '';
-      if(!employeeId || !startDate) return showToast('أدخل الموظف وتاريخ البدء', 'warning');
+      if(!employeeId || !startDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ البدء`, 'warning');
+      if(type === 'سفر للخارج' && !travelReason) return showToast('اختر سبب السفر للخارج', 'warning');
       transferRecords[categoryId] = Array.isArray(transferRecords[categoryId]) ? transferRecords[categoryId] : [];
-      transferRecords[categoryId].push({id: Date.now(), employeeId, type, fromDept, toDept, startDate, endDate, notes});
+      transferRecords[categoryId].push({id: Date.now(), employeeId, type, travelReason, fromDept, toDept, startDate, endDate, notes});
       saveAll();
       showToast('تمت إضافة سجل النقل/الندب', 'success');
       renderTab('transfers');
+    }
+    function toggleTransferTravelFields(){
+      const type = document.getElementById('transfer_type')?.value || '';
+      const wrap = document.getElementById('transfer_travel_reason_wrap');
+      const reasonSelect = document.getElementById('transfer_travel_reason');
+      if(wrap) wrap.style.display = type === 'سفر للخارج' ? 'block' : 'none';
+      if(type !== 'سفر للخارج' && reasonSelect) reasonSelect.value = '';
     }
 
     function renderDisciplinaryTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للسجل التأديبي.</div>';
       const activeCategory = getActiveCategory('disciplinaryCategory', 'officers');
+      const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
+      const canManage = canEditCategoryRecords(activeCategory);
       const subTabs = renderCategorySubTabs('disciplinaryCategory', activeCategory, 'disciplinary');
       const records = disciplinaryRecords[activeCategory] || [];
       const employees = getEmployeesByCategory(activeCategory);
@@ -3840,32 +4089,33 @@
             <div class="card-header">إضافة حالة</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-4"><label class="form-label">الموظف</label><select id="disciplinary_employee" class="form-select"><option value="">— اختر موظفاً —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
-                <div class="col-md-3"><label class="form-label">نوع القضية</label><input id="disciplinary_type" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">تاريخ</label><input id="disciplinary_date" type="date" class="form-control"></div>
-                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addDisciplinaryRecord()">إضافة</button></div>
+                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="disciplinary_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">نوع القضية</label><input id="disciplinary_type" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-3"><label class="form-label">تاريخ</label><input id="disciplinary_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addDisciplinaryRecord()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
               </div>
               <div class="row g-2 mt-2">
-                <div class="col-md-6"><label class="form-label">الإجراء</label><input id="disciplinary_action" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">الحالة</label><input id="disciplinary_status" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">الإجراء</label><input id="disciplinary_action" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-6"><label class="form-label">الحالة</label><input id="disciplinary_status" class="form-control" ${canManage ? '' : 'disabled'}></div>
               </div>
             </div>
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>الموظف</th><th>القضية</th><th>التاريخ</th><th>الإجراء</th><th>الحالة</th></tr></thead>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>القضية</th><th>التاريخ</th><th>الإجراء</th><th>الحالة</th></tr></thead>
             <tbody>${rows || '<tr><td colspan="5" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
     }
     function addDisciplinaryRecord(){
+      if(!canEditCategoryRecords(getActiveCategory('disciplinaryCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل السجل التأديبي','warning');
       const categoryId = getActiveCategory('disciplinaryCategory', 'officers');
       const employeeId = +document.getElementById('disciplinary_employee')?.value;
       const caseType = document.getElementById('disciplinary_type')?.value || '';
       const caseDate = document.getElementById('disciplinary_date')?.value || '';
       const action = document.getElementById('disciplinary_action')?.value || '';
       const status = document.getElementById('disciplinary_status')?.value || '';
-      if(!employeeId || !caseDate) return showToast('أدخل الموظف وتاريخ الحالة', 'warning');
+      if(!employeeId || !caseDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ الحالة`, 'warning');
       disciplinaryRecords[categoryId] = Array.isArray(disciplinaryRecords[categoryId]) ? disciplinaryRecords[categoryId] : [];
       disciplinaryRecords[categoryId].push({id: Date.now(), employeeId, caseType, caseDate, action, status});
       saveAll();
@@ -4802,6 +5052,7 @@
     function renderSettingsTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول لإدارة الإعدادات.</div>';
       const active = getSettingsSubTab();
+      const darkModeChecked = SETTINGS.darkMode || SETTINGS.themeKey === 'night';
       const tabs = [
         {id:'general', label:'عام'},
         {id:'appearance', label:'المظهر والخطوط'},
@@ -4823,6 +5074,7 @@
           <div class="row g-2">
             <div class="col-md-4"><label class="form-label">شعار (تحميل)</label><input id="set_logo" type="file" class="form-control" accept="image/*"></div>
             <div class="col-md-4"><label class="form-label">السمة</label><select id="set_theme" class="form-select">${Object.keys(THEMES).map(k=>`<option value="${k}" ${SETTINGS.themeKey===k?'selected':''}>${THEMES[k].name}</option>`).join('')}</select></div>
+            <div class="col-md-4 form-check align-items-center d-flex"><input id="set_dark_mode" class="form-check-input" type="checkbox" ${darkModeChecked?'checked':''}><label class="form-check-label ms-2">تفعيل الوضع الداكن</label></div>
             <div class="col-md-4"><label class="form-label">خط التطبيق</label><select id="set_appFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.appFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
             <div class="col-md-4"><label class="form-label">خط الحقول النصية</label><select id="set_formFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.formFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
             <div class="col-md-4"><label class="form-label">خط التبويبات</label><select id="set_tabFont" class="form-select">${fontOptions.map(f=>`<option value="${f.value}" ${SETTINGS.tabFontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>
@@ -4892,6 +5144,11 @@
       if(auth) SETTINGS.authEnabled = !!auth.checked;
       const theme = document.getElementById('set_theme');
       if(theme) SETTINGS.themeKey = theme.value || 'classic';
+      const darkMode = document.getElementById('set_dark_mode');
+      if(darkMode){
+        SETTINGS.darkMode = !!darkMode.checked;
+        if(SETTINGS.darkMode) SETTINGS.themeKey = 'night';
+      }
       const loginLayout = document.getElementById('set_loginLayout');
       if(loginLayout) SETTINGS.loginLayout = loginLayout.value || 'stacked';
       const appFont = document.getElementById('set_appFont');
@@ -4946,11 +5203,13 @@
         const officer = us.officerId ? (officers.find(o=>o.id===us.officerId)?.name || 'غير مرتبط') : 'غير مرتبط';
         const created = us.createdAt ? new Date(us.createdAt).toLocaleDateString('ar-EG') : '';
         const roleLabel = getRoleLabel(us.role);
+        const scopeLabel = us.role === 'editor' ? (EDITOR_SCOPES.find(s=>s.id===us.editorScope)?.label || 'غير محدد') : '—';
         return `<tr>
           <td>${escapeHtml(us.name)}</td>
           <td>${escapeHtml(us.fullName||'')}</td>
           <td>${escapeHtml(us.email||'')}</td>
           <td>${escapeHtml(roleLabel)}</td>
+          <td>${escapeHtml(scopeLabel)}</td>
           <td>${escapeHtml(officer)}</td>
           <td>${escapeHtml(us.phone||'')}</td>
           <td>${escapeHtml(us.note||'')}</td>
@@ -4958,7 +5217,7 @@
           <td class="text-end text-nowrap"><button class="btn btn-sm btn-outline-secondary me-1" onclick="editUser(${i})">تعديل</button><button class="btn btn-sm btn-outline-warning me-1" onclick="adminResetPasswordForUser(${i})">إعادة ضبط</button><button class="btn btn-sm btn-danger" onclick="removeUserFromSettings(${i})">حذف</button></td>
         </tr>`;
         }).join('');
-      return `<div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-dark"><tr><th>المستخدم</th><th>الاسم</th><th>البريد</th><th>الدور</th><th>الضابط</th><th>الهاتف</th><th>ملاحظة</th><th>أنشئ</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      return `<div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-dark"><tr><th>المستخدم</th><th>الاسم</th><th>البريد</th><th>الدور</th><th>نطاق المحرر</th><th>الضابط</th><th>الهاتف</th><th>ملاحظة</th><th>أنشئ</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
     function getSelectedPrivilegeTabs(){
       return Array.from(document.querySelectorAll('.admin-privilege-chk:checked')).map(chk=>chk.value);
@@ -4972,6 +5231,11 @@
         chk.disabled = !isEditable;
         if(!isEditable) chk.checked = false;
       });
+      const scopeSelect = document.getElementById('admin_user_scope');
+      if(scopeSelect){
+        scopeSelect.disabled = role !== 'editor';
+        if(role !== 'editor') scopeSelect.value = '';
+      }
     }
     function applyUserPrivilegesToForm(role, privileges){
       const selected = Array.isArray(privileges) && privileges.length
@@ -5022,6 +5286,7 @@
       document.getElementById('admin_user_name').value = u.name;
       document.getElementById('admin_user_pwd').value = u.pwd;
       document.getElementById('admin_user_role').value = u.role;
+      if(document.getElementById('admin_user_scope')) document.getElementById('admin_user_scope').value = u.editorScope || '';
       const sel = document.getElementById('admin_user_officer'); if(sel) sel.value = u.officerId || '';
       if(document.getElementById('admin_user_phone')) document.getElementById('admin_user_phone').value = u.phone||'';
       if(document.getElementById('admin_user_note')) document.getElementById('admin_user_note').value = u.note||'';
