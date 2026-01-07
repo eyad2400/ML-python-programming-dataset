@@ -278,8 +278,8 @@
     const EMPLOYEE_CATEGORIES = [
       { id: 'officers', label: 'الضباط' },
       { id: 'personnel', label: 'الأفراد' },
-      { id: 'civil', label: 'العمال المدنيون' },
-      { id: 'draftees', label: 'المجندون' }
+      { id: 'civil', label: 'الموظفين المدنيين' },
+      { id: 'draftees', label: 'المجندين' }
     ];
     let officers = [];
     let departments = [];
@@ -3143,7 +3143,7 @@
       const filters = getOfficerFilterState();
       const activeCategory = getActiveCategory('employeeCategory', 'officers');
       const subTabs = renderCategorySubTabs('employeeCategory', activeCategory, 'employees');
-      return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>الموظفون — إدارة</div>
+      return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>العاملين بالإدارة العامة للمساعدات الفنية</div>
         <div>${canManage?`<button class="btn btn-success btn-sm" onclick="addOfficerForm()">إضافة موظف</button>`:''}</div></div>
         <div class="card-body">
           ${statsBar}
@@ -5190,4 +5190,3 @@
   </script>
 </body>
 </html>
-
