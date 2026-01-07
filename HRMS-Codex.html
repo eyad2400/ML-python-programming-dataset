@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HRMS - Human Resource Management System</title>
-  <style>
+  <title>تطبيق إدارة الشئون الإدارية</title>  
+<style>
    :root { --brand: #1e40af; --brand-dark:#0f172a; --bg:#f0f9ff; --text:#111; --app-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --form-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --tab-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; }
     * { box-sizing: border-box; }
     body { font-family: var(--app-font); background: linear-gradient(135deg,#f0f9ff,#e0e7ff); margin: 0; padding-bottom: 120px; color: var(--text); }
@@ -198,12 +198,12 @@
         <path d="M106 165h108l-12 24H118z" fill="#0f172a" opacity="0.35"/>
       </svg>
     </div>
-    <div class="splash-title">Welcome to the HRMS platform</div>
-    <div class="splash-subtitle">Preparing your HR workspace...</div>
-    <div class="splash-progress" aria-hidden="true">
+    <div class="splash-title">مرحباً بك في منصة إدارة الشئون الإدارية للإدارة العامة للمساعدات الفنية</div>
+    <div class="splash-subtitle">جارٍ تجهيز مساحة عمل إدارة الشئون الإدارية...</div>    
+     <div class="splash-progress" aria-hidden="true">
       <div class="splash-progress-bar" id="splashProgressBar"></div>
     </div>
-    <div class="splash-progress-label" id="splashProgressLabel">Loading... 0%</div>
+     <div class="splash-progress-label" id="splashProgressLabel">جارٍ التحميل... 0%</div>
     <div class="splash-dots">
       <span class="splash-dot"></span>
       <span class="splash-dot"></span>
@@ -216,34 +216,34 @@
         <div class="d-flex align-items-center gap-2">
           <img id="appLogoImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" class="logo logo-anim" alt="logo" style="display:none" onerror="this.style.display='none'">
           <div>
-            <div class="brand" id="appNameTitle">HRMS</div>
+            <div class="brand" id="appNameTitle">تطبيق إدارة الشئون الإدارية</div>
             <small id="appSubtitle" class="subtitle"></small>
           </div>
         </div>
       </div>
       <div class="d-flex gap-2 align-items-center">
-        <button class="btn btn-outline-light" id="openSettingsBtn" onclick="renderTab('account')">Security & Access</button>
+        <button class="btn btn-outline-light" id="openSettingsBtn" onclick="renderTab('account')">الأمن والصلاحيات</button>
         <div id="currentUserLabel" class="text-white"></div>
-        <button class="btn btn-primary" id="navSignIn" style="display:none;" onclick="renderTab('roster')">Sign In</button>
-        <button class="btn btn-warning" id="navSignOut" style="display:none;" onclick="signOut()" title="Sign out">Sign Out</button>
+        <button class="btn btn-primary" id="navSignIn" style="display:none;" onclick="renderTab('roster')">تسجيل الدخول</button>
+        <button class="btn btn-warning" id="navSignOut" style="display:none;" onclick="signOut()" title="تسجيل الخروج">تسجيل الخروج</button>
       </div>
     </div>
   </nav>
 
   <div class="container-fluid py-5 mt-5 no-print">
     <ul class="nav nav-tabs mb-4" id="mainTabs">
-      <li class="nav-item"><button class="nav-link active" data-icon="🧾" data-tab="roster" onclick="renderTab('roster')">Core Employee Information</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🏢" data-tab="officers" onclick="renderTab('officers')">Organizational Structure &amp; Positions</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')">Recruitment &amp; Onboarding</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🌴" data-tab="departments" onclick="renderTab('departments')">Leave &amp; Absence Management</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="⏱️" data-tab="transfer-departments" onclick="renderTab('transfer-departments')">Attendance &amp; Duty Status</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="📝" data-tab="jobtitles" onclick="renderTab('jobtitles')">Annual Review (Secret Reports – 100% Score)</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🎓" data-tab="duties" onclick="renderTab('duties')">Training &amp; Development (HR View)</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🚀" data-tab="limits" onclick="renderTab('limits')">Promotions, Transfers &amp; Secondments</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="⚖️" data-tab="exceptions" onclick="renderTab('exceptions')">Disciplinary &amp; Legal Records</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🗃️" data-tab="report" onclick="renderTab('report')">Documents &amp; Records Management</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="📊" data-tab="stats" onclick="renderTab('stats')">Reporting &amp; Analytics</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🔐" data-tab="account" onclick="renderTab('account')">Security, Roles &amp; Audit Trails</button></li>
+      <li class="nav-item"><button class="nav-link active" data-icon="🧾" data-tab="roster" onclick="renderTab('roster')">الحضور والخدمات</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🏢" data-tab="officers" onclick="renderTab('officers')">سجلات الموظفين</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')">الرتب والدرجات</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🌴" data-tab="departments" onclick="renderTab('departments')">الأقسام والإدارات</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="⏱️" data-tab="transfer-departments" onclick="renderTab('transfer-departments')">جهات النقل</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="📝" data-tab="jobtitles" onclick="renderTab('jobtitles')">المسميات الوظيفية</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🎓" data-tab="duties" onclick="renderTab('duties')">أنواع الخدمات</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🚀" data-tab="limits" onclick="renderTab('limits')">حدود التوزيع</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="⚖️" data-tab="exceptions" onclick="renderTab('exceptions')">الاستثناءات</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🗃️" data-tab="report" onclick="renderTab('report')">التقارير والطباعة</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="📊" data-tab="stats" onclick="renderTab('stats')">الإحصاءات والأرشيف</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🔐" data-tab="account" onclick="renderTab('account')">الأمن والصلاحيات</button></li>
     </ul>
       <div id="mainContent" class="p-3"></div>
   </div>
@@ -317,7 +317,7 @@
         parseBadgeSegment(third)
       ];
     }
-    function compareOfficerFairness(a, b, totalsMap){
+     function compareOfficerFairness(a, b, totalsMap){
       const totalA = totalsMap?.[a.id]?.total || totalsMap?.[a.id] || 0;
       const totalB = totalsMap?.[b.id]?.total || totalsMap?.[b.id] || 0;
       if(totalA !== totalB) return totalA - totalB;
@@ -330,6 +330,9 @@
         if(diff !== 0) return diff;
       }
       return (a.name||'').localeCompare(b.name||'');
+    }
+    function getRoleLabel(role){
+      return {admin:'مشرف', editor:'محرر', user:'مستخدم', viewer:'مشاهد'}[role] || role;
     }
     function getWeekIndexForDate(dateObj){
       if(!dateObj) return 0;
@@ -356,12 +359,12 @@
     }
    
     const defaultSettings = {
-      appName: "HRMS - Human Resource Management System",
-      appSubtitle: "People Operations & Workforce Intelligence",
+      appName: "نظام إدارة الموارد البشرية",
+      appSubtitle: "إدارة العمليات وتحليلات القوى العاملة",
       headerHtml: "",
       headerAlign: "center",
       logoData: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeDI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZTRkN2JhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U0ZDdiYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz4KICA8cG9seWxpbmUgcG9pbnRzPSIxNTAsMTIwIDE5MCw0MjAgMjIwLDEyMCAyNjAsNDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iMTgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjI2MCwxMDAgMzcwLDIyMCAzMTAsMjMwIDQxMCw0MjAgMjkwLDMyMCAyNTAsNDIwIDI0MCwyMzAgMTgwLDIyMCIgZmlsbD0iIzI3MzI2YiIgLz4KICA8dGV4dCB4PSIyNTYiIHk9IjU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjI4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtix2KfZhNi52KjZiNin2Kog2YPYqNio2YrYp9mGPC90ZXh0PgogIDx0ZXh0IHg9IjI1NiIgeT0iNDc1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtmF2YTZitmHINin2YTYo9iz2LnZiNmKINmF2YbYp9mI2Lkg2KjYp9mG2Ycg2KfZhNmF2YrYp9mE2YrZg9ipPC90ZXh0Pgo8L3N2Zz4=",
-     footerHtml: "<div style='font-size:12px;color:#333;'>© All rights reserved</div>",
+     footerHtml: "<div style='font-size:12px;color:#333;'>© جميع الحقوق محفوظة</div>",
       signatures: [{name:"",title:"",place:""},{name:"",title:"",place:""},{name:"",title:"",place:""}],
       authEnabled: false,
       users: [],
@@ -388,158 +391,129 @@
     const HRMS_CATEGORIES = [
       {
         id: 'roster',
-        label: 'Core Employee Information',
-        description: 'Master profiles that keep every employee record accurate, searchable, and audit-ready.',
+        label: 'الحضور والخدمات',
+        description: 'إنشاء الجداول الشهرية ومتابعة التوزيع والملاحظات.',
         options: [
-          'Employee profile and biographic data',
-          'Contact information and emergency contacts',
-          'Employment history and contract type',
-          'National IDs, badges, and identifiers',
-          'Position history and current status',
-          'Work location, cost center, and unit'
+          'إنشاء جداول شهرية للمناوبات',
+          'توزيع ذكي مع مراعاة الرتب',
+          'تحديث ملاحظات الأيام',
+          'سحب/إبدال التوزيع بسرعة',
+          'تصدير وطباعة التقارير'
         ]
       },
       {
         id: 'officers',
-        label: 'Organizational Structure & Positions',
-        description: 'Visualize reporting lines, positions, and workforce distribution across the organization.',
+        label: 'سجلات الموظفين',
+        description: 'إدارة بيانات الموظفين الأساسية وتفاصيل الاتصال.',
         options: [
-          'Organization chart and reporting lines',
-          'Department and unit structure',
-          'Position catalog and vacancy tracking',
-          'Job descriptions and responsibilities',
-          'Headcount approvals by unit',
-          'Position lifecycle and history'
+          'الاسم والرتبة والرقم التعريفي',
+          'الجهة والقسم والمسمى',
+          'بيانات الاتصال والطوارئ',
+          'الحالة الوظيفية والنقل',
+          'توثيق بيانات التعيين'
         ]
       },
       {
         id: 'ranks',
-        label: 'Recruitment & Onboarding',
-        description: 'Manage the pipeline from requisition to onboarding tasks and probation tracking.',
+        label: 'الرتب والدرجات',
+        description: 'إعداد قائمة الرتب وترتيبها.',
         options: [
-          'Job requisitions and approvals',
-          'Applicant tracking and evaluation',
-          'Interview scheduling and feedback',
-          'Offer management and acceptance',
-          'Onboarding checklists and tasks',
-          'Probation status monitoring'
+          'إضافة وتعديل وحذف الرتب',
+          'ترتيب الرتب بالأولوية',
+          'إحصاء عدد الموظفين لكل رتبة'
         ]
       },
       {
         id: 'departments',
-        label: 'Leave & Absence Management',
-        description: 'Track leave balances, approvals, and compliance with policy rules.',
+        label: 'الأقسام والإدارات',
+        description: 'هيكلة الأقسام الداخلية والخارجية وربطها بالمسؤولين.',
         options: [
-          'Leave balance and accrual rules',
-          'Leave request workflows',
-          'Holiday calendars and blackout dates',
-          'Sick leave and medical tracking',
-          'Return-to-work documentation',
-          'Absence reporting and alerts'
+          'إدارة الأقسام الداخلية والخارجية',
+          'ربط رؤساء الأقسام',
+          'تحديد الإدارة العليا التابعة',
+          'استيراد/تصدير عبر CSV'
         ]
       },
       {
         id: 'transfer-departments',
-        label: 'Attendance & Duty Status',
-        description: 'Capture attendance, duty assignments, and overtime to keep schedules accurate.',
+        label: 'جهات النقل',
+        description: 'تسجيل الجهات الخارجية المستخدمة للنقل والتنسيب.',
         options: [
-          'Attendance logs and timecards',
-          'Shift scheduling and rotations',
-          'Duty status and assignments',
-          'Overtime tracking and approvals',
-          'Late/absence exceptions handling',
-          'Daily attendance summaries'
+          'إضافة جهات النقل',
+          'استيراد/تصدير CSV',
+          'ربط عمليات النقل بالموظفين'
         ]
       },
       {
         id: 'jobtitles',
-        label: 'Annual Review (Secret Reports – 100% Score)',
-        description: 'Confidential performance reviews with calibrated scoring and approvals.',
+         label: 'المسميات الوظيفية',
+        description: 'إدارة المسميات وربطها بالهيكل.',
         options: [
-          'Review cycles and scorecards',
-          'Goal tracking and achievements',
-          'Manager assessments and comments',
-          'Confidential notes and attachments',
-          'Final score approvals and sign-off',
-          'Historical review archive'
+          'شجرة المسميات الوظيفية',
+          'تحديد المسميات القيادية',
+          'ربط المسميات بالأقسام'
         ]
       },
       {
         id: 'duties',
-        label: 'Training & Development (HR View)',
-        description: 'Plan training programs, monitor progress, and maintain certifications.',
+       label: 'أنواع الخدمات',
+        description: 'تعريف أنواع الخدمات وساعاتها والرتب المسموحة.',
         options: [
-          'Training catalog and curricula',
-          'Nomination and approval workflows',
-          'Learning plans by role',
-          'Certification tracking and renewal',
-          'Attendance and completion rates',
-          'Development history per employee'
+          'تعريف نوع المناوبة ومدتها',
+          'تحديد ساعات الراحة',
+          'تحديد الرتب المسموحة',
+          'ضبط طباعة التقارير'
         ]
       },
       {
         id: 'limits',
-        label: 'Promotions, Transfers & Secondments',
-        description: 'Control career mobility with structured approvals and documented history.',
+         label: 'حدود التوزيع',
+        description: 'ضبط حدود الخدمات لكل ضابط أو رتبة.',
         options: [
-          'Promotion eligibility and approvals',
-          'Transfer requests and decisions',
-          'Secondment assignments and timelines',
-          'Position change documentation',
-          'Compensation impact notes',
-          'Career progression history'
+          'حدود شهرية لكل ضابط',
+          'حدود حسب الرتبة',
+          'استثناءات عن الحدود'
         ]
       },
       {
         id: 'exceptions',
-        label: 'Disciplinary & Legal Records',
-        description: 'Track incidents, investigations, and legal case documentation securely.',
+         label: 'الاستثناءات',
+        description: 'إدارة قواعد الاستبعاد والإلزام للمناوبات.',
         options: [
-          'Incident reports and case IDs',
-          'Investigation summaries',
-          'Disciplinary actions and outcomes',
-          'Legal correspondence archive',
-          'Compliance milestones',
-          'Confidential access control'
+          'استثناءات حسب الضابط أو القسم',
+          'قواعد حسب الأيام أو الفترات',
+          'إدارة الإلزام للدوام'
         ]
       },
       {
         id: 'report',
-        label: 'Documents & Records Management',
-        description: 'Centralize HR documents with retention, versioning, and expiry alerts.',
+        label: 'التقارير والطباعة',
+        description: 'تجهيز تقارير الخدمات والتصدير.',
         options: [
-          'Employee contracts and addenda',
-          'Certificates and credentials',
-          'Document version history',
-          'Expiry tracking and alerts',
-          'Digital archive with tagging',
-          'Secure document sharing'
+          'معاينة التقرير',
+          'تصدير PDF/PNG/HTML/DOCX',
+          'إعدادات الخط والتوقيع'
         ]
       },
       {
         id: 'stats',
-        label: 'Reporting & Analytics',
-        description: 'Deliver executive insights with dashboards and export-ready reports.',
+         label: 'الإحصاءات والأرشيف',
+        description: 'متابعة الأرشيف والإحصاءات الشهرية.',
         options: [
-          'Headcount and turnover analytics',
-          'Attendance and leave dashboards',
-          'Recruitment funnel reporting',
-          'Performance distribution trends',
-          'Custom report builder',
-          'Export to Excel/PDF'
+          'إحصاءات توزيع الخدمات',
+          'أرشيف الشهور السابقة',
+          'معاينة وطباعة الأرشيف'
         ]
       },
       {
         id: 'account',
-        label: 'Security, Roles & Audit Trails',
-        description: 'Govern access, monitor actions, and maintain compliance across HR data.',
+        label: 'الأمن والصلاحيات',
+        description: 'إدارة المستخدمين والصلاحيات وسجل النشاط.',
         options: [
-          'Role-based access control',
-          'Permission management by module',
-          'Audit trails and activity logs',
-          'Session monitoring and alerts',
-          'Policy enforcement and exceptions',
-          'Data privacy compliance'
+          'حساب المستخدم وإدارة كلمة المرور',
+          'صلاحيات التبويبات',
+          'لوحة التحكم والنسخ الاحتياطي',
+          'سجل النشاط والتدقيق'
         ]
       }
     ];
@@ -581,7 +555,7 @@
     function completeFirstRunSetup(){
       localStorage.setItem(FIRST_RUN_KEY, 'true');
       saveAll();
-      showToast('HRMS workspace is ready.', 'success');
+      showToast('تم تجهيز مساحة عمل إدارة الشئون الإدارية.', 'success');
       renderTab('roster');
     }
     function handleFirstRunRestore(file){
@@ -654,7 +628,7 @@
       const footer = document.getElementById('appFooterText');
       if(footer){
         const year = new Date().getFullYear();
-        footer.textContent = `© ${year} ${SETTINGS.appName} — All rights reserved`;
+        footer.textContent = `© ${year} ${SETTINGS.appName} — جميع الحقوق محفوظة`;
       }
       updateLoginLabel();
       initSplashScreen();
@@ -819,7 +793,7 @@
       const label = document.getElementById('splashProgressLabel');
       const safeValue = Math.min(100, Math.max(0, Math.round(value)));
       if(bar) bar.style.width = `${safeValue}%`;
-      if(label) label.textContent = `Loading... ${safeValue}%`;
+      if(label) label.textContent = `جارٍ التحميل... ${safeValue}%`;
     }
     let splashProgressTimer = null;
     let splashCompleted = false;
@@ -976,24 +950,24 @@
       return `
         <div class="card first-run-card">
           <div class="card-header">
-            <div>Initial HRMS Setup</div>
-            <div class="small-muted">First-time launch</div>
+            <div>إعداد نظام إدارة الشئون الإدارية الأولي</div>
+            <div class="small-muted">تشغيل لأول مرة</div>
           </div>
           <div class="card-body">
             <div class="text-center mb-4">${logo}</div>
-            <h3 class="text-center mb-2">Welcome to ${escapeHtml(SETTINGS.appName || 'HRMS')}</h3>
-            <p class="text-center text-muted mb-4">No saved data yet. Choose how you want to start.</p>
+            <h3 class="text-center mb-2">مرحباً بك في ${escapeHtml(SETTINGS.appName || 'نظام إدارة الشئون الإدارية')}</h3>
+            <p class="text-center text-muted mb-4">لا توجد بيانات محفوظة بعد. اختر طريقة البدء.</p>
             <div class="first-run-actions">
               <div class="first-run-option">
-                <h4>Start with a fresh workspace</h4>
-                <p>We will create the basic HRMS structure so you can begin managing employee data immediately.</p>
-                <button class="btn btn-success" onclick="completeFirstRunSetup()">Initialize system</button>
+                <h4>ابدأ بمساحة عمل جديدة</h4>
+                <p>سننشئ هيكل إدارة الشئون الإدارية الأساسي لتبدأ إدارة بيانات العاملين بالإدارة فوراً.</p>
+                <button class="btn btn-success" onclick="completeFirstRunSetup()">تهيئة النظام</button>
               </div>
               <div class="first-run-option">
-                <h4>Restore from backup</h4>
-                <p>Upload a previously saved backup file to restore all HR data and settings.</p>
+                 <h4>استعادة من نسخة احتياطية</h4>
+                <p>ارفع ملف نسخة احتياطية محفوظاً مسبقاً لاستعادة جميع بيانات إدارة الشئون الإدارية والإعدادات.</p>
                 <input type="file" class="form-control" accept="application/json" onchange="handleFirstRunRestore(this.files[0])">
-                <button class="btn btn-outline-primary" onclick="this.previousElementSibling?.click()">Choose backup file</button>
+                <button class="btn btn-outline-primary" onclick="this.previousElementSibling?.click()">اختر ملف النسخة الاحتياطية</button>
               </div>
             </div>
           </div>
@@ -1005,7 +979,7 @@
         <div class="col-md-6">
           <div class="list-group-item">
             <span>${escapeHtml(option)}</span>
-            <span class="relation-tag">Included</span>
+            <span class="relation-tag">ضمن النطاق</span>
           </div>
         </div>
       `).join('');
@@ -1013,7 +987,7 @@
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <div>${escapeHtml(category.label)}</div>
-            <span class="badge badge-stat">HRMS Module</span>
+            <span class="badge badge-stat">وحدة النظام</span>
           </div>
           <div class="card-body">
             <p class="text-muted mb-3">${escapeHtml(category.description)}</p>
@@ -1042,21 +1016,55 @@
       applyNavPermissions();
       switch(tab){
         case 'roster':
+          c.innerHTML = renderRosterTab();
+          break;
         case 'officers':
+          c.innerHTML = renderOfficersTab();
+          break;
         case 'ranks':
+          c.innerHTML = renderRanksTab();
+          break;
         case 'departments':
+          c.innerHTML = renderDepartmentsTab();
+          break;
         case 'transfer-departments':
+          c.innerHTML = renderTransferDepartmentsTab();
+          break;
         case 'jobtitles':
+          c.innerHTML = renderJobTitlesTab();
+          break;
         case 'duties':
+          c.innerHTML = renderDutiesTab();
+          break;
         case 'limits':
+          c.innerHTML = renderOfficerLimitsTab();
+          break;
         case 'exceptions':
+          c.innerHTML = renderExceptionsTab();
+          break;
         case 'report':
+          c.innerHTML = renderReportTab();
+          break;
         case 'stats':
+          c.innerHTML = renderStatsArchiveTab();
+          break;
         case 'account':
-          c.innerHTML = renderHrmsCategoryTab(tab);
+          c.innerHTML = renderAccountTab();
+          break;
+        case 'admin':
+          c.innerHTML = renderAdminTab();
+          break;
+        case 'settings':
+          c.innerHTML = renderSettingsTab();
+          break;
+        case 'relations':
+          c.innerHTML = renderRelationsTab();
+          break;
+        case 'about':
+          c.innerHTML = renderAboutTab();
           break;
         default:
-          c.innerHTML = renderHrmsCategoryTab('roster');
+          c.innerHTML = renderRosterTab();
           break;
       }
     }
@@ -1145,7 +1153,7 @@
       const el = document.getElementById('currentUserLabel');
       if(CURRENT_USER){
         const linked = CURRENT_USER.officerId ? officers.find(o=>o.id===CURRENT_USER.officerId) : null;
-        el.textContent = `${linked? linked.name : CURRENT_USER.name} (${CURRENT_USER.role})`;
+        el.textContent = `${linked? linked.name : CURRENT_USER.name} (${getRoleLabel(CURRENT_USER.role)})`;
       } else {
         el.textContent = SETTINGS.authEnabled ? 'غير مسجل' : '';
       }
@@ -1325,7 +1333,7 @@
     }
      function renderSessionChips(){ 
      if(!ACTIVE_SESSIONS.length) return '';
-      return `<div class="d-flex flex-wrap justify-content-center gap-2">${ACTIVE_SESSIONS.map((s,i)=>`<button class="btn btn-outline-primary btn-sm" onclick="switchSession(${i})">${escapeHtml(s.name)} (${s.role})</button>`).join('')}</div>`;
+      return `<div class="d-flex flex-wrap justify-content-center gap-2">${ACTIVE_SESSIONS.map((s,i)=>`<button class="btn btn-outline-primary btn-sm" onclick="switchSession(${i})">${escapeHtml(s.name)} (${getRoleLabel(s.role)})</button>`).join('')}</div>`;
     }
 
     function getOfficerRandomBias(id){
@@ -1860,7 +1868,7 @@
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للإحصاءات.</div>';
       const savedMonth = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
       const monthsAvailable = Object.keys(roster).sort().reverse();
-      const monthOptions = [`<option value="${savedMonth}">Current: ${savedMonth}</option>`].concat(monthsAvailable.map(m=>`<option value="${m}">${m}</option>`)).join('');
+      const monthOptions = [`<option value="${savedMonth}">الحالي: ${savedMonth}</option>`].concat(monthsAvailable.map(m=>`<option value="${m}">${m}</option>`)).join('');
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>الإحصاءات والأرشيف</div><div><button class="btn btn-sm btn-outline-primary" onclick="renderTab('roster')">عودة</button></div></div>
         <div class="card-body">
           <h5>إحصاء مجموعات الأقسام</h5>
@@ -1909,7 +1917,7 @@
     function printArchive(month){
       if(!roster[month]) { safeShowToast('لا يوجد جدول للطباعة لهذا الشهر', 'danger'); return; }
       const ids = duties.map(d=>d.id);
-      printReportPdfStyle(ids, month, `Roster_Archive_${month}.pdf`);
+      printReportPdfStyle(ids, month, `أرشيف_الجدول_${month}.pdf`);
     }
 
     /* ========= Admin / Backup ========= */
@@ -1986,7 +1994,7 @@
               <div class="col-md-3"><input id="admin_user_email" type="email" class="form-control" placeholder="البريد الإلكتروني"></div>
             </div>
             <div class="row g-2">
-              <div class="col-md-2"><select id="admin_user_role" class="form-select" onchange="updatePrivilegeControlState()"><option value="admin">Admin</option><option value="editor">Editor</option><option value="user">User</option><option value="viewer">Viewer</option></select></div>
+              <div class="col-md-2"><select id="admin_user_role" class="form-select" onchange="updatePrivilegeControlState()"><option value="admin">مشرف</option><option value="editor">محرر</option><option value="user">مستخدم</option><option value="viewer">مشاهد</option></select></div>
               <div class="col-md-2"><select id="admin_user_officer" class="form-select"><option value="">ربط بضابط</option>${officers.map(o=>`<option value="${o.id}">${escapeHtml(o.name)} (${escapeHtml(o.rank)})</option>`).join('')}</select></div>
               <div class="col-md-2"><input id="admin_user_phone" class="form-control" placeholder="هاتف"></div>
               <div class="col-md-3"><input id="admin_user_note" class="form-control" placeholder="ملاحظات"></div>
@@ -1997,7 +2005,7 @@
               <div class="compact-checks">
                 ${TAB_OPTIONS.map(tab=>`<label class="form-check"><input class="form-check-input admin-privilege-chk" type="checkbox" value="${tab.id}"><span>${escapeHtml(tab.label)}</span></label>`).join('')}
               </div>
-              <div class="small text-muted mt-1">عند تحديد الصلاحيات يتم اعتمادها بدلاً من الصلاحيات الافتراضية للدور (User/Editor).</div>
+              <div class="small text-muted mt-1">عند تحديد الصلاحيات يتم اعتمادها بدلاً من الصلاحيات الافتراضية للدور (مستخدم/محرر).</div>
             </div>
             <div class="small text-muted mt-1">الربط بضابط يفعّل الصلاحيات الفردية ويظهر الاسم في الشريط العلوي.</div>
             <div class="mt-3" id="admin_usersTable">${renderUsersTable()}</div>
@@ -3071,7 +3079,7 @@
     function printSelectedDuties(){
       const ids = getSelectedDutyIdsInReport(); const month = document.getElementById('rpt_month')?.value || sessionStorage.getItem('activeRosterMonth');
       if(!ids.length) return showToast('اختر نوعاً واحداً أو أكثر للطباعة','danger');
-      printReportPdfStyle(ids, month, `Roster_Selected_${month}.pdf`);
+      printReportPdfStyle(ids, month, `جدول_الخدمات_المحدد_${month}.pdf`);
     }
     function printSelectedReportFromRoster(){
       let ids = [];
@@ -3082,7 +3090,7 @@
         if(!ids.length) return showToast('لا توجد أنواع خدمات للطباعة','warning');
         showToast('لم يتم تحديد أنواع في التقرير، سيتم طباعة الكل','info');
       }
-      printReportPdfStyle(ids, month, `Roster_${month}.pdf`);
+      printReportPdfStyle(ids, month, `جدول_الخدمات_${month}.pdf`);
     }
     async function saveSelectedDutiesPDF(){
       const ids = getSelectedDutyIdsInReport(); const month = document.getElementById('rpt_month')?.value || sessionStorage.getItem('activeRosterMonth');
@@ -3093,7 +3101,7 @@
       document.body.appendChild(container);
       try{
         const canvas = await html2canvas(container, {scale:2, useCORS:true});
-        await canvasToPdf(canvas, `Roster_${month}.pdf`);
+        await canvasToPdf(canvas, `جدول_الخدمات_${month}.pdf`);
         showToast('تم إنشاء PDF وتنزيله','success');
       }catch(e){ console.error(e); showToast('فشل إنشاء PDF','danger'); }
       finally{ container.remove(); }
@@ -3107,7 +3115,7 @@
       document.body.appendChild(container);
       try{
         const canvas = await html2canvas(container, {scale:2, useCORS:true});
-        await canvasToPdf(canvas, `Roster_All_${month}.pdf`);
+        await canvasToPdf(canvas, `جدول_الخدمات_الكل_${month}.pdf`);
         showToast('تم إنشاء PDF وتنزيله','success');
       }catch(e){ console.error(e); showToast('فشل إنشاء PDF','danger'); }
       finally{ container.remove(); }
@@ -3115,7 +3123,7 @@
     function printAllDuties(){
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth');
       const ids = duties.map(d=>d.id);
-      printReportPdfStyle(ids, month, `Roster_All_${month}.pdf`);
+      printReportPdfStyle(ids, month, `جدول_الخدمات_الكل_${month}.pdf`);
     }
 
 
@@ -4158,7 +4166,10 @@
         const upperOfficer = d.upperOfficerId ? officers.find(o=>o.id===d.upperOfficerId) : null;
         const deptOfficers = officers.filter(o=>o.deptId===d.id);
         const officersList = deptOfficers.length
-          ? `<ul class="relation-list">${deptOfficers.map(o=>`<li><span>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</span><span class="relation-tag">${escapeHtml(o.status || 'active')}</span></li>`).join('')}</ul>`
+          ? `<ul class="relation-list">${deptOfficers.map(o=>{
+            const statusLabel = {active:'نشط', retired:'متقاعد', transferred:'منقول'}[o.status] || o.status || 'نشط';
+            return `<li><span>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</span><span class="relation-tag">${escapeHtml(statusLabel)}</span></li>`;
+          }).join('')}</ul>`
           : '<div class="text-muted">لا يوجد ضباط بالقسم.</div>';
         return `<div class="relation-card">
           <h5>${escapeHtml(d.name)}</h5>
@@ -4181,7 +4192,7 @@
       }).join('');
      return `<div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <div>Organizational structure — الأقسام والمسميات والضباط</div>
+          <div>الهيكل التنظيمي — الأقسام والمسميات والضباط</div>
           <div class="small text-muted">عرض مخطط تنظيمي للهيكل الإداري</div>
         </div>
         <div class="card-body">
@@ -4237,7 +4248,29 @@
             </div>
           </div>
           <div id="reportPreview" class="print-preview"></div>
-        </div></div>`;
+        </div></div>
+        ${renderEmployeeReportCard()}`;
+    }
+    function renderEmployeeReportCard(){
+      const emptyState = officers.length ? '' : '<div class="alert alert-info">لا توجد بيانات موظفين للعرض.</div>';
+      return `<div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>تقرير بيانات الموظفين</div>
+          <div class="small text-muted">إجمالي الموظفين: ${officers.length}</div>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="text-muted">معاينة البيانات الأساسية للموظفين وطباعتها أو تصديرها.</div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary" onclick="previewEmployeeReport()">معاينة التقرير</button>
+              <button class="btn btn-outline-secondary" onclick="printEmployeeReport()">طباعة PDF</button>
+              <button class="btn btn-outline-info" onclick="exportOfficersFullCSV()">تصدير CSV كامل</button>
+            </div>
+          </div>
+          ${emptyState}
+          <div id="employeeReportPreview" class="print-preview"></div>
+        </div>
+      </div>`;
     }
     function getSelectedDutyIdsInReport(){
       return Array.from(document.querySelectorAll('.rpt-duty-chk:checked')).map(i=>+i.value);
@@ -4253,6 +4286,43 @@
       const preview = document.getElementById('reportPreview');
       preview.innerHTML = ids.map(id=> buildDutyInnerHtml(id, month)).join('<hr/>');
       preview.scrollIntoView({behavior:'smooth'});
+    }
+    function previewEmployeeReport(){
+      const preview = document.getElementById('employeeReportPreview');
+      if(!preview) return;
+      preview.innerHTML = buildEmployeeReportHtml();
+      preview.scrollIntoView({behavior:'smooth'});
+    }
+    function printEmployeeReport(){
+      if(!officers.length) return showToast('لا توجد بيانات موظفين للطباعة','warning');
+      printPdfFromHtml(buildEmployeeReportHtml(), 'تقرير_الموظفين.pdf');
+    }
+    function buildEmployeeReportTable(){
+      const rows = officers.map((o, idx)=>{
+        const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
+        const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
+        const statusLabel = {active:'نشط', retired:'متقاعد', transferred:'منقول'}[o.status] || o.status || 'نشط';
+        return `<tr>
+          <td class="col-index">${idx + 1}</td>
+          <td>${escapeHtml(o.name || '')}</td>
+          <td>${escapeHtml(o.rank || '')}</td>
+          <td>${escapeHtml(deptName)}</td>
+          <td>${escapeHtml(jobTitle)}</td>
+          <td>${escapeHtml(statusLabel)}</td>
+          <td>${escapeHtml(o.phone || '')}</td>
+          <td>${escapeHtml(o.hiringDate || '')}</td>
+        </tr>`;
+      }).join('');
+      return rows || `<tr><td colspan="8" class="text-center text-muted">لا توجد بيانات لعرضها</td></tr>`;
+    }
+    function buildEmployeeReportHtml(){
+      const header = buildHeaderHtml();
+      const watermark = buildReportWatermarkHtml();
+      const fontSize = getReportPrintFontSize();
+      const fontFamily = getReportFontFamily();
+      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>تاريخ التعيين</th></tr></thead><tbody>${buildEmployeeReportTable()}</tbody></table>`;
+      const meta = `<div class="report-meta"><div>إجمالي الموظفين: ${officers.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div></div>`;
+      return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير بيانات الموظفين</div></div>${meta}${table}</div></div>`;
     }
     function saveReportSettingsFromTab(){
       SETTINGS.reportFontFamily = document.getElementById('report_font_family')?.value || SETTINGS.reportFontFamily;
@@ -4288,7 +4358,7 @@
       const fontFamily = getReportFontFamily();
       const fontSize = getReportPrintFontSize();
       const bodyContent = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
-      return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Roster ${month}</title>
+      return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جدول الخدمات ${month}</title>
         <style>
           ${buildReportStyles({fontFamily, fontSize, includeBackground: true})}
           .report-preview-paper{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.08)}
@@ -4303,7 +4373,7 @@
       const fontSize = getReportPrintFontSize();
       const bodyContent = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
       return `<!doctype html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40" lang="ar" dir="rtl"><head><meta charset="utf-8">
-        <title>Roster ${month}</title>
+        <title>جدول الخدمات ${month}</title>
         <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom></w:WordDocument></xml><![endif]-->
         <style>
           ${buildReportStyles({fontFamily, fontSize, includeBackground: false})}
@@ -4325,17 +4395,17 @@
       }
       if(format === 'html'){
         const html = buildReportHtmlDocument(ids, month);
-        downloadTextFile(`Roster_${scope}_${month}.html`, html, 'text/html');
+        downloadTextFile(`جدول_الخدمات_${scope}_${month}.html`, html, 'text/html');
         return showToast('تم تصدير ملف HTML','success');
       }
       if(format === 'docx'){
         const doc = buildReportDocxDocument(ids, month);
-        downloadTextFile(`Roster_${scope}_${month}.docx`, doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+         downloadTextFile(`جدول_الخدمات_${scope}_${month}.docx`, doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         return showToast('تم تصدير ملف DOCX','success');
       }
       if(format === 'docx'){
         const doc = buildReportDocxDocument(ids, month);
-        downloadTextFile(`Roster_${scope}_${month}.docx`, doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        downloadTextFile(`جدول_الخدمات_${scope}_${month}.docx`, doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         return showToast('تم تصدير ملف DOCX','success');
       }
       if(format === 'png' || format === 'jpeg'){
@@ -4352,7 +4422,7 @@
           const dataUrl = canvas.toDataURL(mime, 0.95);
           const link = document.createElement('a');
           link.href = dataUrl;
-          link.download = `Roster_${scope}_${month}.${format}`;
+          link.download = `جدول_الخدمات_${scope}_${month}.${format}`;
           link.click();
           showToast(`تم تصدير صورة ${format.toUpperCase()}`,'success');
         }catch(err){
@@ -4545,14 +4615,15 @@
       function renderUsersTable(){
       const u = SETTINGS.users||[];
       if(!u.length) return '<div class="text-muted">لا مستخدمين</div>';
-      const rows = u.map((us,i)=>{
+       const rows = u.map((us,i)=>{
         const officer = us.officerId ? (officers.find(o=>o.id===us.officerId)?.name || 'غير مرتبط') : 'غير مرتبط';
         const created = us.createdAt ? new Date(us.createdAt).toLocaleDateString('ar-EG') : '';
+        const roleLabel = getRoleLabel(us.role);
         return `<tr>
           <td>${escapeHtml(us.name)}</td>
           <td>${escapeHtml(us.fullName||'')}</td>
           <td>${escapeHtml(us.email||'')}</td>
-          <td>${escapeHtml(us.role)}</td>
+          <td>${escapeHtml(roleLabel)}</td>
           <td>${escapeHtml(officer)}</td>
           <td>${escapeHtml(us.phone||'')}</td>
           <td>${escapeHtml(us.note||'')}</td>
@@ -4684,6 +4755,7 @@
       const u = currentUserRecord();
       if(!u) return '<div class="alert alert-danger">تعذر تحميل بيانات المستخدم الحالي.</div>';
       const officerName = u.officerId ? (officers.find(o=>o.id===u.officerId)?.name || '') : '';
+      const roleLabel = getRoleLabel(u.role);
       const created = u.createdAt ? new Date(u.createdAt).toLocaleString('ar-EG') : '';
      const mustChange = !!u.mustChangePassword;
       return `<div class="card">
@@ -4693,7 +4765,7 @@
           <div class="row g-3 mb-3">
             <div class="col-md-4"><label class="form-label">اسم الدخول (ثابت)</label><input class="form-control" value="${escapeHtml(u.name)}" disabled></div>
             <div class="col-md-4"><label class="form-label">الاسم الكامل</label><input id="acct_fullName" class="form-control" value="${escapeHtml(u.fullName||'')}" placeholder="الاسم المعتمد"></div>
-            <div class="col-md-4"><label class="form-label">الدور</label><input class="form-control" value="${escapeHtml(u.role)}" disabled></div>
+            <div class="col-md-4"><label class="form-label">الدور</label><input class="form-control" value="${escapeHtml(roleLabel)}" disabled></div>
             <div class="col-md-4"><label class="form-label">البريد الإلكتروني</label><input id="acct_email" type="email" class="form-control" value="${escapeHtml(u.email||'')}" placeholder="you@example.com"></div>
             <div class="col-md-4"><label class="form-label">الهاتف</label><input id="acct_phone" class="form-control" value="${escapeHtml(u.phone||'')}" placeholder="05xxxxxxxx"></div>
             <div class="col-md-4"><label class="form-label">ملاحظة</label><input id="acct_note" class="form-control" value="${escapeHtml(u.note||'')}" placeholder="معلومات إضافية"></div>
