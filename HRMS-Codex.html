@@ -2365,7 +2365,7 @@
       const summary = `موظفون: ${officers.length} • أقسام: ${departments.length} • مسميات: ${jobTitles.length} • خطط تدريب: ${(trainingCourses || []).length}`;
       const pendingReq = supportRequests.filter(r=>r.status==='pending').length;
       const authSummary = `مستخدمون: ${(SETTINGS.users||[]).length} • جلسات مفعلة: ${ACTIVE_SESSIONS.length} • طلبات مساعدة قيد الانتظار: ${pendingReq}`;
-      cconst activeStored = getAdminSubTab();
+      const activeStored = getAdminSubTab();
       const tabs = [
         {id:'overview', label:'نظرة عامة'},
         {id:'backup', label:'النسخ والتهيئة'},
