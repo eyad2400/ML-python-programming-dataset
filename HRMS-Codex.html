@@ -267,9 +267,12 @@
     const weekdays = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
      const THEMES = {
       classic: { name:'كلاسيكي', brand:'#1e40af', brandDark:'#0f172a', bg:'#f0f9ff', text:'#111' },
-      night: { name:'ليلي', brand:'#0ea5e9', brandDark:'#0b172a', bg:'#0f172a', text:'#e5e7eb' },
+      night: { name:'ليلي داكن', brand:'#111827', brandDark:'#030712', bg:'#020617', text:'#e5e7eb' },
       desert: { name:'رملي', brand:'#b45309', brandDark:'#78350f', bg:'#fef3c7', text:'#1f2937' },
-      mint: { name:'نعناعي', brand:'#0d9488', brandDark:'#0f766e', bg:'#ecfeff', text:'#0f172a' }
+      mint: { name:'نعناعي', brand:'#0d9488', brandDark:'#0f766e', bg:'#ecfeff', text:'#0f172a' },
+      royal: { name:'ملكي', brand:'#4f46e5', brandDark:'#312e81', bg:'#eef2ff', text:'#111827' },
+      oasis: { name:'واحة', brand:'#0891b2', brandDark:'#0e7490', bg:'#ecfeff', text:'#0f172a' },
+      sunset: { name:'غروب', brand:'#f97316', brandDark:'#c2410c', bg:'#fff7ed', text:'#111827' }
     };
     const fontOptions = [
       {label:'Arial', value:'Arial'},
@@ -292,6 +295,7 @@
       { id: 'civil', label: 'الموظفين المدنيين' },
       { id: 'draftees', label: 'المجندين' }
     ];
+    const DRAFTEE_WORK_TYPES = ['سائقون', 'الخدمات المعاونة'];
     const EDITOR_SCOPES = [
       { id: 'training', label: 'التدريب' },
       { id: 'officers', label: 'الضباط' },
@@ -369,6 +373,19 @@
       const ladder = rankLadders[categoryId];
       return Array.isArray(ladder) && ladder.length ? ladder : (defaultRankLadders[categoryId] || []);
     }
+    function getJobTitlesForCategory(categoryId){
+      if(categoryId === 'draftees') return [];
+      const pool = jobTitles.filter(j=> (j.categoryId || 'officers') === categoryId);
+      if(categoryId !== 'officers') return pool.filter(j=>!j.isUpper);
+      return pool;
+    }
+    function getDrafteeWorkTypeLabel(value){
+      return DRAFTEE_WORK_TYPES.includes(value) ? value : '';
+    }
+    function getGeneralAdministrationLabel(){
+      const general = departments.find(d=>d.groupKey==='internal' && d.parentId==null);
+      return general?.name || 'الإدارة العامة للمساعدات الفنية';
+    }
     function getEditorScope(){
       return currentUserRecord()?.editorScope || '';
     }
@@ -435,6 +452,10 @@
       themeKey: 'classic',
       darkMode: false,
       loginLayout: 'stacked',
+      disciplinaryActions: [
+        { id: 1, name: 'إنذار كتابي', appliesToAll: true, categories: EMPLOYEE_CATEGORIES.map(c=>c.id) },
+        { id: 2, name: 'خصم أيام', appliesToAll: false, categories: ['officers','personnel','civil'] }
+      ],
        deptGroups: [
         { key: 'internal', name: 'الإدارة العامة للمساعدات الفنية - ديوان الإدارة' },
         { key: 'external', name: 'الإدارة العامة للمساعدات الفنية- المناطق الجغرافية' },
@@ -677,7 +698,7 @@
     function loadAll(){
       try { officers = JSON.parse(localStorage.getItem('officers')) || []; } catch(_) { officers = []; }
       try { departments = JSON.parse(localStorage.getItem('departments')) || getDefaultDepartments(); } catch(_) { departments = getDefaultDepartments(); }
-      try { jobTitles = JSON.parse(localStorage.getItem('jobTitles')) || [{id:1,name:"قائد الوحدة",parentId:null,isUpper:true},{id:2,name:"رئيس قسم الشئون الإدارية",parentId:null,isUpper:false}]; } catch(_) { jobTitles = [{id:1,name:"قائد الوحدة",parentId:null,isUpper:true},{id:2,name:"رئيس قسم الشئون الإدارية",parentId:null,isUpper:false}]; }
+      try { jobTitles = JSON.parse(localStorage.getItem('jobTitles')) || [{id:1,name:"قائد الوحدة",parentId:null,isUpper:true,categoryId:'officers'},{id:2,name:"رئيس قسم الشئون الإدارية",parentId:null,isUpper:false,categoryId:'officers'}]; } catch(_) { jobTitles = [{id:1,name:"قائد الوحدة",parentId:null,isUpper:true,categoryId:'officers'},{id:2,name:"رئيس قسم الشئون الإدارية",parentId:null,isUpper:false,categoryId:'officers'}]; }
       try { trainingCatalog = JSON.parse(localStorage.getItem('trainingCatalog')) || getDefaultTrainingCatalog(); } catch(_) { trainingCatalog = getDefaultTrainingCatalog(); }
       trainingCatalog = Object.assign(getDefaultTrainingCatalog(), trainingCatalog || {});
       try { annualReviews = JSON.parse(localStorage.getItem('annualReviews')) || { officers: [], personnel: [], civil: [] }; } catch(_) { annualReviews = { officers: [], personnel: [], civil: [] }; }
@@ -744,11 +765,37 @@
         }
       }
          officers = officers.map(o=>{
-          const normalized = Object.assign({status:'active',category:'officers',trainings:[],transferNote:'',phone:'',gender:'',birth:'',address:'',emgName:'',emgPhone:'',admissionType:'fresh',hiringDate:'',transferFromDeptId:null,transferToDeptId:null,transferDate:'',transferToDate:'', archivedAt:null, badge:'', nationalId:''}, o);
+          const normalized = Object.assign({status:'active',category:'officers',trainings:[],transferNote:'',phone:'',gender:'',birth:'',address:'',emgName:'',emgPhone:'',admissionType:'fresh',hiringDate:'',transferFromDeptId:null,transferToDeptId:null,transferDate:'',transferToDate:'', archivedAt:null, badge:'', nationalId:'', drafteeWorkType:''}, o);
         if(!normalized.transferDate && normalized.transferFromDate) normalized.transferDate = normalized.transferFromDate;
+        if(normalized.category === 'draftees'){
+          normalized.deptId = null;
+          normalized.jobTitleId = null;
+          normalized.drafteeWorkType = getDrafteeWorkTypeLabel(normalized.drafteeWorkType);
+        } else {
+          const jt = jobTitles.find(j=>j.id===normalized.jobTitleId);
+          if(jt && ((jt.categoryId || 'officers') !== normalized.category || (normalized.category !== 'officers' && jt.isUpper))){
+            normalized.jobTitleId = null;
+          }
+        }
         return normalized;
       });
-      departments = departments.map(d=>Object.assign({groupKey:'internal'}, d));
+      jobTitles = jobTitles.map(j=>Object.assign({categoryId:'officers', parentId:null, isUpper:false}, j));
+      if(!Array.isArray(SETTINGS.disciplinaryActions)) SETTINGS.disciplinaryActions = defaultSettings.disciplinaryActions.map(a=>Object.assign({}, a));
+      SETTINGS.disciplinaryActions = (SETTINGS.disciplinaryActions || []).map(a=>{
+        const normalized = Object.assign({appliesToAll:false, categories: []}, a);
+        if(normalized.appliesToAll || !Array.isArray(normalized.categories) || !normalized.categories.length){
+          normalized.appliesToAll = true;
+          normalized.categories = EMPLOYEE_CATEGORIES.map(c=>c.id);
+        }
+        return normalized;
+      });
+      const officerIds = new Set(officers.filter(o=>o.category==='officers').map(o=>o.id));
+      departments = departments.map(d=>{
+        const normalized = Object.assign({groupKey:'internal'}, d);
+        if(normalized.headId && !officerIds.has(normalized.headId)) normalized.headId = null;
+        if(normalized.upperOfficerId && !officerIds.has(normalized.upperOfficerId)) normalized.upperOfficerId = null;
+        return normalized;
+      });
       applyNavPermissions();
       applyTheme();
       applyCustomFont();
@@ -1129,9 +1176,13 @@
           break;
         case 'transfers':
           c.innerHTML = renderTransfersTab();
+          updateTransferDepartmentOptions();
+          toggleTransferTravelFields();
           break;
         case 'disciplinary':
           c.innerHTML = renderDisciplinaryTab();
+          updateDisciplinaryActionOptions();
+          toggleDisciplinaryFields();
           break;
         case 'ranks':
           c.innerHTML = renderRanksTab();
@@ -1153,6 +1204,7 @@
           break;
         case 'admin':
           c.innerHTML = renderAdminTab();
+          if(getAdminSubTab() === 'disciplinary-actions') toggleDisciplinaryActionCategorySelect();
           break;
         case 'settings':
           c.innerHTML = renderSettingsTab();
@@ -2111,6 +2163,7 @@
         {id:'overview', label:'نظرة عامة'},
         {id:'backup', label:'النسخ والتهيئة'},
         {id:'users', label:'المستخدمون'},
+        {id:'disciplinary-actions', label:'إجراءات تأديبية'},
         {id:'requests', label:'طلبات الدعم'},
         {id:'activity', label:'سجل النشاط'}
       ];
@@ -2180,6 +2233,19 @@
             <div class="mt-3" id="admin_usersTable">${renderUsersTable()}</div>
           </div>
         `,
+        'disciplinary-actions': `
+          <div class="border rounded p-3 h-100">
+            <h6>إجراءات الجزاءات الإدارية</h6>
+            <div class="row g-2 mb-2">
+              <div class="col-md-4"><input id="admin_disc_action_name" class="form-control" placeholder="اسم الإجراء التأديبي"></div>
+              <div class="col-md-2 form-check d-flex align-items-center"><input id="admin_disc_action_all" class="form-check-input" type="checkbox" checked onchange="toggleDisciplinaryActionCategorySelect()"> <label class="form-check-label ms-2">ينطبق على الجميع</label></div>
+              <div class="col-md-5" id="admin_disc_action_categories">${renderDisciplinaryActionCategoryOptions()}</div>
+              <div class="col-md-1 text-end"><button class="btn btn-success" onclick="addDisciplinaryAction()">إضافة</button></div>
+            </div>
+            <div class="small text-muted mb-2">حدد ما إذا كان الإجراء ينطبق على كل الفئات أو فئات محددة فقط.</div>
+            <div>${renderDisciplinaryActionsTable()}</div>
+          </div>
+        `,
         requests: `
           <div class="border rounded p-3 h-100">
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -2226,6 +2292,54 @@
           ${sections[active] || ''}
         </div>
       </div>`;
+    }
+    function renderDisciplinaryActionCategoryOptions(){
+      return EMPLOYEE_CATEGORIES.map(c=>`<label class="form-check me-2"><input class="form-check-input admin-disc-cat" type="checkbox" value="${c.id}" checked> ${escapeHtml(c.label)}</label>`).join('');
+    }
+    function toggleDisciplinaryActionCategorySelect(){
+      const allChk = document.getElementById('admin_disc_action_all');
+      const container = document.getElementById('admin_disc_action_categories');
+      const disabled = !!allChk?.checked;
+      if(container){
+        container.innerHTML = renderDisciplinaryActionCategoryOptions();
+        container.querySelectorAll('input').forEach(input=>{ input.disabled = disabled; input.checked = true; });
+      }
+    }
+    function renderDisciplinaryActionsTable(){
+      const actions = SETTINGS.disciplinaryActions || [];
+      if(!actions.length) return '<div class="text-muted">لا توجد إجراءات مسجلة بعد</div>';
+      const rows = actions.map((a, idx)=>`<tr>
+        <td>${idx+1}</td>
+        <td>${escapeHtml(a.name)}</td>
+        <td>${a.appliesToAll ? 'كل الفئات' : (a.categories||[]).map(getCategoryLabel).join('، ')}</td>
+        <td><button class="btn btn-sm btn-outline-danger" onclick="deleteDisciplinaryAction(${a.id})">حذف</button></td>
+      </tr>`).join('');
+      return `<div class="table-responsive"><table class="table table-sm table-bordered">
+        <thead class="table-dark"><tr><th>#</th><th>الإجراء</th><th>النطاق</th><th>إجراء</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`;
+    }
+    function addDisciplinaryAction(){
+      const name = (document.getElementById('admin_disc_action_name')?.value || '').trim();
+      const appliesToAll = !!document.getElementById('admin_disc_action_all')?.checked;
+      const selectedCats = Array.from(document.querySelectorAll('.admin-disc-cat:checked')).map(el=>el.value);
+      if(!name) return showToast('أدخل اسم الإجراء التأديبي','warning');
+      if(!appliesToAll && !selectedCats.length) return showToast('اختر فئة واحدة على الأقل','warning');
+      const action = {
+        id: Date.now(),
+        name,
+        appliesToAll,
+        categories: appliesToAll ? EMPLOYEE_CATEGORIES.map(c=>c.id) : selectedCats
+      };
+      SETTINGS.disciplinaryActions = Array.isArray(SETTINGS.disciplinaryActions) ? SETTINGS.disciplinaryActions : [];
+      SETTINGS.disciplinaryActions.push(action);
+      saveAll();
+      renderTab('admin');
+    }
+    function deleteDisciplinaryAction(id){
+      SETTINGS.disciplinaryActions = (SETTINGS.disciplinaryActions || []).filter(a=>a.id !== id);
+      saveAll();
+      renderTab('admin');
     }
     function renderActivityLogTable(){
       if(!activityLog.length) return '<div class="text-muted">لا يوجد نشاط مسجل بعد</div>';
@@ -2485,7 +2599,7 @@
       sessionStorage.clear();
       officers = [];
       departments = getDefaultDepartments();
-      jobTitles = [{id:1,name:"قائد الوحدة",parentId:null,isUpper:true},{id:2,name:"رئيس قسم الشئون الإدارية",parentId:null,isUpper:false}];
+      jobTitles = [{id:1,name:"قائد الوحدة",parentId:null,isUpper:true,categoryId:'officers'},{id:2,name:"رئيس قسم الشئون الإدارية",parentId:null,isUpper:false,categoryId:'officers'}];
       trainingCatalog = getDefaultTrainingCatalog();
       annualReviews = { officers: [], personnel: [], civil: [] };
       promotions = { officers: [], personnel: [], civil: [], draftees: [] };
@@ -3339,7 +3453,7 @@
       const list = officers.filter(o=>{
         if(categoryId && o.category !== categoryId) return false;
         if(!q) return true;
-        const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
+        const deptName = o.category === 'draftees' ? getGeneralAdministrationLabel() : (o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '');
         const statusLabel = renderStatusBadge(o.status||'active').replace(/<[^>]+>/g,'');
         const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
         return o.name?.toLowerCase().includes(q)
@@ -3379,8 +3493,21 @@
       const officerTitle = `${escapeHtml(o.rank || '')} ${escapeHtml(o.name)}`.trim();
       const categoryLabel = getEmployeeLabel(o.category, 'singular');
       const rankOptions = getCategoryRankLadder(o.category);
+      const jobTitleOptions = getJobTitlesForCategory(o.category);
+      const isDraftee = o.category === 'draftees';
+      const generalDeptLabel = getGeneralAdministrationLabel();
       const trainings = Array.isArray(o.trainings) ? o.trainings : [];
       const trainingsMarkup = trainings.length ? trainings.map(t=>`<li class="list-group-item"><span>${escapeHtml(t.name)}</span><span class="relation-tag">${escapeHtml(t.startDate)} → ${escapeHtml(t.endDate)} | ${escapeHtml(t.location)}</span></li>`).join('') : '<li class="list-group-item text-muted">لا توجد دورات مسندة</li>';
+      const reviewCutoff = new Date();
+      reviewCutoff.setFullYear(reviewCutoff.getFullYear() - 5);
+      const recentReviews = (annualReviews[o.category] || []).filter(r=>r.employeeId === o.id).filter(r=>r.reportDate && new Date(r.reportDate) >= reviewCutoff);
+      const reviewMarkup = recentReviews.length
+        ? recentReviews.map(r=>`<li class="list-group-item"><span>${escapeHtml(r.reportDate)}</span><span class="relation-tag">${escapeHtml(r.percentage ?? r.rating ?? '')}% • ${escapeHtml(r.notes||'')}</span></li>`).join('')
+        : '<li class="list-group-item text-muted">لا توجد تقارير خلال آخر 5 سنوات</li>';
+      const travelRecords = (transferRecords[o.category] || []).filter(r=>r.employeeId === o.id && r.type === 'سفر للخارج');
+      const travelMarkup = travelRecords.length
+        ? travelRecords.map(r=>`<li class="list-group-item"><span>${escapeHtml(r.startDate)} → ${escapeHtml(r.endDate || '—')}</span><span class="relation-tag">${escapeHtml(r.travelReason || '—')}</span></li>`).join('')
+        : '<li class="list-group-item text-muted">لا توجد سفريات خارج البلاد مسجلة</li>';
       const badgeField = o.category === 'officers'
         ? `
           <div class="col-md-6"><label class="form-label">رقم الأقدمية</label>
@@ -3409,10 +3536,10 @@
         <div class="mb-2"><label class="form-label">الفئة الوظيفية</label><select class="form-select" ${disabledAttr} onchange="updateOfficerCategory(${o.id},this.value)">${EMPLOYEE_CATEGORIES.map(c=>`<option value="${c.id}" ${c.id===o.category?'selected':''}>${c.label}</option>`).join('')}</select></div>
         <div class="row g-2">
           <div class="col-md-6"><label class="form-label">الرتبة</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'rank',this.value)">${rankOptions.map(r=>`<option ${r===o.rank?'selected':''}>${r}</option>`).join('')}</select></div>
-          <div class="col-md-6"><label class="form-label">القسم</label><select class="form-select" ${deptDisabled} onchange="updateOfficer(${o.id},'deptId',+this.value||null)"><option value="">— قسم —</option>${getInternalDepartments().map(d=>`<option value="${d.id}" ${d.id===o.deptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select>${isUpper?'<div class="small-muted">حامل مسمى إدارة عليا - القسم معطل</div>':''}</div>
+          <div class="col-md-6"><label class="form-label">القسم</label>${isDraftee ? `<input class="form-control" value="${escapeHtml(generalDeptLabel)}" disabled>` : `<select class="form-select" ${deptDisabled} onchange="updateOfficer(${o.id},'deptId',+this.value||null)"><option value="">— قسم —</option>${getInternalDepartments().map(d=>`<option value="${d.id}" ${d.id===o.deptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select>${isUpper?'<div class="small-muted">حامل مسمى إدارة عليا - القسم معطل</div>':''}`}</div>
         </div>
         <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">المسمى الوظيفي</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'jobTitleId',+this.value||null)"><option value="">— مسمى —</option>${jobTitles.map(j=>`<option value="${j.id}" ${j.id===o.jobTitleId?'selected':''}>${escapeHtml(j.name)}</option>`).join('')}</select></div>
+          <div class="col-md-6"><label class="form-label">${isDraftee ? 'نوع العمل للمجندين' : 'المسمى الوظيفي'}</label>${isDraftee ? `<select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'drafteeWorkType',this.value)"><option value="">— اختر النوع —</option>${DRAFTEE_WORK_TYPES.map(t=>`<option value="${t}" ${t===o.drafteeWorkType?'selected':''}>${t}</option>`).join('')}</select>` : `<select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'jobTitleId',+this.value||null)"><option value="">— مسمى —</option>${jobTitleOptions.map(j=>`<option value="${j.id}" ${j.id===o.jobTitleId?'selected':''}>${escapeHtml(j.name)}</option>`).join('')}</select>`}</div>
           ${badgeField}
         </div>
         <div class="row g-2">
@@ -3459,6 +3586,14 @@
           <div class="fw-bold mb-2">الدورات التدريبية</div>
           <ul class="list-group">${trainingsMarkup}</ul>
         </div>
+        <div class="mt-3">
+          <div class="fw-bold mb-2">التقارير السنوية (آخر 5 سنوات)</div>
+          <ul class="list-group">${reviewMarkup}</ul>
+        </div>
+        <div class="mt-3">
+          <div class="fw-bold mb-2">سفريات خارج البلاد والغرض</div>
+          <ul class="list-group">${travelMarkup}</ul>
+        </div>
       </div></div>`;
     }
     function setOfficerStatus(id,status){
@@ -3484,14 +3619,21 @@
     }
     function addOfficerForm(){
       const area = document.getElementById('officerEditorArea');
+      const activeCategory = getActiveCategory('employeeCategory', 'officers');
+      const editorScope = currentRole() === 'editor' ? (getEditorScope() || activeCategory) : '';
+      const selectableCategories = currentRole() === 'editor'
+        ? EMPLOYEE_CATEGORIES.filter(c=>c.id===editorScope)
+        : EMPLOYEE_CATEGORIES;
+      const selectedCategory = editorScope || activeCategory;
       area.innerHTML = `<div class="card mt-2"><div class="card-header">سجل جديد</div><div class="card-body">
         <div class="row g-2">
           <div class="col-md-4"><input id="new_off_name" class="form-control" placeholder="الاسم"></div>
-          <div class="col-md-3"><select id="new_off_category" class="form-select" onchange="updateNewOfficerCategoryFields()"><option value="">— الفئة —</option>${EMPLOYEE_CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}</select></div>
+          <div class="col-md-3"><select id="new_off_category" class="form-select" ${currentRole()==='editor'?'disabled':''} onchange="updateNewOfficerCategoryFields()">${selectableCategories.map(c=>`<option value="${c.id}" ${c.id===selectedCategory?'selected':''}>${c.label}</option>`).join('')}</select></div>
           <div class="col-md-2"><select id="new_off_rank" class="form-select"></select></div>
           <div class="col-md-3" id="new_off_badge_fields"></div>
-           <div class="col-md-2"><select id="new_off_dept" class="form-select"><option value="">قسم</option>${getInternalDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select></div>
-          <div class="col-md-2"><select id="new_off_job" class="form-select"><option value="">مسمى</option>${jobTitles.map(j=>`<option value="${j.id}">${escapeHtml(j.name)}</option>`).join('')}</select></div>
+           <div class="col-md-2" id="new_off_dept_wrap"><select id="new_off_dept" class="form-select"><option value="">قسم</option>${getInternalDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select></div>
+          <div class="col-md-2" id="new_off_job_wrap"><select id="new_off_job" class="form-select"></select></div>
+          <div class="col-md-2" id="new_off_work_type_wrap" style="display:none;"></div>
            <div class="col-md-2"><input id="new_off_phone" class="form-control" placeholder="هاتف"></div>
           <div class="col-md-2"><input id="new_off_gender" class="form-control" placeholder="الجنس"></div>
           <div class="col-md-2"><input id="new_off_birth" type="date" class="form-control" placeholder="ميلاد"></div>
@@ -3534,7 +3676,7 @@
       return `<label class="form-label">رقم الأقدمية</label><input id="new_off_badge_single" class="form-control" placeholder="رقم الأقدمية">`;
     }
     function updateNewOfficerCategoryFields(){
-      const categoryId = document.getElementById('new_off_category')?.value || 'officers';
+      const categoryId = document.getElementById('new_off_category')?.value || getActiveCategory('employeeCategory', 'officers');
       const badgeContainer = document.getElementById('new_off_badge_fields');
       if(badgeContainer) badgeContainer.innerHTML = renderNewOfficerBadgeFields(categoryId);
       const rankSelect = document.getElementById('new_off_rank');
@@ -3542,11 +3684,37 @@
         const options = getCategoryRankLadder(categoryId);
         rankSelect.innerHTML = options.map(r=>`<option>${escapeHtml(r)}</option>`).join('') || '<option value="">—</option>';
       }
+      const jobWrap = document.getElementById('new_off_job_wrap');
+      const jobSelect = document.getElementById('new_off_job');
+      if(jobSelect){
+        const options = getJobTitlesForCategory(categoryId);
+        jobSelect.innerHTML = `<option value="">مسمى</option>` + options.map(j=>`<option value="${j.id}">${escapeHtml(j.name)}</option>`).join('');
+      }
+      if(jobWrap) jobWrap.style.display = categoryId === 'draftees' ? 'none' : 'block';
+      const workWrap = document.getElementById('new_off_work_type_wrap');
+      if(workWrap){
+        workWrap.style.display = categoryId === 'draftees' ? 'block' : 'none';
+        workWrap.innerHTML = categoryId === 'draftees'
+          ? `<select id="new_off_work_type" class="form-select"><option value="">نوع العمل</option>${DRAFTEE_WORK_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('')}</select>`
+          : '';
+      }
+      const deptWrap = document.getElementById('new_off_dept_wrap');
+      const deptSelect = document.getElementById('new_off_dept');
+      if(deptSelect){
+        if(categoryId === 'draftees'){
+          deptSelect.innerHTML = `<option value="">${escapeHtml(getGeneralAdministrationLabel())}</option>`;
+          deptSelect.disabled = true;
+        } else {
+          deptSelect.disabled = false;
+          deptSelect.innerHTML = `<option value="">قسم</option>` + getInternalDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+        }
+      }
     }
     function createOfficer(){
       const name = document.getElementById('new_off_name').value.trim();
       const category = document.getElementById('new_off_category').value || 'officers';
       const rank = document.getElementById('new_off_rank').value;
+      if(!canEditCategory(category)) return showToast('لا تملك صلاحية إضافة هذا السجل','warning');
       if(!name) return showToast('ادخل الاسم','danger');
       let badgeValue = '';
       let nationalId = '';
@@ -3578,7 +3746,8 @@
        const transferToDeptId = null;
       const transferDate = admissionType === 'transferred' ? (document.getElementById('new_off_transferDate').value || '') : '';
       const transferToDate = '';
-      officers.push({id, name, category, rank, badge: badgeValue, nationalId, deptId: +document.getElementById('new_off_dept').value || null, jobTitleId: +document.getElementById('new_off_job').value || null, subs: [], status:'active', trainings: [], transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, admissionType, hiringDate, transferFromDeptId, transferToDeptId, transferDate, transferToDate, archivedAt: null});
+      const workType = category === 'draftees' ? (document.getElementById('new_off_work_type')?.value || '') : '';
+      officers.push({id, name, category, rank, badge: badgeValue, nationalId, deptId: category === 'draftees' ? null : (+document.getElementById('new_off_dept').value || null), jobTitleId: category === 'draftees' ? null : (+document.getElementById('new_off_job').value || null), drafteeWorkType: workType, subs: [], status:'active', trainings: [], transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, admissionType, hiringDate, transferFromDeptId, transferToDeptId, transferDate, transferToDate, archivedAt: null});
       saveAll();
       document.getElementById('officerEditorArea').innerHTML='';
       SELECTED_OFFICER_ID = id;
@@ -3595,9 +3764,33 @@
       }
       updateOfficer(id, 'badge', buildBadgeValue(part1, part2, part3));
     }
-    function updateOfficer(id,key,val){ const o = officers.find(x=>x.id===id); if(!o) return; o[key]=val; saveAll(); }
+    function updateOfficer(id,key,val){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      if(key === 'deptId' && o.category === 'draftees') return;
+      if(key === 'drafteeWorkType' && o.category !== 'draftees') return;
+      if(key === 'jobTitleId'){
+        const jt = jobTitles.find(j=>j.id===Number(val));
+        if(jt && ((jt.categoryId || 'officers') !== o.category || (o.category !== 'officers' && jt.isUpper))){
+          return showToast('المسمى غير متاح لهذه الفئة','warning');
+        }
+      }
+      o[key]=val;
+      saveAll();
+    }
     function updateOfficerCategory(id, val){
-      updateOfficer(id, 'category', val);
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(val)) return showToast('لا تملك صلاحية تعديل هذه الفئة','warning');
+      o.category = val;
+      if(val === 'draftees'){
+        o.deptId = null;
+        o.jobTitleId = null;
+        o.drafteeWorkType = o.drafteeWorkType || '';
+      } else {
+        o.drafteeWorkType = '';
+      }
       renderTab('employees');
     }
    function getExternalDepartments(){
@@ -3641,16 +3834,16 @@
     }
     function saveSubs(id){ const o = officers.find(x=>x.id===id); if(!o) return; o.subs = Array.from(document.getElementById('subs_select').selectedOptions||[]).map(op=>+op.value); saveAll(); renderTab('employees'); }
        function exportOfficersCSV(){
-      const header = 'id,name,category,rank,badge,deptId,jobTitleId,phone,gender,birth,address,emgName,emgPhone,status,admissionType,hiringDate,transferFromDeptId,transferToDeptId,transferDate,transferToDate\n';
+      const header = 'id,name,category,rank,badge,deptId,jobTitleId,drafteeWorkType,phone,gender,birth,address,emgName,emgPhone,status,admissionType,hiringDate,transferFromDeptId,transferToDeptId,transferDate,transferToDate\n';
       const lines = officers.map(o=>[
-        o.id,o.name,o.category||'officers',o.rank,o.badge||'',o.deptId||'',o.jobTitleId||'',
+        o.id,o.name,o.category||'officers',o.rank,o.badge||'',o.deptId||'',o.jobTitleId||'',o.drafteeWorkType||'',
         o.phone||'',o.gender||'',o.birth||'',o.address||'',o.emgName||'',o.emgPhone||'',
         o.status||'',o.admissionType||'fresh',o.hiringDate||'',o.transferFromDeptId||'',o.transferToDeptId||'',o.transferDate||'',o.transferToDate||''
       ].map(csvEscape).join(','));
       downloadCSVFile('officers.csv', header + lines.join('\n'));
     }
     function exportOfficersFullCSV(){
-      const header = 'id,name,category,rank,badge,status,deptId,deptName,jobTitleId,jobTitle,subs,phone,gender,birth,address,emgName,emgPhone,admissionType,hiringDate,transferFromDeptId,transferFromDeptName,transferToDeptId,transferToDeptName,transferDate,transferToDate,transferNote\n';
+      const header = 'id,name,category,rank,badge,status,deptId,deptName,jobTitleId,jobTitle,drafteeWorkType,subs,phone,gender,birth,address,emgName,emgPhone,admissionType,hiringDate,transferFromDeptId,transferFromDeptName,transferToDeptId,transferToDeptName,transferDate,transferToDate,transferNote\n';
       const lines = officers.map(o=>{
         const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
         const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
@@ -3659,7 +3852,7 @@
         return [
           o.id,o.name,o.category||'officers',o.rank,o.badge||'',o.status||'',
           o.deptId||'',deptName,
-          o.jobTitleId||'',jobTitle,
+          o.jobTitleId||'',jobTitle,o.drafteeWorkType||'',
           (o.subs||[]).join('|'),
           o.phone||'',o.gender||'',o.birth||'',o.address||'',o.emgName||'',o.emgPhone||'',
           o.admissionType||'fresh',o.hiringDate||'',
@@ -3671,7 +3864,7 @@
       });
       downloadCSVFile('officers_full.csv', header + lines.join('\n'));
     }
-    function downloadOfficersTemplateCSV(){ downloadCSVFile('officers_template.csv','id,name,category,rank,badge,deptId,jobTitleId,phone,gender,birth,address,emgName,emgPhone,status,admissionType,hiringDate,transferFromDeptId,transferToDeptId,transferDate,transferToDate'); }
+    function downloadOfficersTemplateCSV(){ downloadCSVFile('officers_template.csv','id,name,category,rank,badge,deptId,jobTitleId,drafteeWorkType,phone,gender,birth,address,emgName,emgPhone,status,admissionType,hiringDate,transferFromDeptId,transferToDeptId,transferDate,transferToDate'); }
     function importOfficersCSV(input){
       const f = input.files && input.files[0]; if(!f) return;
       const reader = new FileReader(); reader.onload = ()=>{
@@ -3680,7 +3873,7 @@
         let skipped = 0;
         let merged = 0;
         rows.forEach(line=>{
-          const [id,name,category,rank,badge,deptId,jobTitleId,phone,gender,birth,address,emgName,emgPhone,status,admissionType,hiringDate,transferFromDeptId,transferToDeptId,transferDate,transferToDate] = line.split(',');
+          const [id,name,category,rank,badge,deptId,jobTitleId,drafteeWorkType,phone,gender,birth,address,emgName,emgPhone,status,admissionType,hiringDate,transferFromDeptId,transferToDeptId,transferDate,transferToDate] = line.split(',');
           if(!name) return;
           const cleanName = name.trim();
           const cleanCategory = (category || 'officers').trim();
@@ -3693,6 +3886,7 @@
                 category: cleanCategory,
                 deptId: deptId? +deptId : null,
                 jobTitleId: jobTitleId? +jobTitleId : null,
+                drafteeWorkType: drafteeWorkType || '',
                 phone: phone || '',
                 gender: gender || '',
                 birth: birth || '',
@@ -3711,6 +3905,7 @@
                 ['category', v=> v],
                 ['deptId', v=> v != null],
                 ['jobTitleId', v=> v != null],
+                ['drafteeWorkType', v=> v],
                 ['phone', v=> v],
                 ['gender', v=> v],
                 ['birth', v=> v],
@@ -3746,6 +3941,7 @@
             badge: cleanBadge,
             deptId: deptId? +deptId : null,
             jobTitleId: jobTitleId? +jobTitleId : null,
+            drafteeWorkType: drafteeWorkType || '',
             subs: [],
             phone: phone || '',
             gender: gender || '',
@@ -3782,6 +3978,9 @@
     function getEmployeeNameById(id){
       const employee = officers.find(o=>o.id===id);
       return employee ? `${employee.rank || ''} ${employee.name || ''}`.trim() : '—';
+    }
+    function getEmployeeById(id){
+      return officers.find(o=>o.id===id) || null;
     }
     function renderTrainingAssignments(categoryId){
       const employees = getEmployeesByCategory(categoryId);
@@ -3954,9 +4153,10 @@
             <div class="card-header">تسجيل ترقية</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="promotion_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
-                <div class="col-md-3"><label class="form-label">رتبة السلم الوظيفي</label><select id="promotion_rank_index" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر رتبة —</option>${ladder.map((r, idx)=>`<option value="${idx}">${idx+1} - ${escapeHtml(r)}</option>`).join('')}</select></div>
-                <div class="col-md-3"><label class="form-label">تاريخ السريان</label><input id="promotion_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="promotion_employee" class="form-select" onchange="updatePromotionRankOptions()" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">الرتبة الحالية</label><select id="promotion_current_rank" class="form-select" disabled><option value="">—</option></select></div>
+                <div class="col-md-3"><label class="form-label">الرتبة الأعلى</label><select id="promotion_next_rank" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر رتبة —</option></select></div>
+                <div class="col-md-2"><label class="form-label">تاريخ السريان</label><input id="promotion_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
                 <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addPromotion()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
               </div>
               <div class="mt-2"><label class="form-label">ملاحظات</label><input id="promotion_notes" class="form-control" ${canManage ? '' : 'disabled'}></div>
@@ -3973,19 +4173,37 @@
       if(!canEditCategoryRecords(getActiveCategory('promotionsCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل الترقيات','warning');
       const categoryId = getActiveCategory('promotionsCategory', 'officers');
       const employeeId = +document.getElementById('promotion_employee')?.value;
-      const rankIndex = document.getElementById('promotion_rank_index')?.value;
       const ladder = getCategoryRankLadder(categoryId);
-      const toRank = rankIndex !== '' ? ladder[+rankIndex] : '';
-      const fromRank = rankIndex !== '' && +rankIndex > 0 ? ladder[+rankIndex - 1] : '';
+      const fromRank = document.getElementById('promotion_current_rank')?.value || '';
+      const toRank = document.getElementById('promotion_next_rank')?.value || '';
       const effectiveDate = document.getElementById('promotion_date')?.value || '';
       const notes = document.getElementById('promotion_notes')?.value || '';
       if(!employeeId || !effectiveDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ السريان`, 'warning');
-      if(!toRank) return showToast('اختر رتبة من سلم الترقيات', 'warning');
+      if(!toRank) return showToast('اختر رتبة أعلى للترقية', 'warning');
       promotions[categoryId] = Array.isArray(promotions[categoryId]) ? promotions[categoryId] : [];
-      promotions[categoryId].push({id: Date.now(), employeeId, fromRank, toRank, rankIndex: +rankIndex, effectiveDate, notes});
+      promotions[categoryId].push({id: Date.now(), employeeId, fromRank, toRank, rankIndex: ladder.indexOf(toRank), effectiveDate, notes});
       saveAll();
       showToast('تمت إضافة الترقية', 'success');
       renderTab('promotions');
+    }
+
+    function updatePromotionRankOptions(){
+      const categoryId = getActiveCategory('promotionsCategory', 'officers');
+      const employeeId = +document.getElementById('promotion_employee')?.value;
+      const ladder = getCategoryRankLadder(categoryId);
+      const employee = getEmployeeById(employeeId);
+      const currentSelect = document.getElementById('promotion_current_rank');
+      const nextSelect = document.getElementById('promotion_next_rank');
+      if(currentSelect){
+        currentSelect.innerHTML = employee ? `<option value="${escapeHtml(employee.rank)}">${escapeHtml(employee.rank)}</option>` : '<option value="">—</option>';
+      }
+      if(nextSelect){
+        const currentIndex = employee ? ladder.indexOf(employee.rank) : -1;
+        const nextRank = currentIndex >= 0 ? ladder[currentIndex + 1] : '';
+        nextSelect.innerHTML = nextRank
+          ? `<option value="${escapeHtml(nextRank)}">${escapeHtml(nextRank)}</option>`
+          : '<option value="">— لا توجد رتبة أعلى —</option>';
+      }
     }
 
     function renderTransfersTab(){
@@ -3999,6 +4217,7 @@
       const rows = records.map(r=>`
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
+          <td>${escapeHtml(r.scopeLabel || (r.scope === 'external' ? 'خارجي' : 'داخلي'))}</td>
           <td>${escapeHtml(r.type)}</td>
           <td>${escapeHtml(r.travelReason || '—')}</td>
           <td>${escapeHtml(r.fromDept)}</td>
@@ -4017,10 +4236,11 @@
             <div class="card-body">
               <div class="row g-2">
                 <div class="col-md-3"><label class="form-label">${employeeLabel}</label><select id="transfer_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
-                <div class="col-md-2"><label class="form-label">النوع</label><select id="transfer_type" class="form-select" onchange="toggleTransferTravelFields()" ${canManage ? '' : 'disabled'}><option value="نقل">نقل</option><option value="ندب">ندب</option><option value="سفر للخارج">سفر للخارج</option></select></div>
+                <div class="col-md-2"><label class="form-label">نطاق النقل</label><select id="transfer_scope" class="form-select" onchange="updateTransferDepartmentOptions()" ${canManage ? '' : 'disabled'}><option value="internal">داخلي</option><option value="external">خارجي</option></select></div>
+                <div class="col-md-2"><label class="form-label">نوع الحركة</label><select id="transfer_type" class="form-select" onchange="toggleTransferTravelFields()" ${canManage ? '' : 'disabled'}><option value="نقل">نقل</option><option value="ندب">ندب</option><option value="سفر للخارج">سفر للخارج</option></select></div>
                 <div class="col-md-3" id="transfer_travel_reason_wrap" style="display:none;"><label class="form-label">سبب السفر</label><select id="transfer_travel_reason" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر السبب —</option><option>مهمة رسمية</option><option>دورة تدريبية</option><option>مؤتمر</option><option>علاج</option><option>إجازة معتمدة</option></select></div>
-                <div class="col-md-2"><label class="form-label">من جهة</label><input id="transfer_from" class="form-control" ${canManage ? '' : 'disabled'}></div>
-                <div class="col-md-2"><label class="form-label">إلى جهة</label><input id="transfer_to" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-2"><label class="form-label">من جهة</label><select id="transfer_from" class="form-select" ${canManage ? '' : 'disabled'}></select></div>
+                <div class="col-md-2"><label class="form-label">إلى جهة</label><select id="transfer_to" class="form-select" ${canManage ? '' : 'disabled'}></select></div>
                 <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addTransferRecord()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
               </div>
               <div class="row g-2 mt-2">
@@ -4031,8 +4251,8 @@
             </div>
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>النوع</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="8" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>نطاق النقل</th><th>نوع الحركة</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="9" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
@@ -4041,6 +4261,7 @@
       if(!canEditCategoryRecords(getActiveCategory('transfersCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل النقل والندب','warning');
       const categoryId = getActiveCategory('transfersCategory', 'officers');
       const employeeId = +document.getElementById('transfer_employee')?.value;
+      const scope = document.getElementById('transfer_scope')?.value || 'internal';
       const type = document.getElementById('transfer_type')?.value || '';
       const travelReason = document.getElementById('transfer_travel_reason')?.value || '';
       const fromDept = document.getElementById('transfer_from')?.value || '';
@@ -4051,7 +4272,7 @@
       if(!employeeId || !startDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ البدء`, 'warning');
       if(type === 'سفر للخارج' && !travelReason) return showToast('اختر سبب السفر للخارج', 'warning');
       transferRecords[categoryId] = Array.isArray(transferRecords[categoryId]) ? transferRecords[categoryId] : [];
-      transferRecords[categoryId].push({id: Date.now(), employeeId, type, travelReason, fromDept, toDept, startDate, endDate, notes});
+      transferRecords[categoryId].push({id: Date.now(), employeeId, scope, scopeLabel: scope === 'external' ? 'خارجي' : 'داخلي', type, travelReason, fromDept, toDept, startDate, endDate, notes});
       saveAll();
       showToast('تمت إضافة سجل النقل/الندب', 'success');
       renderTab('transfers');
@@ -4062,6 +4283,15 @@
       const reasonSelect = document.getElementById('transfer_travel_reason');
       if(wrap) wrap.style.display = type === 'سفر للخارج' ? 'block' : 'none';
       if(type !== 'سفر للخارج' && reasonSelect) reasonSelect.value = '';
+    }
+    function updateTransferDepartmentOptions(){
+      const scope = document.getElementById('transfer_scope')?.value || 'internal';
+      const fromSelect = document.getElementById('transfer_from');
+      const toSelect = document.getElementById('transfer_to');
+      const options = scope === 'external' ? getTransferDepartments() : departments.filter(d=> (d.groupKey || 'internal') === 'internal');
+      const optsMarkup = options.map(d=>`<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
+      if(fromSelect) fromSelect.innerHTML = `<option value="">— اختر جهة —</option>${optsMarkup}`;
+      if(toSelect) toSelect.innerHTML = `<option value="">— اختر جهة —</option>${optsMarkup}`;
     }
 
     function renderDisciplinaryTab(){
@@ -4075,10 +4305,13 @@
       const rows = records.map(r=>`
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
-          <td>${escapeHtml(r.caseType)}</td>
-          <td>${escapeHtml(r.caseDate)}</td>
-          <td>${escapeHtml(r.action)}</td>
-          <td>${escapeHtml(r.status)}</td>
+          <td>${escapeHtml(r.caseCategoryLabel || (r.caseCategory === 'criminal' ? 'جنائي' : 'إداري'))}</td>
+          <td>${escapeHtml(r.caseNumber || '—')}</td>
+          <td>${escapeHtml(r.caseType || r.disciplinaryActionName || '—')}</td>
+          <td>${escapeHtml(r.brief || '—')}</td>
+          <td>${escapeHtml(r.finalActions || r.action || '—')}</td>
+          <td>${escapeHtml(r.status || '—')}</td>
+          <td>${escapeHtml(r.caseDate || '')}</td>
         </tr>
       `).join('');
       return `<div class="card">
@@ -4089,20 +4322,28 @@
             <div class="card-header">إضافة حالة</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="disciplinary_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
-                <div class="col-md-3"><label class="form-label">نوع القضية</label><input id="disciplinary_type" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="disciplinary_employee" class="form-select" onchange="updateDisciplinaryActionOptions()" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">تصنيف القضية</label><select id="disciplinary_case_category" class="form-select" onchange="toggleDisciplinaryFields()" ${canManage ? '' : 'disabled'}><option value="criminal">جنائي</option><option value="administrational">إداري</option></select></div>
                 <div class="col-md-3"><label class="form-label">تاريخ</label><input id="disciplinary_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
                 <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addDisciplinaryRecord()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
               </div>
-              <div class="row g-2 mt-2">
-                <div class="col-md-6"><label class="form-label">الإجراء</label><input id="disciplinary_action" class="form-control" ${canManage ? '' : 'disabled'}></div>
+              <div class="row g-2 mt-2" id="disciplinary_criminal_fields">
+                <div class="col-md-3"><label class="form-label">رقم القضية</label><input id="disciplinary_case_number" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-3"><label class="form-label">نوع القضية</label><input id="disciplinary_case_type" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-6"><label class="form-label">ملخص القضية</label><input id="disciplinary_brief" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-6"><label class="form-label">الإجراءات النهائية</label><input id="disciplinary_final_actions" class="form-control" ${canManage ? '' : 'disabled'}></div>
                 <div class="col-md-6"><label class="form-label">الحالة</label><input id="disciplinary_status" class="form-control" ${canManage ? '' : 'disabled'}></div>
+              </div>
+              <div class="row g-2 mt-2" id="disciplinary_admin_fields" style="display:none;">
+                <div class="col-md-6"><label class="form-label">ملخص الحالة الإدارية</label><input id="disciplinary_admin_brief" class="form-control" ${canManage ? '' : 'disabled'}></div>
+                <div class="col-md-6"><label class="form-label">الإجراء التأديبي</label><select id="disciplinary_admin_action" class="form-select" ${canManage ? '' : 'disabled'}></select></div>
+                <div class="col-md-6"><label class="form-label">الحالة</label><input id="disciplinary_admin_status" class="form-control" ${canManage ? '' : 'disabled'}></div>
               </div>
             </div>
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>القضية</th><th>التاريخ</th><th>الإجراء</th><th>الحالة</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="5" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>التصنيف</th><th>رقم القضية</th><th>النوع/الإجراء</th><th>ملخص</th><th>إجراءات نهائية</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="8" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
@@ -4111,16 +4352,46 @@
       if(!canEditCategoryRecords(getActiveCategory('disciplinaryCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل السجل التأديبي','warning');
       const categoryId = getActiveCategory('disciplinaryCategory', 'officers');
       const employeeId = +document.getElementById('disciplinary_employee')?.value;
-      const caseType = document.getElementById('disciplinary_type')?.value || '';
+      const caseCategory = document.getElementById('disciplinary_case_category')?.value || 'criminal';
       const caseDate = document.getElementById('disciplinary_date')?.value || '';
-      const action = document.getElementById('disciplinary_action')?.value || '';
-      const status = document.getElementById('disciplinary_status')?.value || '';
       if(!employeeId || !caseDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ الحالة`, 'warning');
+      let payload = {};
+      if(caseCategory === 'criminal'){
+        const caseNumber = document.getElementById('disciplinary_case_number')?.value || '';
+        const caseType = document.getElementById('disciplinary_case_type')?.value || '';
+        const brief = document.getElementById('disciplinary_brief')?.value || '';
+        const finalActions = document.getElementById('disciplinary_final_actions')?.value || '';
+        const status = document.getElementById('disciplinary_status')?.value || '';
+        if(!caseNumber || !caseType) return showToast('أدخل رقم ونوع القضية الجنائية', 'warning');
+        payload = {caseNumber, caseType, brief, finalActions, status};
+      } else {
+        const brief = document.getElementById('disciplinary_admin_brief')?.value || '';
+        const actionId = document.getElementById('disciplinary_admin_action')?.value || '';
+        const status = document.getElementById('disciplinary_admin_status')?.value || '';
+        const action = (SETTINGS.disciplinaryActions || []).find(a=>String(a.id) === String(actionId));
+        if(!brief || !action) return showToast('اختر الإجراء التأديبي وملخص الحالة', 'warning');
+        payload = {brief, disciplinaryActionId: action?.id || null, disciplinaryActionName: action?.name || '', status};
+      }
       disciplinaryRecords[categoryId] = Array.isArray(disciplinaryRecords[categoryId]) ? disciplinaryRecords[categoryId] : [];
-      disciplinaryRecords[categoryId].push({id: Date.now(), employeeId, caseType, caseDate, action, status});
+      disciplinaryRecords[categoryId].push(Object.assign({id: Date.now(), employeeId, caseCategory, caseCategoryLabel: caseCategory === 'criminal' ? 'جنائي' : 'إداري', caseDate}, payload));
       saveAll();
       showToast('تمت إضافة الحالة', 'success');
       renderTab('disciplinary');
+    }
+    function toggleDisciplinaryFields(){
+      const category = document.getElementById('disciplinary_case_category')?.value || 'criminal';
+      const criminalWrap = document.getElementById('disciplinary_criminal_fields');
+      const adminWrap = document.getElementById('disciplinary_admin_fields');
+      if(criminalWrap) criminalWrap.style.display = category === 'criminal' ? 'flex' : 'none';
+      if(adminWrap) adminWrap.style.display = category === 'administrational' ? 'flex' : 'none';
+    }
+    function updateDisciplinaryActionOptions(){
+      const categoryId = getActiveCategory('disciplinaryCategory', 'officers');
+      const actions = (SETTINGS.disciplinaryActions || []).filter(a=>a.appliesToAll || (Array.isArray(a.categories) && a.categories.includes(categoryId)));
+      const select = document.getElementById('disciplinary_admin_action');
+      if(select){
+        select.innerHTML = actions.length ? `<option value="">— اختر الإجراء —</option>${actions.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('')}` : '<option value="">لا توجد إجراءات متاحة</option>';
+      }
     }
    /* ========= Departments ========= */
     function renderDepartmentsTab(){
@@ -4325,11 +4596,12 @@
         .map(d=>`<option value="${d.id}" ${d.id==pid?'selected':''}>${escapeHtml(d.name)}</option>`).join('');
       const groupSelector = scopeGroup ? '' : `<div class="mb-2"><label class="form-label">مجموعة القسم</label><select id="dept_group" class="form-select">${(SETTINGS.deptGroups||[]).map(g=>`<option value="${g.key}" ${g.key===groupKey?'selected':''}>${escapeHtml(g.name)}</option>`).join('')}</select></div>`;
       const transferNote = isTransferGroup ? '<div class="alert alert-info mb-2">جهات النقل تُسجّل بالاسم فقط.</div>' : '';
+      const officersOnly = getEmployeesByCategory('officers');
       const extraFields = isTransferGroup ? '' : `
         <div class="mb-2"><label class="form-label">تابع لـ</label><select id="dept_parent" class="form-select"><option value="">— لا شيء —</option>${parentOptions}</select></div>
-        <div class="mb-2"><label class="form-label">رئيس القسم</label><select id="dept_head" class="form-select"><option value="">— لا شيء —</option>${officers.map(o=>`<option value="${o.id}" ${o.id==headId?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>
+        <div class="mb-2"><label class="form-label">رئيس القسم (ضباط فقط)</label><select id="dept_head" class="form-select"><option value="">— لا شيء —</option>${officersOnly.map(o=>`<option value="${o.id}" ${o.id==headId?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>
         <div class="mb-2"><label class="form-label">مسمى الإدارة العليا (اختياري)</label><input id="dept_upperTitle" class="form-control" value="${escapeHtml(upperTitle)}"></div>
-        <div class="mb-2"><label class="form-label">ضابط الإدارة العليا (اختياري)</label><select id="dept_upperOfficer" class="form-select"><option value="">— لا شيء —</option>${officers.map(o=>`<option value="${o.id}" ${o.id==upperOfficerId?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>`;
+        <div class="mb-2"><label class="form-label">ضابط الإدارة العليا (اختياري)</label><select id="dept_upperOfficer" class="form-select"><option value="">— لا شيء —</option>${officersOnly.map(o=>`<option value="${o.id}" ${o.id==upperOfficerId?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('')}</select></div>`;
       area.innerHTML = `<div class="card"><div class="card-header">${mode==='add'?'إضافة قسم':'تعديل قسم'}</div><div class="card-body">
         ${transferNote}
         <div class="mb-2"><label class="form-label">اسم</label><input id="dept_name" class="form-control" value="${escapeHtml(name)}" onkeydown="handleDepartmentFormKey(event,'${mode}',${idValue},'${groupKey}','${returnTab}')"></div>
@@ -4391,7 +4663,7 @@
       if(!children.length && !parentId) return `<p class="text-muted py-3">لا توجد مسميات وظيفية</p>`;
       return `<ul class="list-unstyled ms-${level*3}">${children.map(j=>`<li class="mb-2 p-2 border rounded">
         <div class="d-flex justify-content-between align-items-center">
-          <div><strong>${escapeHtml(j.name)}</strong> ${j.isUpper?'<span class="small text-warning">[إدارة عليا]</span>':''}</div>
+          <div><strong>${escapeHtml(j.name)}</strong> <span class="small text-muted">(${escapeHtml(getCategoryLabel(j.categoryId || 'officers'))})</span> ${j.isUpper?'<span class="small text-warning">[إدارة عليا]</span>':''}</div>
           <div>
             <button class="btn btn-sm btn-outline-primary me-1" onclick="openJobTitleForm('edit',${j.id})">تعديل</button>
             <button class="btn btn-sm btn-outline-success me-1" onclick="openJobTitleForm('add',null,${j.id})">فرعي</button>
@@ -4403,12 +4675,13 @@
     }
     function openJobTitleForm(mode,id=null,parentId=null){
       const area = document.getElementById('jobTitleFormArea');
-      let name='', isUpper=false;
+      let name='', isUpper=false, categoryId='officers';
       if(mode==='edit' && id){
-        const jt = jobTitles.find(x=>x.id===id); if(jt){ name=jt.name; isUpper=jt.isUpper; parentId=jt.parentId||null; }
+        const jt = jobTitles.find(x=>x.id===id); if(jt){ name=jt.name; isUpper=jt.isUpper; parentId=jt.parentId||null; categoryId = jt.categoryId || 'officers'; }
       }
       area.innerHTML = `<div class="card"><div class="card-header">${mode==='add'?'إضافة مسمى':'تعديل مسمى'}</div><div class="card-body">
         <div class="mb-2"><label class="form-label">الاسم</label><input id="jt_name" class="form-control" value="${escapeHtml(name)}"></div>
+        <div class="mb-2"><label class="form-label">الفئة الوظيفية</label><select id="jt_category" class="form-select">${EMPLOYEE_CATEGORIES.filter(c=>c.id!=='draftees').map(c=>`<option value="${c.id}" ${c.id===categoryId?'selected':''}>${escapeHtml(c.label)}</option>`).join('')}</select></div>
         <div class="form-check mb-2"><input id="jt_isUpper" class="form-check-input" type="checkbox" ${isUpper?'checked':''}><label class="form-check-label">إدارة عليا</label></div>
         <div class="mb-2"><label class="form-label">تابع لـ</label><select id="jt_parent" class="form-select"><option value="">— لا شيء —</option>${jobTitles.map(j=>`<option value="${j.id}" ${j.id==parentId?'selected':''}>${escapeHtml(j.name)}</option>`).join('')}</select></div>
         <div class="text-end"><button class="btn btn-secondary" onclick="document.getElementById('jobTitleFormArea').innerHTML=''">إلغاء</button> <button class="btn btn-primary" onclick="saveJobTitle('${mode}',${id||''})">حفظ</button></div>
@@ -4417,10 +4690,11 @@
     function saveJobTitle(mode,id){
       const name = document.getElementById('jt_name').value.trim();
       const isUpper = !!document.getElementById('jt_isUpper').checked;
+      const categoryId = document.getElementById('jt_category')?.value || 'officers';
       const parentId = document.getElementById('jt_parent').value ? +document.getElementById('jt_parent').value : null;
       if(!name) return showToast('أدخل اسم المسمى','danger');
-      if(mode==='add') jobTitles.push({id:Date.now(),name,parentId,isUpper});
-      else if(mode==='edit'){ const jt = jobTitles.find(x=>x.id===id); if(jt){ jt.name=name; jt.isUpper=isUpper; jt.parentId=parentId; } }
+      if(mode==='add') jobTitles.push({id:Date.now(),name,parentId,isUpper,categoryId});
+      else if(mode==='edit'){ const jt = jobTitles.find(x=>x.id===id); if(jt){ jt.name=name; jt.isUpper=isUpper; jt.parentId=parentId; jt.categoryId=categoryId; } }
       saveAll(); document.getElementById('jobTitleFormArea').innerHTML=''; renderTab('jobtitles');
     }
     function deleteJobTitleRecursive(id){
@@ -5052,7 +5326,7 @@
     function renderSettingsTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول لإدارة الإعدادات.</div>';
       const active = getSettingsSubTab();
-      const darkModeChecked = SETTINGS.darkMode || SETTINGS.themeKey === 'night';
+      const darkModeChecked = SETTINGS.darkMode;
       const tabs = [
         {id:'general', label:'عام'},
         {id:'appearance', label:'المظهر والخطوط'},
@@ -5148,7 +5422,10 @@
       if(darkMode){
         SETTINGS.darkMode = !!darkMode.checked;
         if(SETTINGS.darkMode) SETTINGS.themeKey = 'night';
+        if(!SETTINGS.darkMode && SETTINGS.themeKey === 'night') SETTINGS.themeKey = theme?.value || 'classic';
       }
+      if(SETTINGS.themeKey === 'night') SETTINGS.darkMode = true;
+      if(SETTINGS.themeKey !== 'night') SETTINGS.darkMode = false;
       const loginLayout = document.getElementById('set_loginLayout');
       if(loginLayout) SETTINGS.loginLayout = loginLayout.value || 'stacked';
       const appFont = document.getElementById('set_appFont');
@@ -5425,26 +5702,26 @@
       return `<div class="card">
         <div class="card-header">حول التطبيق</div>
         <div class="card-body">
-          <p class="mb-3">منصة تنظيم وإدارة خدمات الإدارة العامة للمساعدات الفنية، مصممة لتقديم تجربة موثوقة ومتكاملة لإدارة الجداول، الضباط، والعمليات الداعمة.</p>
+          <p class="mb-3">منصة إدارة موارد بشرية مخصصة لتنظيم بيانات العاملين، التدريب، الترقيات، النقل، والسجل التأديبي في الإدارة العامة للمساعدات الفنية.</p>
           <div class="row g-2">
             <div class="col-md-6">
-              <h6 class="mb-2">قدرات تشغيلية</h6>
+              <h6 class="mb-2">إدارة الموارد البشرية</h6>
               <ul>
-                <li>توليد جداول شهرية ذكية تراعي الرتب، أوقات الراحة، والاستثناءات.</li>
-                <li>تقارير جاهزة للطباعة A4 مع تواقيع وعلامة مائية.</li>
-                <li>أرشفة شهرية واستعراض إحصاءات الخدمة حسب الضباط.</li>
+                <li>ملفات موظفين حسب الفئات مع التدريب والتقارير السنوية.</li>
+                <li>سجلات ترقيات ونقل مرتبطة بسلالم الرتب والجهات.</li>
+                <li>توثيق القضايا والجزاءات الجنائية والإدارية.</li>
               </ul>
             </div>
             <div class="col-md-6">
-              <h6 class="mb-2">حوكمة وإدارة</h6>
+              <h6 class="mb-2">حوكمة وتشغيل</h6>
               <ul>
-                <li>لوحة تحكم لنسخ احتياطي واستعادة البيانات.</li>
-                <li>صلاحيات متعددة للمستخدمين مع سجل نشاط شامل.</li>
-                <li>تخصيص السمات والخطوط والشعار بما يتناسب مع الهوية المؤسسية.</li>
+                <li>صلاحيات دقيقة للمستخدمين والمحررين حسب النطاق.</li>
+                <li>لوحة تحكم للنسخ الاحتياطي واستعادة البيانات.</li>
+                <li>تهيئة الواجهة (السمات والخطوط والشعار) حسب الهوية المؤسسية.</li>
               </ul>
             </div>
           </div>
-          <div class="mt-3"><strong>الإصدار:</strong> 1.0 — إصدار تشغيلي موحد</div>
+          <div class="mt-3"><strong>الإصدار:</strong> 1.1 — نسخة تشغيلية لإدارة الموارد البشرية</div>
         </div>
       </div>`;
     }
