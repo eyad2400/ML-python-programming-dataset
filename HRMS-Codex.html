@@ -17,6 +17,7 @@
     .btn::before { content:"🔹"; font-size: 14px; line-height:1; }
     .btn:hover { filter: brightness(0.97); }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .btn:focus-visible { outline:2px solid rgba(250,204,21,.9); outline-offset:2px; box-shadow:0 0 0 3px rgba(30,64,175,.25); }
     .btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
     .btn-secondary { background: #e5e7eb; }
     .btn-success { background: #16a34a; color:#fff; border-color:#16a34a; }
@@ -47,9 +48,12 @@
     .table-sm th, .table-sm td { padding:6px 8px; }
     .table-bordered { border:1px solid #e5e7eb; }
     .table-responsive { overflow:auto; }
-    .form-control, .form-select, textarea, input, select { width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; font-family: var(--form-font); }
+    .form-control, .form-select, textarea, input, select { width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; font-family: var(--form-font); transition:border-color .15s ease, box-shadow .15s ease; }
     .form-label { display:block; margin-bottom:4px; font-weight:700; }
     .form-control:disabled, .form-select:disabled { background:#f3f4f6; color:#6b7280; }
+    .form-control:focus, .form-select:focus, textarea:focus, input:focus, select:focus { border-color: var(--brand); box-shadow:0 0 0 3px rgba(30,64,175,.15); outline: none; }
+    .form-check-input { accent-color: var(--brand); }
+    .form-check-input:focus { box-shadow:0 0 0 3px rgba(30,64,175,.15); }
     .row { display:flex; flex-wrap:wrap; margin:-6px; }
     .g-2 { gap:8px; }
     .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-8, .col-md-9, .col-md-10, .col-md-12 { padding:6px; }
@@ -158,7 +162,7 @@
     .report-block { border:1px solid #0f172a; border-radius:10px; padding:10px; margin-bottom:10px; }
     .report-block h5 { margin:0 0 8px; font-size:15px; color:#0f172a; }
    .report-preview-paper { background:#fff; border:1px solid #0f172a; border-radius:8px; padding:16px; box-shadow:0 4px 12px rgba(15,23,42,.08); }
-    .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#111; margin-bottom:6px; }
+    .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#111; margin-bottom:6px; flex-wrap:wrap; }
      .report-header { position:relative; display:flex; justify-content:center; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px; gap:12px; }
     .report-title { font-size:18px; font-weight:700; text-align:center; color:#111; }
     .report-logo { position:absolute; top:0; right:0; display:flex; align-items:center; justify-content:center; }
@@ -189,6 +193,7 @@
     .sub-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
     .sub-tab-btn { border:1px solid #c7d2fe; background:#fff; color:#1f2937; padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:all .15s ease; }
     .sub-tab-btn.active { background:#1e40af; color:#fff; border-color:#1e40af; box-shadow:0 6px 16px rgba(30,64,175,.2); }
+    .sub-tab-btn:focus-visible { outline:2px solid rgba(250,204,21,.9); outline-offset:2px; }
     @keyframes floatLogo { 0%{transform:translateY(0);} 50%{transform:translateY(-6px);} 100%{transform:translateY(0);} }
     @keyframes splashPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
      @keyframes splashBounce { 0%, 80%, 100% { transform: translateY(0); opacity:.6; } 40% { transform: translateY(-8px); opacity:1; } }
@@ -258,6 +263,7 @@
       <li class="nav-item"><button class="nav-link" data-icon="🔁" data-tab="transfers" onclick="renderTab('transfers')">النقل والندب</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="🏖️" data-tab="vacations" onclick="renderTab('vacations')">الإجازات</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="⚖️" data-tab="disciplinary" onclick="renderTab('disciplinary')">الجزاءات والقضايا</button></li>
+      <li class="nav-item"><button class="nav-link" data-icon="🏅" data-tab="honors" onclick="renderTab('honors')">التكريمات والأنواط</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')">سلم الرتب والترتيب</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="🗂️" data-tab="archive" onclick="renderTab('archive')">الأرشيف</button></li>
       <li class="nav-item"><button class="nav-link" data-icon="🌴" data-tab="departments" onclick="renderTab('departments')">الأقسام والإدارات</button></li>
@@ -337,11 +343,13 @@
     let trainingCatalog = {};
     let trainingCourses = [];
     let trainingInstitutes = [];
-    let annualReviews = {};
+     let annualReviews = {};
     let promotions = {};
     let transferRecords = {};
     let vacationRecords = {};
     let disciplinaryRecords = {};
+    let honorRecipients = [];
+    let honorTypes = [];
     let activityLog = [];
     let SELECTED_OFFICER_ID = null;
     let supportRequests = [];
@@ -582,6 +590,16 @@
         ]
       },
       {
+        id: 'honors',
+        label: 'التكريمات والتحفيزات',
+        description: 'متابعة التكريمات والحوافز للمستفيدين.',
+        options: [
+          'تسجيل المستفيدين والملاحظات',
+          'إدارة أنواع التكريم والتحفيز',
+          'مراجعة التواريخ والأثر الإداري'
+        ]
+      },
+      {
         id: 'ranks',
         label: 'سلم الرتب والترتيب',
         description: 'إعداد سلم الرتب حسب الفئات وترتيبه.',
@@ -803,10 +821,12 @@
       }
       vacationRecords = Object.assign({ officers: [], personnel: [], civil: [], draftees: [] }, vacationRecords || {});
       if(db){
-        annualReviews = db.annualReviews || { officers: [], personnel: [], civil: [] };
+         annualReviews = db.annualReviews || { officers: [], personnel: [], civil: [] };
         promotions = db.promotions || { officers: [], personnel: [], civil: [], draftees: [] };
         transferRecords = db.transferRecords || { officers: [], personnel: [], civil: [], draftees: [] };
         disciplinaryRecords = db.disciplinaryRecords || { officers: [], personnel: [], civil: [], draftees: [] };
+        honorRecipients = Array.isArray(db.honorRecipients) ? db.honorRecipients : [];
+        honorTypes = Array.isArray(db.honorTypes) ? db.honorTypes : [];
         activityLog = Array.isArray(db.activityLog) ? db.activityLog : [];
         ranks = Array.isArray(db.ranks) ? db.ranks : defaultRanks.slice();
         rankLadders = db.rankLadders || {};
@@ -817,16 +837,20 @@
         try { promotions = JSON.parse(localStorage.getItem('promotions')) || { officers: [], personnel: [], civil: [], draftees: [] }; } catch(_) { promotions = { officers: [], personnel: [], civil: [], draftees: [] }; }
         try { transferRecords = JSON.parse(localStorage.getItem('transferRecords')) || { officers: [], personnel: [], civil: [], draftees: [] }; } catch(_) { transferRecords = { officers: [], personnel: [], civil: [], draftees: [] }; }
         try { disciplinaryRecords = JSON.parse(localStorage.getItem('disciplinaryRecords')) || { officers: [], personnel: [], civil: [], draftees: [] }; } catch(_) { disciplinaryRecords = { officers: [], personnel: [], civil: [], draftees: [] }; }
+        try { honorRecipients = JSON.parse(localStorage.getItem('honorRecipients')) || []; } catch(_) { honorRecipients = []; }
+        try { honorTypes = JSON.parse(localStorage.getItem('honorTypes')) || []; } catch(_) { honorTypes = []; }
         try { activityLog = JSON.parse(localStorage.getItem('activityLog')) || []; } catch(_) { activityLog = []; }
         try { ranks = JSON.parse(localStorage.getItem('ranks')) || defaultRanks.slice(); } catch(_) { ranks = defaultRanks.slice(); }
         try { rankLadders = JSON.parse(localStorage.getItem('rankLadders')) || {}; } catch(_) { rankLadders = {}; }
         try { SETTINGS = Object.assign(SETTINGS, JSON.parse(localStorage.getItem('settings')) || {}); } catch(_) {}
         try { supportRequests = JSON.parse(localStorage.getItem('supportRequests')) || []; } catch(_) { supportRequests = []; }
       }
-      annualReviews = Object.assign({ officers: [], personnel: [], civil: [] }, annualReviews || {});
+       annualReviews = Object.assign({ officers: [], personnel: [], civil: [] }, annualReviews || {});
       promotions = Object.assign({ officers: [], personnel: [], civil: [], draftees: [] }, promotions || {});
       transferRecords = Object.assign({ officers: [], personnel: [], civil: [], draftees: [] }, transferRecords || {});
       disciplinaryRecords = Object.assign({ officers: [], personnel: [], civil: [], draftees: [] }, disciplinaryRecords || {});
+      honorRecipients = Array.isArray(honorRecipients) ? honorRecipients : [];
+      honorTypes = Array.isArray(honorTypes) ? honorTypes : [];
       if(!Array.isArray(ranks) || !ranks.length) ranks = defaultRanks.slice();
       rankLadders = Object.assign({}, defaultRankLadders, rankLadders || {});
       rankLadders.officers = Array.isArray(rankLadders.officers) && rankLadders.officers.length ? rankLadders.officers : ranks.slice();
@@ -941,9 +965,11 @@
           trainingInstitutes,
           annualReviews,
           promotions,
-          transferRecords,
+           transferRecords,
           vacationRecords,
           disciplinaryRecords,
+          honorRecipients,
+          honorTypes,
           supportRequests,
           activityLog,
           settings: SETTINGS
@@ -963,6 +989,8 @@
       localStorage.setItem('transferRecords', JSON.stringify(transferRecords));
       localStorage.setItem('vacationRecords', JSON.stringify(vacationRecords));
       localStorage.setItem('disciplinaryRecords', JSON.stringify(disciplinaryRecords));
+      localStorage.setItem('honorRecipients', JSON.stringify(honorRecipients));
+      localStorage.setItem('honorTypes', JSON.stringify(honorTypes));
       localStorage.setItem('supportRequests', JSON.stringify(supportRequests));
       localStorage.setItem('activityLog', JSON.stringify(activityLog));
       localStorage.setItem('settings', JSON.stringify(SETTINGS));
@@ -1339,6 +1367,9 @@
           updateDisciplinaryActionOptions();
           toggleDisciplinaryFields();
           if(getDisciplinarySubTab() === 'actions') toggleDisciplinaryActionCategorySelect();
+          break;
+        case 'honors':
+          c.innerHTML = renderHonorsTab();
           break;
         case 'ranks':
           c.innerHTML = renderRanksTab();
@@ -3333,7 +3364,7 @@
           tr{page-break-inside:avoid}
           h2,h3{margin:0}
           .report-header{position:relative;display:flex;justify-content:center;align-items:center;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:6px;margin-bottom:8px}
-          .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#111;margin-bottom:6px}
+          .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#111;margin-bottom:6px;flex-wrap:wrap}
           .report-title{font-size:16px;font-weight:700;text-align:center;color:#111}
           .report-logo{position:absolute;top:0;right:0;display:flex;align-items:center;justify-content:center}
           .report-logo img{max-height:32px;width:auto;height:auto}
@@ -3375,6 +3406,7 @@
       const monthTitle = new Date(effectiveMonth+'-01').toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
       const title = `${escapeHtml(duty.printLabel || duty.name)}`;
       const logoHtml = SETTINGS.logoData ? `<div class="report-logo"><img src="${SETTINGS.logoData}" alt="logo"></div>` : '';
+      const printMeta = buildReportPrintMetaHtml();
       return `
         <div class="report-header">
           <div style="flex:1;text-align:center;">
@@ -3385,6 +3417,7 @@
         <div class="report-meta">
           <div>الشهر: ${monthTitle}</div>
           <div>عدد الأيام: ${new Date(+effectiveMonth.split('-')[0], +effectiveMonth.split('-')[1], 0).getDate()}</div>
+          ${printMeta}
         </div>
     `;
     }
@@ -3428,10 +3461,27 @@
       div.innerHTML = html || '';
       return (div.textContent || div.innerText || '').trim();
     }
+    function getPrintingUserName(){
+      const linkedOfficer = CURRENT_USER?.officerId ? officers.find(o=>o.id===CURRENT_USER.officerId) : null;
+      return linkedOfficer?.name || CURRENT_USER?.fullName || CURRENT_USER?.name || 'مستخدم غير مسجل';
+    }
+    function formatTimestampForFilename(dateObj){
+      const pad = (val)=> String(val).padStart(2,'0');
+      return `${dateObj.getFullYear()}${pad(dateObj.getMonth()+1)}${pad(dateObj.getDate())}_${pad(dateObj.getHours())}${pad(dateObj.getMinutes())}${pad(dateObj.getSeconds())}`;
+    }
+    function buildPdfFilename(baseName){
+      const trimmed = String(baseName || 'تقرير').replace(/\.pdf$/i, '').trim() || 'تقرير';
+      const stamp = formatTimestampForFilename(new Date());
+      return `${trimmed}_${stamp}.pdf`;
+    }
+    function buildReportPrintMetaHtml(){
+      const userName = getPrintingUserName();
+      const stamp = new Date().toLocaleString('ar-EG');
+      return `<div>طبع بواسطة: ${escapeHtml(userName)}</div><div>وقت الطباعة: ${escapeHtml(stamp)}</div>`;
+    }
     function buildReportWatermarkHtml(){
       if(!SETTINGS.includeFooterOnPrint) return '';
-      const linkedOfficer = CURRENT_USER?.officerId ? officers.find(o=>o.id===CURRENT_USER.officerId) : null;
-      const userName = linkedOfficer?.name || CURRENT_USER?.fullName || CURRENT_USER?.name || 'مستخدم غير مسجل';
+      const userName = getPrintingUserName();
       const stamp = new Date().toLocaleString('ar-EG');
       const text = `${userName}\n${stamp}`;
       return `<div class="watermark">${escapeHtml(text)}</div>`;
@@ -3491,16 +3541,9 @@
         await ensureHtml2CanvasReady();
         const canvas = await html2canvas(container, {scale:2, useCORS:true});
         const blob = buildPdfBlobFromCanvas(canvas);
-        const url = URL.createObjectURL(blob);
-        const win = window.open(url, '_blank');
-        if(!win){
-          safeShowToast('تعذر فتح نافذة الطباعة','warning');
-          return;
-        }
-        win.onload = () => {
-          try { win.focus(); win.print(); } catch(_) {}
-        };
-        setTimeout(()=>{ URL.revokeObjectURL(url); }, 2000);
+        const reportName = buildPdfFilename(filename);
+        downloadPdfBlob(blob, reportName);
+        safeShowToast('تم إنشاء ملف PDF للطباعة','success');
       }catch(err){
         console.error(err);
         safeShowToast('فشل إعداد الطباعة','danger');
@@ -3516,7 +3559,7 @@
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
       const duty = duties.find(d=>d.id===dutyId);
       if(!duty){ safeShowToast('تعذر العثور على نوع الخدمة للطباعة','danger'); return; }
-      printReportPdfStyle([dutyId], month, `${duty.name}_${month}.pdf`);
+       printReportPdfStyle([dutyId], month, `${duty.name}_${month}.pdf`);
     }
     function exportDutyPDF(dutyId){
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
@@ -3524,7 +3567,7 @@
       const container = document.createElement('div');
       container.style.width = '210mm'; container.style.padding = '6mm'; container.style.direction = 'rtl'; container.innerHTML = html;
       document.body.appendChild(container);
-      html2canvas(container, {scale:2, useCORS:true}).then(canvas => canvasToPdf(canvas, `${duties.find(d=>d.id===dutyId).name}_${month}.pdf`).then(()=>{ safeShowToast('تم تنزيل PDF','success'); container.remove(); })).catch(e=>{ safeShowToast('فشل إنشاء PDF','danger'); console.error(e); container.remove(); });
+      html2canvas(container, {scale:2, useCORS:true}).then(canvas => canvasToPdf(canvas, buildPdfFilename(`${duties.find(d=>d.id===dutyId).name}_${month}`)).then(()=>{ safeShowToast('تم تنزيل PDF','success'); container.remove(); })).catch(e=>{ safeShowToast('فشل إنشاء PDF','danger'); console.error(e); container.remove(); });
     }
 
     function saveRosterAndExport(){
@@ -3574,7 +3617,7 @@
       document.body.appendChild(container);
       try{
         const canvas = await html2canvas(container, {scale:2, useCORS:true});
-        await canvasToPdf(canvas, `جدول_الخدمات_${month}.pdf`);
+        await canvasToPdf(canvas, buildPdfFilename(`جدول_الخدمات_${month}`));
         showToast('تم إنشاء PDF وتنزيله','success');
       }catch(e){ console.error(e); showToast('فشل إنشاء PDF','danger'); }
       finally{ container.remove(); }
@@ -3588,7 +3631,7 @@
       document.body.appendChild(container);
       try{
         const canvas = await html2canvas(container, {scale:2, useCORS:true});
-        await canvasToPdf(canvas, `جدول_الخدمات_الكل_${month}.pdf`);
+        await canvasToPdf(canvas, buildPdfFilename(`جدول_الخدمات_الكل_${month}`));
         showToast('تم إنشاء PDF وتنزيله','success');
       }catch(e){ console.error(e); showToast('فشل إنشاء PDF','danger'); }
       finally{ container.remove(); }
@@ -3628,6 +3671,12 @@
     }
     function setDisciplinarySubTab(tabId){
       sessionStorage.setItem('disciplinarySubTab', tabId);
+    }
+    function getHonorsSubTab(){
+      return sessionStorage.getItem('honorsSubTab') || 'recipients';
+    }
+    function setHonorsSubTab(tabId){
+      sessionStorage.setItem('honorsSubTab', tabId);
     }
     function getOfficerFilterState(){
       return {
@@ -3760,23 +3809,23 @@
         ? `
           <div class="col-md-6"><label class="form-label">رقم الأقدمية</label>
             <div class="d-flex align-items-center gap-1">
-              <input id="badge_${o.id}_1" class="form-control" ${disabledAttr} value="${escapeHtml(badgeFirst)}" placeholder="رقم 1" required onchange="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
+               <input id="badge_${o.id}_1" class="form-control" ${disabledAttr} value="${escapeHtml(badgeFirst)}" placeholder="رقم 1" required oninput="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
               <span class="text-muted">/</span>
-              <input id="badge_${o.id}_2" class="form-control" ${disabledAttr} value="${escapeHtml(badgeSecond)}" placeholder="رقم 2" required onchange="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
+               <input id="badge_${o.id}_2" class="form-control" ${disabledAttr} value="${escapeHtml(badgeSecond)}" placeholder="رقم 2" required oninput="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
               <span class="text-muted">/</span>
-              <input id="badge_${o.id}_3" class="form-control" ${disabledAttr} value="${escapeHtml(badgeThird)}" placeholder="اختياري" onchange="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
+               <input id="badge_${o.id}_3" class="form-control" ${disabledAttr} value="${escapeHtml(badgeThird)}" placeholder="اختياري" oninput="updateOfficerBadgeFromInputs(${o.id})" style="min-width:0;">
             </div>
           </div>
         `
         : o.category === 'civil'
           ? `
             <div class="col-md-6"><label class="form-label">الرقم القومي</label>
-              <input class="form-control" ${disabledAttr} value="${escapeHtml(o.nationalId||'')}" onchange="updateOfficer(${o.id},'nationalId',this.value)">
+              <input class="form-control" ${disabledAttr} value="${escapeHtml(o.nationalId||'')}" oninput="updateOfficer(${o.id},'nationalId',this.value)">
             </div>
           `
            : `
             <div class="col-md-6"><label class="form-label">رقم الشرطة</label>
-              <input class="form-control" ${disabledAttr} value="${escapeHtml(o.policeId||'')}" onchange="updateOfficer(${o.id},'policeId',this.value)">
+              <input class="form-control" ${disabledAttr} value="${escapeHtml(o.policeId||'')}" oninput="updateOfficer(${o.id},'policeId',this.value)">
             </div>
           `;
       const photoPreview = o.photo
@@ -3799,10 +3848,10 @@
         : '';
       const drafteeDetails = o.category === 'draftees'
         ? `<div class="row g-2">
-             <div class="col-md-3"><label class="form-label">محل الميلاد/المنشأ</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.hometown||'')}" onchange="updateOfficer(${o.id},'hometown',this.value)"></div>
-             <div class="col-md-3"><label class="form-label">المؤهل الدراسي</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.educationDegree||'')}" onchange="updateOfficer(${o.id},'educationDegree',this.value)"></div>
-             <div class="col-md-3"><label class="form-label">يوم التجنيد</label><input type="date" class="form-control" ${disabledAttr} value="${o.draftStart||''}" onchange="updateOfficer(${o.id},'draftStart',this.value)"></div>
-             <div class="col-md-3"><label class="form-label">نهاية التجنيد</label><input type="date" class="form-control" ${disabledAttr} value="${o.draftEnd||''}" onchange="updateOfficer(${o.id},'draftEnd',this.value)"></div>
+             <div class="col-md-3"><label class="form-label">الموطن</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.hometown||'')}" oninput="updateOfficer(${o.id},'hometown',this.value)"></div>
+             <div class="col-md-3"><label class="form-label">المؤهل الدراسي</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.educationDegree||'')}" oninput="updateOfficer(${o.id},'educationDegree',this.value)"></div>
+             <div class="col-md-3"><label class="form-label">تاريخ التجنيد</label><input type="date" class="form-control" ${disabledAttr} value="${o.draftStart||''}" oninput="updateOfficer(${o.id},'draftStart',this.value)"></div>
+             <div class="col-md-3"><label class="form-label">نهاية التجنيد</label><input type="date" class="form-control" ${disabledAttr} value="${o.draftEnd||''}" oninput="updateOfficer(${o.id},'draftEnd',this.value)"></div>
            </div>`
         : '';
       return `<div class="card sticky-panel"><div class="card-header d-flex justify-content-between align-items-center"><div>تفاصيل ${categoryLabel}</div><div class="d-flex align-items-center gap-2"><div class="badge-stat">${officerTitle}</div>${canManage ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteOfficerInCategory(${o.id},'${o.category}')">حذف</button>` : ''}<button class="btn btn-sm btn-outline-secondary" onclick="clearSelectedOfficer()">إغلاق</button></div></div><div class="card-body">
@@ -3816,7 +3865,7 @@
             <div class="small-muted mt-1">يتم حفظ الصورة داخل ملف الموظف.</div>
           </div>
         </div>
-        <div class="mb-2"><label class="form-label">الاسم</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.name)}" onchange="updateOfficer(${o.id},'name',this.value)"></div>
+        <div class="mb-2"><label class="form-label">الاسم</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.name)}" oninput="updateOfficer(${o.id},'name',this.value)"></div>
         <div class="mb-2"><label class="form-label">الفئة الوظيفية</label><input class="form-control" value="${escapeHtml(getCategoryLabel(o.category))}" disabled></div>
         <div class="row g-2">
           <div class="col-md-6"><label class="form-label">الرتبة</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'rank',this.value)">${rankOptions.map(r=>`<option ${r===o.rank?'selected':''}>${r}</option>`).join('')}</select></div>
@@ -3827,31 +3876,31 @@
           ${badgeField}
         </div>
         <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">هاتف</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.phone||'')}" onchange="updateOfficer(${o.id},'phone',this.value)"></div>
+          <div class="col-md-6"><label class="form-label">هاتف</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.phone||'')}" oninput="updateOfficer(${o.id},'phone',this.value)"></div>
           <div class="col-md-6"><label class="form-label">الجنس</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'gender',this.value)"><option value="">—</option><option ${o.gender==='ذكر'?'selected':''}>ذكر</option><option ${o.gender==='أنثى'?'selected':''}>أنثى</option></select></div>
         </div>
         ${o.category === 'officers' ? `
         <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">سنة التخرج</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.graduationYear||'')}" onchange="updateOfficer(${o.id},'graduationYear',this.value)"></div>
-          <div class="col-md-6"><label class="form-label">سنة مباشرة العمل</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.workStartYear||'')}" onchange="updateOfficer(${o.id},'workStartYear',this.value)"><div class="small-muted mt-1">المباشرة المحسوبة: ${escapeHtml(startDate || '—')} (1 أغسطس عند عدم إدخال تاريخ التعيين).</div></div>
+          <div class="col-md-6"><label class="form-label">سنة التخرج</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.graduationYear||'')}" oninput="updateOfficer(${o.id},'graduationYear',this.value)"></div>
+          <div class="col-md-6"><label class="form-label">سنة مباشرة العمل</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.workStartYear||'')}" oninput="updateOfficer(${o.id},'workStartYear',this.value)"><div class="small-muted mt-1">المباشرة المحسوبة: ${escapeHtml(startDate || '—')} (1 أغسطس عند عدم إدخال تاريخ التعيين).</div></div>
         </div>` : `
         <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">سنة مباشرة العمل</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.workStartYear||'')}" onchange="updateOfficer(${o.id},'workStartYear',this.value)"><div class="small-muted mt-1">في حال عدم إدخال تاريخ التعيين يتم احتساب 1 أغسطس من السنة.</div></div>
+          <div class="col-md-6"><label class="form-label">سنة مباشرة العمل</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.workStartYear||'')}" oninput="updateOfficer(${o.id},'workStartYear',this.value)"><div class="small-muted mt-1">في حال عدم إدخال تاريخ التعيين يتم احتساب 1 أغسطس من السنة.</div></div>
           <div class="col-md-6"><label class="form-label">تاريخ مباشرة العمل (محسوب)</label><input class="form-control" value="${escapeHtml(startDate)}" disabled></div>
         </div>`}
         <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">رصيد الإجازة السنوية</label><input type="number" class="form-control" ${disabledAttr} value="${o.annualVacationDays ?? ''}" onchange="updateOfficer(${o.id},'annualVacationDays',this.value)"><div class="small-muted mt-1">${annualAllowance != null ? `المستخدم ${annualUsage} يوم • المتبقي ${annualRemaining} يوم${defaultAllowance ? ` (الافتراضي ${defaultAllowance} يوم)` : ''}` : 'حدد الرصيد السنوي لهذا الموظف'}</div></div>
+          <div class="col-md-6"><label class="form-label">رصيد الإجازة السنوية</label><input type="number" class="form-control" ${disabledAttr} value="${o.annualVacationDays ?? ''}" oninput="updateOfficer(${o.id},'annualVacationDays',this.value)"><div class="small-muted mt-1">${annualAllowance != null ? `المستخدم ${annualUsage} يوم • المتبقي ${annualRemaining} يوم${defaultAllowance ? ` (الافتراضي ${defaultAllowance} يوم)` : ''}` : 'حدد الرصيد السنوي لهذا الموظف'}</div></div>
           <div class="col-md-6"><label class="form-label">عام الإجازات</label><input class="form-control" value="${vacationRangeLabel}" disabled></div>
         </div>
          <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">تاريخ الميلاد</label><input type="date" class="form-control" ${disabledAttr} value="${o.birth||''}" onchange="updateOfficer(${o.id},'birth',this.value)">${ageLabel !== '' ? `<div class="small-muted mt-1">العمر: ${ageLabel} سنة</div>` : ''}</div>
+          <div class="col-md-6"><label class="form-label">تاريخ الميلاد</label><input type="date" class="form-control" ${disabledAttr} value="${o.birth||''}" oninput="updateOfficer(${o.id},'birth',this.value)">${ageLabel !== '' ? `<div class="small-muted mt-1">العمر: ${ageLabel} سنة</div>` : ''}</div>
           <div class="col-md-6"><label class="form-label">حالة</label><div class="d-flex align-items-center gap-2">${renderStatusBadge(o.status||'active')}${statusActionMarkup}</div></div>
         </div>
         <div class="row g-2">
            <div class="col-md-6"><label class="form-label">نوع التعيين</label><select id="off_${o.id}_off_admission" class="form-select" ${disabledAttr} onchange="setOfficerAdmissionType(${o.id}, this.value)"><option value="fresh" ${o.admissionType!=='transferred'?'selected':''}>خريج جديد</option><option value="transferred" ${o.admissionType==='transferred'?'selected':''}>منقول من جهة أخرى</option></select></div>
           <div class="col-md-6" id="off_${o.id}_off_hiring_fields" style="display:${transferInVisible?'none':'block'};">
             <label class="form-label">تاريخ التعيين</label>
-            <input type="date" class="form-control" ${disabledAttr} value="${o.hiringDate||''}" onchange="updateOfficer(${o.id},'hiringDate',this.value)">
+            <input type="date" class="form-control" ${disabledAttr} value="${o.hiringDate||''}" oninput="updateOfficer(${o.id},'hiringDate',this.value)">
           </div>
           <div class="col-md-12" id="off_${o.id}_off_transfer_fields" style="display:${transferInVisible?'block':'none'};">
             <label class="form-label">جهة النقل من (الإدارات العامة ومديريات الأمن)</label>
@@ -3860,7 +3909,7 @@
               ${transferDepts.map(d=>`<option value="${d.id}" ${d.id===o.transferFromDeptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}
             </select>
             <label class="form-label">تاريخ النقل للداخل</label>
-            <input type="date" class="form-control" ${disabledAttr} value="${o.transferDate||''}" onchange="updateOfficer(${o.id},'transferDate',this.value)">
+            <input type="date" class="form-control" ${disabledAttr} value="${o.transferDate||''}" oninput="updateOfficer(${o.id},'transferDate',this.value)">
           </div>
         </div>
         <div class="row g-2" id="off_${o.id}_off_transfer_out_fields" style="display:${transferOutVisible?'block':'none'};">
@@ -3871,14 +3920,14 @@
               ${transferDepts.map(d=>`<option value="${d.id}" ${d.id===o.transferToDeptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}
             </select>
             <label class="form-label">تاريخ النقل للخارج</label>
-            <input type="date" class="form-control" ${disabledAttr} value="${o.transferToDate||''}" onchange="updateOfficer(${o.id},'transferToDate',this.value)">
+            <input type="date" class="form-control" ${disabledAttr} value="${o.transferToDate||''}" oninput="updateOfficer(${o.id},'transferToDate',this.value)">
           </div>
          </div>
-        <div class="mb-2"><label class="form-label">العنوان</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.address||'')}" onchange="updateOfficer(${o.id},'address',this.value)"></div>
+        <div class="mb-2"><label class="form-label">العنوان</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.address||'')}" oninput="updateOfficer(${o.id},'address',this.value)"></div>
         ${drafteeDetails}
         <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">شخص طوارئ</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.emgName||'')}" onchange="updateOfficer(${o.id},'emgName',this.value)"></div>
-          <div class="col-md-6"><label class="form-label">هاتف الطوارئ</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.emgPhone||'')}" onchange="updateOfficer(${o.id},'emgPhone',this.value)"></div>
+          <div class="col-md-6"><label class="form-label">شخص طوارئ</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.emgName||'')}" oninput="updateOfficer(${o.id},'emgName',this.value)"></div>
+          <div class="col-md-6"><label class="form-label">هاتف الطوارئ</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.emgPhone||'')}" oninput="updateOfficer(${o.id},'emgPhone',this.value)"></div>
         </div>
         <div class="mt-3">
           <div class="fw-bold mb-2">الدرجات العلمية</div>
@@ -3988,7 +4037,7 @@
           </div>
           <div class="col-md-12" id="new_off_draftee_fields" style="display:none;">
             <div class="row g-2">
-              <div class="col-md-4"><input id="new_off_hometown" class="form-control" placeholder="محل الميلاد/المنشأ"></div>
+              <div class="col-md-4"><input id="new_off_hometown" class="form-control" placeholder="الموطن"></div>
               <div class="col-md-4"><input id="new_off_education" class="form-control" placeholder="المؤهل الدراسي"></div>
               <div class="col-md-2"><input id="new_off_draft_start" type="date" class="form-control" placeholder="يوم التجنيد"></div>
               <div class="col-md-2"><input id="new_off_draft_end" type="date" class="form-control" placeholder="نهاية التجنيد"></div>
@@ -4128,12 +4177,15 @@
       logActivity('إضافة موظف', {target: name, rank});
       renderTab('employees');
     }
-    function updateOfficerBadgeFromInputs(id){
+     function updateOfficerBadgeFromInputs(id){
       const part1 = document.getElementById(`badge_${id}_1`)?.value || '';
       const part2 = document.getElementById(`badge_${id}_2`)?.value || '';
       const part3 = document.getElementById(`badge_${id}_3`)?.value || '';
+      if(!part1.trim() && !part2.trim() && !part3.trim()){
+        updateOfficer(id, 'badge', '');
+        return;
+      }
       if(!part1.trim() || !part2.trim()){
-        safeShowToast('رقما الأقدمية الأول والثاني مطلوبان','warning');
         return;
       }
       updateOfficer(id, 'badge', buildBadgeValue(part1, part2, part3));
@@ -5268,6 +5320,111 @@
         select.innerHTML = actions.length ? `<option value="">— اختر الإجراء —</option>${actions.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('')}` : '<option value="">لا توجد إجراءات متاحة</option>';
       }
     }
+
+    /* ========= Honors ========= */
+    function getHonorTypeLabel(typeId){
+      return honorTypes.find(t=>t.id===typeId)?.name || '—';
+    }
+    function addHonorType(){
+      const name = (document.getElementById('honor_type_name')?.value || '').trim();
+      const note = (document.getElementById('honor_type_note')?.value || '').trim();
+      if(!name) return showToast('أدخل اسم نوع التكريم/التحفيز', 'warning');
+      honorTypes.push({id: Date.now(), name, note});
+      saveAll();
+      renderTab('honors');
+    }
+    function deleteHonorType(id){
+      honorTypes = honorTypes.filter(t=>t.id!==id);
+      honorRecipients = honorRecipients.filter(r=>r.typeId!==id);
+      saveAll();
+      renderTab('honors');
+    }
+    function addHonorRecipient(){
+      const employeeId = +document.getElementById('honor_employee')?.value;
+      const typeId = +document.getElementById('honor_type')?.value;
+      const date = document.getElementById('honor_date')?.value || '';
+      const notes = document.getElementById('honor_notes')?.value || '';
+      if(!employeeId || !typeId || !date) return showToast('أدخل الموظف ونوع التكريم والتاريخ', 'warning');
+      honorRecipients.push({id: Date.now(), employeeId, typeId, date, notes});
+      saveAll();
+      renderTab('honors');
+    }
+    function deleteHonorRecipient(id){
+      honorRecipients = honorRecipients.filter(r=>r.id!==id);
+      saveAll();
+      renderTab('honors');
+    }
+    function renderHonorsTab(){
+      if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول إلى التكريمات والتحفيزات.</div>';
+      const activeSubTab = ['recipients','types'].includes(getHonorsSubTab()) ? getHonorsSubTab() : 'recipients';
+      const employees = officers.map(o=>`<option value="${o.id}">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</option>`).join('');
+      const typeOptions = honorTypes.map(t=>`<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+      const recipientsRows = honorRecipients.map((r, idx)=>`
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
+          <td>${escapeHtml(getHonorTypeLabel(r.typeId))}</td>
+          <td>${escapeHtml(r.date || '')}</td>
+          <td>${escapeHtml(r.notes || '—')}</td>
+          <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteHonorRecipient(${r.id})">حذف</button></td>
+        </tr>
+      `).join('');
+      const typesRows = honorTypes.map((t, idx)=>`
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(t.name)}</td>
+          <td>${escapeHtml(t.note || '—')}</td>
+          <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteHonorType(${t.id})">حذف</button></td>
+        </tr>
+      `).join('');
+      const recipientsSection = `
+        <div class="card mb-3">
+          <div class="card-header">تسجيل تكريم/تحفيز</div>
+          <div class="card-body">
+            <div class="row g-2">
+              <div class="col-md-4"><label class="form-label">الموظف</label><select id="honor_employee" class="form-select"><option value="">— اختر موظف —</option>${employees}</select></div>
+              <div class="col-md-4"><label class="form-label">النوع</label><select id="honor_type" class="form-select"><option value="">— اختر النوع —</option>${typeOptions}</select></div>
+              <div class="col-md-2"><label class="form-label">التاريخ</label><input id="honor_date" type="date" class="form-control"></div>
+              <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addHonorRecipient()">إضافة</button></div>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-md-12"><label class="form-label">ملاحظات</label><input id="honor_notes" class="form-control" placeholder="ملاحظات إضافية"></div>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive"><table class="table table-bordered table-sm">
+          <thead class="table-dark"><tr><th>#</th><th>الموظف</th><th>النوع</th><th>التاريخ</th><th>ملاحظات</th><th></th></tr></thead>
+          <tbody>${recipientsRows || '<tr><td colspan="6" class="text-center text-muted">لا توجد تكريمات مسجلة</td></tr>'}</tbody>
+        </table></div>
+      `;
+      const typesSection = `
+        <div class="card mb-3">
+          <div class="card-header">إدارة الأنواع</div>
+          <div class="card-body">
+            <div class="row g-2">
+              <div class="col-md-4"><input id="honor_type_name" class="form-control" placeholder="اسم النوع"></div>
+              <div class="col-md-6"><input id="honor_type_note" class="form-control" placeholder="وصف أو ملاحظات"></div>
+              <div class="col-md-2"><button class="btn btn-success w-100" onclick="addHonorType()">إضافة</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive"><table class="table table-bordered table-sm">
+          <thead class="table-dark"><tr><th>#</th><th>النوع</th><th>ملاحظات</th><th></th></tr></thead>
+          <tbody>${typesRows || '<tr><td colspan="4" class="text-center text-muted">لا توجد أنواع مسجلة</td></tr>'}</tbody>
+        </table></div>
+      `;
+      const sectionTabs = `<div class="sub-tabs">
+        <button class="sub-tab-btn ${activeSubTab==='recipients'?'active':''}" onclick="setHonorsSubTab('recipients');renderTab('honors')">المستفيدون</button>
+        <button class="sub-tab-btn ${activeSubTab==='types'?'active':''}" onclick="setHonorsSubTab('types');renderTab('honors')">أنواع التكريم</button>
+      </div>`;
+      return `<div class="card">
+        <div class="card-header">التكريم والأنواط</div>
+        <div class="card-body">
+          ${sectionTabs}
+          ${activeSubTab === 'types' ? typesSection : recipientsSection}
+        </div>
+      </div>`;
+    }
    /* ========= Departments ========= */
     function renderDepartmentsTab(){
       if(SETTINGS.authEnabled && (!CURRENT_USER || currentRole()==='editor')) return signInInlineFormMarkup() + '<div class="alert alert-warning">ليست لديك صلاحية تعديل الأقسام.</div>';
@@ -6009,9 +6166,17 @@
         <div class="card-body">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div class="text-muted">معاينة البيانات الأساسية للموظفين وطباعتها أو تصديرها.</div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
               <button class="btn btn-outline-primary" onclick="previewEmployeeReport()">معاينة التقرير</button>
               <button class="btn btn-outline-secondary" onclick="printEmployeeReport()">طباعة PDF</button>
+              <select id="employee_report_export_format" class="form-select form-select-sm" style="min-width:160px;">
+                <option value="pdf">PDF</option>
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="html">HTML</option>
+                <option value="docx">DOCX</option>
+              </select>
+              <button class="btn btn-outline-primary" onclick="exportEmployeeReportByFormat()">تصدير التقرير</button>
               <button class="btn btn-outline-info" onclick="exportOfficersFullCSV()">تصدير CSV كامل</button>
             </div>
           </div>
@@ -6030,11 +6195,25 @@
         </div>
         <div class="card-body">
           ${emptyState}
-          <div class="row g-2 align-items-end">
+          <<div class="row g-2 align-items-end">
             <div class="col-md-6"><label class="form-label">الموظف</label><select id="status_report_employee" class="form-select"><option value="">— اختر موظف —</option>${employees}</select></div>
             <div class="col-md-6 text-end">
               <button class="btn btn-outline-primary me-2" onclick="previewEmployeeStatusReport()">معاينة</button>
               <button class="btn btn-outline-secondary" onclick="printEmployeeStatusReport()">طباعة PDF</button>
+            </div>
+          </div>
+          <div class="row g-2 mt-2 align-items-center">
+            <div class="col-md-4"><label class="form-label">امتداد التصدير</label>
+              <select id="status_report_export_format" class="form-select">
+                <option value="pdf">PDF</option>
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="html">HTML</option>
+                <option value="docx">DOCX</option>
+              </select>
+            </div>
+            <div class="col-md-8 text-end">
+              <button class="btn btn-outline-primary" onclick="exportEmployeeStatusReportByFormat()">تصدير البيان</button>
             </div>
           </div>
           <div id="employeeStatusReportPreview" class="print-preview mt-3"></div>
@@ -6079,6 +6258,47 @@
       if(!id) return showToast('اختر موظفاً للطباعة', 'warning');
       printPdfFromHtml(buildEmployeeStatusReportHtml(id), 'بيان_حالة_وظيفية.pdf');
     }
+    async function exportEmployeeReportByFormat(){
+      if(!officers.length) return showToast('لا توجد بيانات موظفين للتصدير','warning');
+      const format = document.getElementById('employee_report_export_format')?.value || 'pdf';
+      const html = buildEmployeeReportHtml();
+      if(format === 'pdf') return printPdfFromHtml(html, 'تقرير_الموظفين.pdf');
+      if(format === 'html'){
+        const doc = buildStandaloneReportDocument(html, 'تقرير بيانات الموظفين');
+        downloadTextFile(buildReportExportFilename('تقرير_الموظفين', 'html'), doc, 'text/html');
+        return showToast('تم تصدير ملف HTML','success');
+      }
+      if(format === 'docx'){
+        const doc = buildStandaloneDocxDocument(html, 'تقرير بيانات الموظفين');
+        downloadTextFile(buildReportExportFilename('تقرير_الموظفين', 'docx'), doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        return showToast('تم تصدير ملف DOCX','success');
+      }
+      if(format === 'png' || format === 'jpeg'){
+        return exportReportImage(html, 'تقرير_الموظفين', format);
+      }
+      showToast('صيغة التصدير غير مدعومة حالياً','warning');
+    }
+    async function exportEmployeeStatusReportByFormat(){
+      const id = +document.getElementById('status_report_employee')?.value;
+      if(!id) return showToast('اختر موظفاً للتصدير', 'warning');
+      const format = document.getElementById('status_report_export_format')?.value || 'pdf';
+      const html = buildEmployeeStatusReportHtml(id);
+      if(format === 'pdf') return printPdfFromHtml(html, 'بيان_حالة_وظيفية.pdf');
+      if(format === 'html'){
+        const doc = buildStandaloneReportDocument(html, 'بيان حالة وظيفية');
+        downloadTextFile(buildReportExportFilename('بيان_حالة_وظيفية', 'html'), doc, 'text/html');
+        return showToast('تم تصدير ملف HTML','success');
+      }
+      if(format === 'docx'){
+        const doc = buildStandaloneDocxDocument(html, 'بيان حالة وظيفية');
+        downloadTextFile(buildReportExportFilename('بيان_حالة_وظيفية', 'docx'), doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        return showToast('تم تصدير ملف DOCX','success');
+      }
+      if(format === 'png' || format === 'jpeg'){
+        return exportReportImage(html, 'بيان_حالة_وظيفية', format);
+      }
+      showToast('صيغة التصدير غير مدعومة حالياً','warning');
+    }
     function buildEmployeeReportTable(){
       const rows = officers.map((o, idx)=>{
         const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
@@ -6104,7 +6324,8 @@
       const fontSize = getReportPrintFontSize();
       const fontFamily = getReportFontFamily();
       const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>تاريخ التعيين</th></tr></thead><tbody>${buildEmployeeReportTable()}</tbody></table>`;
-      const meta = `<div class="report-meta"><div>إجمالي الموظفين: ${officers.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div></div>`;
+      const printMeta = buildReportPrintMetaHtml();
+      const meta = `<div class="report-meta"><div>إجمالي الموظفين: ${officers.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
       return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير بيانات الموظفين</div></div>${meta}${table}</div></div>`;
     }
     function buildEmployeeStatusReportHtml(employeeId){
@@ -6126,49 +6347,53 @@
       const annualUsed = getAnnualVacationUsage((vacationRecords[o.category] || []).filter(r=>r.employeeId === o.id), vacationRange);
       const annualRemaining = annualAllowance != null ? Math.max(annualAllowance - annualUsed, 0) : null;
       const photoHtml = o.photo ? `<img src="${o.photo}" alt="صورة الموظف">` : `<div class="placeholder">📷</div>`;
+      const printMeta = buildReportPrintMetaHtml();
+      const fallback = (val)=> val ? val : '—';
+      const transferFromName = o.transferFromDeptId ? (departments.find(d=>d.id===o.transferFromDeptId)?.name || '') : '';
+      const transferToName = o.transferToDeptId ? (departments.find(d=>d.id===o.transferToDeptId)?.name || '') : '';
       const infoList = `
         <div class="report-block">
           <h5>البيانات الأساسية</h5>
-          <div>الاسم: ${escapeHtml(o.name || '')}</div>
-          <div>الفئة: ${escapeHtml(getCategoryLabel(o.category))}</div>
-          <div>الرتبة: ${escapeHtml(o.rank || '')}</div>
-          <div>المسمى: ${escapeHtml(jobTitle)}</div>
-          <div>القسم: ${escapeHtml(deptName)}</div>
-          <div>الحالة: ${escapeHtml(statusLabel)}</div>
+          <div>الاسم: ${escapeHtml(fallback(o.name))}</div>
+          <div>الفئة: ${escapeHtml(fallback(getCategoryLabel(o.category)))}</div>
+          <div>الرتبة: ${escapeHtml(fallback(o.rank))}</div>
+          <div>المسمى: ${escapeHtml(fallback(jobTitle))}</div>
+          <div>القسم: ${escapeHtml(fallback(deptName))}</div>
+          <div>الحالة: ${escapeHtml(fallback(statusLabel))}</div>
         </div>
         <div class="report-block">
           <h5>الهوية والتواصل</h5>
-          <div>رقم الأقدمية/الهوية: ${escapeHtml(getOfficerIdentityValue(o) || '')}</div>
-          <div>الهاتف: ${escapeHtml(o.phone || '')}</div>
-          <div>العنوان: ${escapeHtml(o.address || '')}</div>
-          <div>الجنس: ${escapeHtml(o.gender || '')}</div>
-          <div>تاريخ الميلاد: ${escapeHtml(o.birth || '')}</div>
-          <div>شخص الطوارئ: ${escapeHtml(o.emgName || '')} — ${escapeHtml(o.emgPhone || '')}</div>
+          <div>رقم الأقدمية/الهوية: ${escapeHtml(fallback(getOfficerIdentityValue(o)))}</div>
+          <div>الهاتف: ${escapeHtml(fallback(o.phone))}</div>
+          <div>العنوان: ${escapeHtml(fallback(o.address))}</div>
+          <div>الجنس: ${escapeHtml(fallback(o.gender))}</div>
+          <div>تاريخ الميلاد: ${escapeHtml(fallback(o.birth))}</div>
+          <div>شخص الطوارئ: ${escapeHtml(fallback(o.emgName))} — ${escapeHtml(fallback(o.emgPhone))}</div>
         </div>
         <div class="report-block">
           <h5>بيانات التعيين</h5>
           <div>نوع التعيين: ${escapeHtml(o.admissionType === 'transferred' ? 'منقول' : 'خريج جديد')}</div>
-          <div>تاريخ التعيين: ${escapeHtml(o.hiringDate || '')}</div>
-          <div>سنة مباشرة العمل: ${escapeHtml(o.workStartYear || '')}</div>
-          <div>تاريخ مباشرة العمل (محسوب): ${escapeHtml(startDate || '')}</div>
-          ${o.category === 'officers' ? `<div>سنة التخرج: ${escapeHtml(o.graduationYear || '')}</div>` : ''}
-          ${o.transferFromDeptId ? `<div>جهة النقل من: ${escapeHtml(departments.find(d=>d.id===o.transferFromDeptId)?.name || '')}</div>` : ''}
-          ${o.transferDate ? `<div>تاريخ النقل للداخل: ${escapeHtml(o.transferDate)}</div>` : ''}
-          ${o.transferToDeptId ? `<div>جهة النقل إلى: ${escapeHtml(departments.find(d=>d.id===o.transferToDeptId)?.name || '')}</div>` : ''}
-          ${o.transferToDate ? `<div>تاريخ النقل للخارج: ${escapeHtml(o.transferToDate)}</div>` : ''}
+          <div>تاريخ التعيين: ${escapeHtml(fallback(o.hiringDate))}</div>
+          <div>سنة مباشرة العمل: ${escapeHtml(fallback(o.workStartYear))}</div>
+          <div>تاريخ مباشرة العمل (محسوب): ${escapeHtml(fallback(startDate))}</div>
+          <div>سنة التخرج: ${escapeHtml(fallback(o.graduationYear))}</div>
+          <div>جهة النقل من: ${escapeHtml(fallback(transferFromName))}</div>
+          <div>تاريخ النقل للداخل: ${escapeHtml(fallback(o.transferDate))}</div>
+          <div>جهة النقل إلى: ${escapeHtml(fallback(transferToName))}</div>
+          <div>تاريخ النقل للخارج: ${escapeHtml(fallback(o.transferToDate))}</div>
         </div>
         <div class="report-block">
           <h5>الإجازات السنوية</h5>
           ${annualAllowance != null ? `<div>الرصيد السنوي: ${annualAllowance} يوم</div><div>المستخدم خلال العام: ${annualUsed} يوم</div><div>المتبقي: ${annualRemaining} يوم</div><div>عام الإجازات: ${vacationRange.start.toLocaleDateString('ar-EG')} → ${vacationRange.end.toLocaleDateString('ar-EG')}</div>` : '<div class="text-muted">لم يتم تحديد رصيد سنوي لهذا الموظف.</div>'}
         </div>
-        ${o.category === 'draftees' ? `<div class="report-block">
+        <div class="report-block">
           <h5>بيانات المجند</h5>
-          <div>نوع العمل: ${escapeHtml(o.drafteeWorkType || '')}</div>
-          <div>محل الميلاد/المنشأ: ${escapeHtml(o.hometown || '')}</div>
-          <div>المؤهل الدراسي: ${escapeHtml(o.educationDegree || '')}</div>
-          <div>بداية التجنيد: ${escapeHtml(o.draftStart || '')}</div>
-          <div>نهاية التجنيد: ${escapeHtml(o.draftEnd || '')}</div>
-        </div>` : ''}
+          <div>نوع العمل: ${escapeHtml(fallback(o.drafteeWorkType))}</div>
+          <div>الموطن: ${escapeHtml(fallback(o.hometown))}</div>
+          <div>المؤهل الدراسي: ${escapeHtml(fallback(o.educationDegree))}</div>
+          <div>بداية التجنيد: ${escapeHtml(fallback(o.draftStart))}</div>
+          <div>نهاية التجنيد: ${escapeHtml(fallback(o.draftEnd))}</div>
+        </div>
         <div class="report-block">
           <h5>الدرجات العلمية</h5>
           ${degrees.length ? `<ul>${degrees.map(d=>`<li>${escapeHtml(d.type || '')} ${escapeHtml(d.name || '')} ${d.date ? `— ${escapeHtml(d.date)}` : ''}</li>`).join('')}</ul>` : '<div class="text-muted">لم يتم إضافة درجات علمية.</div>'}
@@ -6181,7 +6406,7 @@
           <h5>السفر خارج البلاد</h5>
           ${travels.length ? `<ul>${travels.map(t=>`<li>${escapeHtml(t.startDate || '')} → ${escapeHtml(t.endDate || '')} — ${escapeHtml(t.travelReason || '—')}</li>`).join('')}</ul>` : '<div class="text-muted">لا توجد سفريات خارج البلاد مسجلة.</div>'}
         </div>`;
-      const meta = `<div class="report-meta"><div>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</div><div>رقم الموظف: ${o.id}</div></div>`;
+      const meta = `<div class="report-meta"><div>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</div><div>رقم الموظف: ${o.id}</div>${printMeta}</div>`;
       return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">بيان حالة وظيفية</div></div>${meta}<div class="report-profile">${photoHtml}<div><div class="fw-bold">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</div><div class="small-muted">${escapeHtml(getCategoryLabel(o.category))}</div></div></div>${infoList}</div></div>`;
     }
     function saveReportSettingsFromTab(){
@@ -6213,6 +6438,57 @@
       document.body.appendChild(a);
       a.click();
       a.remove();
+    }
+    function buildReportExportFilename(baseName, extension){
+      const trimmed = String(baseName || 'report').replace(/\.[a-z0-9]+$/i, '').trim() || 'report';
+      const stamp = formatTimestampForFilename(new Date());
+      return `${trimmed}_${stamp}.${extension}`;
+    }
+    function buildStandaloneReportDocument(content, titleText){
+      const fontFamily = getReportFontFamily();
+      const fontSize = getReportPrintFontSize();
+      const title = escapeHtml(titleText || 'تقرير');
+      return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${title}</title>
+        <style>
+          ${buildReportStyles({fontFamily, fontSize, includeBackground: true})}
+        </style>
+      </head><body>${content}</body></html>`;
+    }
+    function buildStandaloneDocxDocument(content, titleText){
+      const fontFamily = getReportFontFamily();
+      const fontSize = getReportPrintFontSize();
+      const title = escapeHtml(titleText || 'تقرير');
+      return `<!doctype html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40" lang="ar" dir="rtl"><head><meta charset="utf-8">
+        <title>${title}</title>
+        <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom></w:WordDocument></xml><![endif]-->
+        <style>
+          ${buildReportStyles({fontFamily, fontSize, includeBackground: false})}
+        </style>
+      </head><body>${content}</body></html>`;
+    }
+    async function exportReportImage(html, baseName, format){
+      const container = document.createElement('div');
+      container.style.width = '210mm';
+      container.style.padding = '6mm';
+      container.style.direction = 'rtl';
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      try{
+        await ensureHtml2CanvasReady();
+        const canvas = await html2canvas(container, {scale:2, useCORS:true});
+        const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+        const dataUrl = canvas.toDataURL(mime, 0.95);
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = buildReportExportFilename(baseName, format);
+        link.click();
+        showToast(`تم تصدير صورة ${format.toUpperCase()}`,'success');
+      }catch(err){
+        console.error(err);
+        showToast('فشل إنشاء الصورة','danger');
+      }finally{
+        container.remove();
+      }
     }
     function buildReportHtmlDocument(ids, month){
       const fontFamily = getReportFontFamily();
