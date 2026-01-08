@@ -160,20 +160,24 @@
     .employee-section-card h6 { margin:0 0 10px; color:#1e3a8a; font-weight:800; }
     .employee-meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
     .pill { background:#e0f2fe; color:#0f172a; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
-    .report-profile { display:flex; gap:14px; align-items:center; border:1px solid #0f172a; border-radius:12px; padding:12px; margin-bottom:10px; }
+    .report-profile { display:flex; gap:14px; align-items:center; justify-content:space-between; border:1px solid #0f172a; border-radius:12px; padding:12px; margin-bottom:10px; flex-direction:row; }
     .report-profile img { width:120px; height:120px; border-radius:12px; object-fit:cover; border:2px solid #0f172a; }
     .report-profile .placeholder { width:120px; height:120px; border-radius:12px; border:2px dashed #94a3b8; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:24px; }
     .report-block { border:1px solid #0f172a; border-radius:10px; padding:10px; margin-bottom:10px; }
     .report-block h5 { margin:0 0 8px; font-size:15px; color:#0f172a; }
+    .report-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:8px 12px; }
+    .report-item { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:6px 8px; display:flex; flex-direction:column; gap:4px; }
+    .report-item .label { font-size:11px; font-weight:700; color:#64748b; }
+    .report-item .value { font-size:13px; font-weight:600; color:#0f172a; }
    .report-preview-paper { background:#fff; border:1px solid #0f172a; border-radius:8px; padding:16px; box-shadow:0 4px 12px rgba(15,23,42,.08); }
     .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#111; margin-bottom:6px; flex-wrap:wrap; }
      .report-header { position:relative; display:flex; justify-content:center; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px; gap:12px; }
     .report-title { font-size:18px; font-weight:700; text-align:center; color:#111; }
      .report-logo { position:absolute; top:0; left:0; right:auto; display:flex; align-items:flex-start; justify-content:flex-start; }
-    .report-logo img { max-height:36px; width:auto; height:auto; }
+    .report-logo img { max-height:38px; width:auto; height:auto; }
     .report-logo-block { display:flex; flex-direction:column; align-items:flex-start; gap:4px; margin-bottom:6px; }
-    .report-logo-block img { max-height:46px; width:auto; height:auto; }
-    .report-logo-subtitle { font-weight:700; color:#111; font-size:12.5px; }
+    .report-logo-block img { max-height:48px; width:auto; height:auto; }
+    .report-logo-subtitle { font-weight:700; color:#111; font-size:10.5px; }
     .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:4px double #0f172a; }
      .report-table th, .report-table td { border-top:1px solid #0f172a; border-bottom:1px solid #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:normal; word-break:break-word; }
     .report-table th { background:#d1d5db; color:#111; font-weight:700; border-top:4px double #0f172a; border-bottom:4px double #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; }
@@ -564,6 +568,22 @@
       appFontFamily: 'Arial',
       formFontFamily: 'Arial',
       tabFontFamily: 'Arial',
+      travelReasons: [
+        'مهمة رسمية',
+        'زيارة رسمية',
+        'دورة تدريبية',
+        'سياحة',
+        'مؤتمر',
+        'علاج',
+        'بحث علمي',
+        'إجازة معتمدة',
+        'تمثيل جهة'
+      ],
+      travelCountries: [
+        'مصر','السعودية','الإمارات','الكويت','قطر','البحرين','عُمان','الأردن','لبنان','سوريا','العراق','المغرب','الجزائر','تونس',
+        'السودان','ليبيا','اليمن','فلسطين','تركيا','فرنسا','إيطاليا','إسبانيا','ألمانيا','المملكة المتحدة','الولايات المتحدة','كندا',
+        'الصين','اليابان','كوريا الجنوبية','الهند'
+      ],
       includeHeaderOnPrint: false,
       includeFooterOnPrint: true,
       idleLogoutMinutes: 0,
@@ -1026,7 +1046,7 @@
         }
       }
           officers = officers.map(o=>{
-          const normalized = Object.assign({status:'active',category:'officers',trainings:[],transferNote:'',phone:'',gender:'',birth:'',address:'',emgName:'',emgPhone:'',admissionType:'fresh',hiringDate:'',workStartYear:'',graduationYear:'',educationDegrees:[],annualVacationDays:null,transferFromDeptId:null,transferToDeptId:null,transferDate:'',transferToDate:'', archivedAt:null, badge:'', policeId:'', nationalId:'', drafteeWorkType:'', photo:'', hometown:'', educationDegree:'', draftStart:'', draftEnd:''}, o);
+          const normalized = Object.assign({status:'active',category:'officers',trainings:[],transferNote:'',phone:'',gender:'',birth:'',address:'',emgName:'',emgPhone:'',admissionType:'fresh',hiringDate:'',workStartYear:'',graduationYear:'',educationDegrees:[],annualVacationDays:null,transferFromDeptId:null,transferToDeptId:null,transferDate:'',transferToDate:'',secondaryDeptId:null,secondaryDeptRole:'', archivedAt:null, badge:'', policeId:'', nationalId:'', drafteeWorkType:'', photo:'', hometown:'', educationDegree:'', draftStart:'', draftEnd:''}, o);
         if(!normalized.transferDate && normalized.transferFromDate) normalized.transferDate = normalized.transferFromDate;
         if(normalized.category === 'draftees'){
           normalized.deptId = null;
@@ -1059,6 +1079,8 @@
         }
         return normalized;
       });
+      if(!Array.isArray(SETTINGS.travelReasons) || !SETTINGS.travelReasons.length) SETTINGS.travelReasons = defaultSettings.travelReasons.slice();
+      if(!Array.isArray(SETTINGS.travelCountries) || !SETTINGS.travelCountries.length) SETTINGS.travelCountries = defaultSettings.travelCountries.slice();
       const officerIds = new Set(officers.filter(o=>o.category==='officers').map(o=>o.id));
       departments = departments.map(d=>{
         const normalized = Object.assign({groupKey:'internal'}, d);
@@ -2720,14 +2742,22 @@
       sessionStorage.setItem('adminSubTab', id);
       renderTab('admin');
     }
+    function getAdminCatalogSubTab(){
+      return sessionStorage.getItem('adminCatalogSubTab') || 'travel';
+    }
+    function setAdminCatalogSubTab(id){
+      sessionStorage.setItem('adminCatalogSubTab', id);
+      renderTab('admin');
+    }
     function renderAdminTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول للوصول للوحة التحكم.</div>';
       const summary = `موظفون: ${officers.length} • أقسام: ${departments.length} • مسميات: ${jobTitles.length} • خطط تدريب: ${(trainingCourses || []).length}`;
       const pendingReq = supportRequests.filter(r=>r.status==='pending').length;
       const authSummary = `مستخدمون: ${(SETTINGS.users||[]).length} • جلسات مفعلة: ${ACTIVE_SESSIONS.length} • طلبات مساعدة قيد الانتظار: ${pendingReq}`;
       const activeStored = getAdminSubTab();
-      const tabs = [
+       const tabs = [
         {id:'overview', label:'نظرة عامة'},
+        {id:'catalogs', label:'القوائم المرجعية'},
         {id:'backup', label:'النسخ والتهيئة'},
         {id:'users', label:'المستخدمون'},
         {id:'requests', label:'طلبات الدعم'},
@@ -2739,6 +2769,35 @@
         overview: `
           <div class="mb-3"><strong>ملخص البيانات:</strong> ${summary}</div>
           <div class="small-muted mb-3">${authSummary}</div>
+        `,
+        catalogs: `
+          <div class="border rounded p-3 h-100">
+            <div class="sub-tabs mb-3">
+              <button class="sub-tab-btn ${getAdminCatalogSubTab()==='travel'?'active':''}" onclick="setAdminCatalogSubTab('travel')">أسباب السفر</button>
+              <button class="sub-tab-btn ${getAdminCatalogSubTab()==='disciplinary'?'active':''}" onclick="setAdminCatalogSubTab('disciplinary')">إجراءات الجزاءات</button>
+            </div>
+            ${getAdminCatalogSubTab()==='travel' ? `
+              <div class="row g-2 mb-2">
+                <div class="col-md-6"><label class="form-label">سبب السفر الجديد</label><input id="travel_reason_name" class="form-control" placeholder="مثال: مهمة رسمية"></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-success w-100" onclick="addTravelReason()">إضافة</button></div>
+              </div>
+              <div class="small text-muted mb-2">يتم عرض هذه الأسباب تلقائياً عند تسجيل سفر للخارج.</div>
+              <div id="travelReasonsTable">${renderTravelReasonsTable()}</div>
+            ` : `
+              <div class="row g-2 mb-2">
+                <div class="col-md-3"><input id="disc_action_name" class="form-control" placeholder="اسم الإجراء التأديبي"></div>
+                <div class="col-md-2"><input id="disc_action_severity" class="form-control" placeholder="درجة الجزاء"></div>
+                <div class="col-md-3"><input id="disc_action_legal" class="form-control" placeholder="المرجع القانوني"></div>
+                <div class="col-md-4"><input id="disc_action_desc" class="form-control" placeholder="وصف موجز للإجراء"></div>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-md-3 form-check d-flex align-items-center"><input id="disc_action_all" class="form-check-input" type="checkbox" checked onchange="toggleDisciplinaryActionCategorySelect()"> <label class="form-check-label ms-2">ينطبق على الجميع</label></div>
+                <div class="col-md-7" id="disc_action_categories">${renderDisciplinaryActionCategoryOptions()}</div>
+                <div class="col-md-2 text-end"><button class="btn btn-success w-100" onclick="addDisciplinaryAction()">إضافة إجراء</button></div>
+              </div>
+              <div id="disciplinaryActionsTable">${renderDisciplinaryActionsTable()}</div>
+            `}
+          </div>
         `,
         backup: `
           <div class="row g-3">
@@ -2898,12 +2957,49 @@
       SETTINGS.disciplinaryActions = Array.isArray(SETTINGS.disciplinaryActions) ? SETTINGS.disciplinaryActions : [];
       SETTINGS.disciplinaryActions.push(action);
       saveAll();
-      renderTab('disciplinary');
+      renderTab(CURRENT_TAB === 'admin' ? 'admin' : 'disciplinary');
     }
     function deleteDisciplinaryAction(id){
       SETTINGS.disciplinaryActions = (SETTINGS.disciplinaryActions || []).filter(a=>a.id !== id);
       saveAll();
-      renderTab('disciplinary');
+      renderTab(CURRENT_TAB === 'admin' ? 'admin' : 'disciplinary');
+    }
+    function renderTravelReasonsTable(){
+      const reasons = getTravelReasons();
+      if(!reasons.length) return '<div class="text-muted">لا توجد أسباب سفر مسجلة بعد.</div>';
+      const rows = reasons.map((reason, idx)=>`<tr>
+        <td>${idx + 1}</td>
+        <td>${escapeHtml(reason)}</td>
+        <td><button class="btn btn-sm btn-outline-danger" onclick="deleteTravelReason(${idx})">حذف</button></td>
+      </tr>`).join('');
+      return `<div class="table-responsive"><table class="table table-sm table-bordered">
+        <thead class="table-dark"><tr><th>#</th><th>السبب</th><th>إجراء</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`;
+    }
+    function addTravelReason(){
+      if(currentRole() !== 'admin') return showToast('هذا الإجراء متاح للمشرف فقط','warning');
+      const input = document.getElementById('travel_reason_name');
+      const value = (input?.value || '').trim();
+      if(!value) return showToast('أدخل سبب السفر','warning');
+      const reasons = getTravelReasons();
+      if(reasons.includes(value)) return showToast('سبب السفر موجود بالفعل','warning');
+      SETTINGS.travelReasons = reasons.concat(value);
+      saveAll();
+      if(input) input.value = '';
+      renderTab('admin');
+    }
+    function deleteTravelReason(index){
+      if(currentRole() !== 'admin') return showToast('هذا الإجراء متاح للمشرف فقط','warning');
+      const reasons = getTravelReasons();
+      const reason = reasons[index];
+      if(reason == null) return;
+      requestConfirmation('حذف سبب السفر؟', ()=>{
+        reasons.splice(index, 1);
+        SETTINGS.travelReasons = reasons;
+        saveAll();
+        renderTab('admin');
+      }, {type:'warning'});
     }
     function renderActivityLogTable(){
       if(!activityLog.length) return '<div class="text-muted">لا يوجد نشاط مسجل بعد</div>';
@@ -3748,10 +3844,19 @@
           .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#111;margin-bottom:6px;flex-wrap:wrap}
           .report-title{font-size:16px;font-weight:700;text-align:center;color:#111}
           .report-logo{position:absolute;top:0;left:0;right:auto;display:flex;align-items:flex-start;justify-content:flex-start}
-          .report-logo img{max-height:32px;width:auto;height:auto}
+          .report-logo img{max-height:34px;width:auto;height:auto}
           .report-logo-block{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:6px}
-          .report-logo-block img{max-height:40px;width:auto;height:auto}
-          .report-logo-subtitle{font-weight:700;color:#111;font-size:12.5px}
+          .report-logo-block img{max-height:42px;width:auto;height:auto}
+          .report-logo-subtitle{font-weight:700;color:#111;font-size:10.5px}
+          .report-profile{display:flex;gap:14px;align-items:center;justify-content:space-between;border:1px solid #0f172a;border-radius:12px;padding:12px;margin-bottom:10px;flex-direction:row}
+          .report-profile img{width:120px;height:120px;border-radius:12px;object-fit:cover;border:2px solid #0f172a}
+          .report-profile .placeholder{width:120px;height:120px;border-radius:12px;border:2px dashed #94a3b8;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:24px}
+          .report-block{border:1px solid #0f172a;border-radius:10px;padding:10px;margin-bottom:10px}
+          .report-block h5{margin:0 0 8px;font-size:15px;color:#0f172a}
+          .report-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px 12px}
+          .report-item{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:6px 8px;display:flex;flex-direction:column;gap:4px}
+          .report-item .label{font-size:11px;font-weight:700;color:#64748b}
+          .report-item .value{font-size:13px;font-weight:600;color:#0f172a}
           .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
           .report-signatures{display:flex;flex-direction:column;gap:12px;margin-top:10px;font-size:12px;line-height:1.5;width:100%;align-items:center;text-align:center}
           .report-signatures-row{display:flex;justify-content:space-between;gap:18px;width:100%}
@@ -4264,7 +4369,7 @@
         : '<li class="list-group-item text-muted">لا توجد تقارير خلال آخر 5 سنوات</li>';
       const travelRecords = (transferRecords[o.category] || []).filter(r=>r.employeeId === o.id && r.type === 'سفر للخارج');
       const travelMarkup = travelRecords.length
-        ? travelRecords.map(r=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(r.startDate)} → ${escapeHtml(r.endDate || '—')}</span><span class="relation-tag">${escapeHtml(r.travelReason || '—')}</span></div>${canManage ? `<button class="btn btn-sm btn-outline-primary" onclick="startTransferEdit(${r.id})">تعديل</button>` : ''}</li>`).join('')
+        ? travelRecords.map(r=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(r.startDate)} → ${escapeHtml(r.endDate || '—')}</span><span class="relation-tag">${escapeHtml(r.travelReason || '—')}${r.travelCountry ? ` • ${escapeHtml(r.travelCountry)}` : ''}</span></div>${canManage ? `<button class="btn btn-sm btn-outline-primary" onclick="startTransferEdit(${r.id})">تعديل</button>` : ''}</li>`).join('')
         : '<li class="list-group-item text-muted">لا توجد سفريات خارج البلاد مسجلة</li>';
       const honorEntries = honorRecipients.filter(r=>r.employeeId === o.id);
       const honorsMarkup = honorEntries.length
@@ -4349,6 +4454,10 @@
         <div class="row g-2">
           <div class="col-md-6"><label class="form-label">الرتبة</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'rank',this.value)">${rankOptions.map(r=>`<option ${r===o.rank?'selected':''}>${r}</option>`).join('')}</select></div>
           <div class="col-md-6"><label class="form-label">القسم</label>${isDraftee ? `<input class="form-control" value="${escapeHtml(generalDeptLabel)}" disabled>` : `<select class="form-select" ${deptDisabled} onchange="updateOfficer(${o.id},'deptId',+this.value||null)"><option value="">— قسم —</option>${getInternalDepartments().map(d=>`<option value="${d.id}" ${d.id===o.deptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select>${isUpper?'<div class="small-muted">حامل مسمى إدارة عليا - القسم معطل</div>':''}`}</div>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-6"><label class="form-label">قسم إضافي</label>${isDraftee ? `<input class="form-control" value="—" disabled>` : `<select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'secondaryDeptId',+this.value||null)"><option value="">— بدون —</option>${getInternalDepartments().map(d=>`<option value="${d.id}" ${d.id===o.secondaryDeptId?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select>`}</div>
+          <div class="col-md-6"><label class="form-label">دور بالقسم الإضافي</label><input class="form-control" ${isDraftee ? 'disabled' : disabledAttr} value="${escapeHtml(o.secondaryDeptRole||'')}" oninput="updateOfficer(${o.id},'secondaryDeptRole',this.value)" placeholder="مثال: منسق/مكلف"></div>
         </div>
         <div class="row g-2">
           <div class="col-md-6"><label class="form-label">${isDraftee ? 'نوع العمل للمجندين' : 'المسمى الوظيفي'}</label>${isDraftee ? `<select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'drafteeWorkType',this.value)"><option value="">— اختر النوع —</option>${DRAFTEE_WORK_TYPES.map(t=>`<option value="${t}" ${t===o.drafteeWorkType?'selected':''}>${t}</option>`).join('')}</select>` : `<select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'jobTitleId',+this.value||null)"><option value="">— مسمى —</option>${jobTitleOptions.map(j=>`<option value="${j.id}" ${j.id===o.jobTitleId?'selected':''}>${escapeHtml(j.name)}</option>`).join('')}</select>`}</div>
@@ -4515,6 +4624,8 @@
           <div class="col-md-3" id="new_off_badge_fields"></div>
           <div class="col-md-3" id="new_off_grad_wrap"><input id="new_off_graduation_year" class="form-control" placeholder="سنة التخرج (للضباط)"></div>
           <div class="col-md-2" id="new_off_dept_wrap"><select id="new_off_dept" class="form-select"><option value="">قسم</option>${getInternalDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select></div>
+          <div class="col-md-2" id="new_off_secondary_dept_wrap"><select id="new_off_secondary_dept" class="form-select"><option value="">قسم إضافي</option>${getInternalDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')}</select></div>
+          <div class="col-md-2" id="new_off_secondary_role_wrap"><input id="new_off_secondary_role" class="form-control" placeholder="دور بالقسم الإضافي"></div>
           <div class="col-md-2" id="new_off_job_wrap"><select id="new_off_job" class="form-select"></select></div>
           <div class="col-md-2" id="new_off_work_type_wrap" style="display:none;"></div>
           <div class="col-md-2"><input id="new_off_phone" class="form-control" placeholder="هاتف"></div>
@@ -4608,6 +4719,21 @@
           deptSelect.innerHTML = `<option value="">قسم</option>` + getInternalDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
         }
       }
+      const secondaryDeptSelect = document.getElementById('new_off_secondary_dept');
+      if(secondaryDeptSelect){
+        if(categoryId === 'draftees'){
+          secondaryDeptSelect.innerHTML = `<option value="">قسم إضافي</option>`;
+          secondaryDeptSelect.disabled = true;
+        } else {
+          secondaryDeptSelect.disabled = false;
+          secondaryDeptSelect.innerHTML = `<option value="">قسم إضافي</option>` + getInternalDepartments().map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+        }
+      }
+      const secondaryRoleInput = document.getElementById('new_off_secondary_role');
+      if(secondaryRoleInput){
+        secondaryRoleInput.disabled = categoryId === 'draftees';
+        if(categoryId === 'draftees') secondaryRoleInput.value = '';
+      }
       const gradWrap = document.getElementById('new_off_grad_wrap');
       const gradInput = document.getElementById('new_off_graduation_year');
       if(gradWrap){
@@ -4654,10 +4780,12 @@
      const admissionType = document.getElementById('new_off_admission').value || 'fresh';
       const hiringDate = admissionType !== 'transferred' ? (document.getElementById('new_off_hiringDate').value || '') : '';
       const transferFromDeptId = admissionType === 'transferred' ? (+document.getElementById('new_off_transferDept').value || null) : null;
-       const transferToDeptId = null;
+      const transferToDeptId = null;
       const transferDate = admissionType === 'transferred' ? (document.getElementById('new_off_transferDate').value || '') : '';
       const transferToDate = '';
       const workType = category === 'draftees' ? (document.getElementById('new_off_work_type')?.value || '') : '';
+      const secondaryDeptId = category === 'draftees' ? null : (+document.getElementById('new_off_secondary_dept')?.value || null);
+      const secondaryDeptRole = category === 'draftees' ? '' : (document.getElementById('new_off_secondary_role')?.value || '');
       const hometown = document.getElementById('new_off_hometown')?.value || '';
       const educationDegree = document.getElementById('new_off_education')?.value || '';
       const draftStart = document.getElementById('new_off_draft_start')?.value || '';
@@ -4669,7 +4797,7 @@
       const annualVacationDays = annualVacationDaysRaw === '' ? null : Number(annualVacationDaysRaw);
       const computedDefault = getAnnualVacationDefault(category, document.getElementById('new_off_birth')?.value || '');
       const resolvedVacationDays = (annualVacationDays === null || Number.isNaN(annualVacationDays)) ? computedDefault : annualVacationDays;
-      officers.push({id, name, category, rank, badge: badgeValue, policeId, nationalId, deptId: category === 'draftees' ? null : (+document.getElementById('new_off_dept').value || null), jobTitleId: category === 'draftees' ? null : (+document.getElementById('new_off_job').value || null), drafteeWorkType: workType, subs: [], status:'active', trainings: [], transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, hometown, educationDegree, draftStart, draftEnd, admissionType, hiringDate, workStartYear, graduationYear, educationDegrees: [], annualVacationDays: resolvedVacationDays, transferFromDeptId, transferToDeptId, transferDate, transferToDate, archivedAt: null, photo: NEW_OFFICER_PHOTO || ''});
+      officers.push({id, name, category, rank, badge: badgeValue, policeId, nationalId, deptId: category === 'draftees' ? null : (+document.getElementById('new_off_dept').value || null), secondaryDeptId, secondaryDeptRole, jobTitleId: category === 'draftees' ? null : (+document.getElementById('new_off_job').value || null), drafteeWorkType: workType, subs: [], status:'active', trainings: [], transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, hometown, educationDegree, draftStart, draftEnd, admissionType, hiringDate, workStartYear, graduationYear, educationDegrees: [], annualVacationDays: resolvedVacationDays, transferFromDeptId, transferToDeptId, transferDate, transferToDate, archivedAt: null, photo: NEW_OFFICER_PHOTO || ''});
       saveAll();
       NEW_OFFICER_PHOTO = '';
       document.getElementById('officerEditorArea').innerHTML='';
@@ -5614,8 +5742,10 @@
       toggleTransferTravelFields();
       const reasonSelect = document.getElementById('transfer_travel_reason');
       const reasonOther = document.getElementById('transfer_travel_reason_other');
+      const countrySelect = document.getElementById('transfer_travel_country');
       if(reasonSelect) reasonSelect.value = record.travelReason || '';
       if(reasonOther) reasonOther.value = '';
+      if(countrySelect) countrySelect.value = record.travelCountry || '';
       if(reasonSelect && record.type === 'سفر للخارج'){
         const optionValues = Array.from(reasonSelect.options).map(o=>o.value);
         if(record.travelReason && !optionValues.includes(record.travelReason)){
@@ -5650,6 +5780,22 @@
         renderTab('transfers');
       }, {type:'warning'});
     }
+    function getTravelReasons(){
+      SETTINGS.travelReasons = Array.isArray(SETTINGS.travelReasons) ? SETTINGS.travelReasons : [];
+      return SETTINGS.travelReasons.map(r=>String(r).trim()).filter(Boolean);
+    }
+    function getTravelCountries(){
+      SETTINGS.travelCountries = Array.isArray(SETTINGS.travelCountries) ? SETTINGS.travelCountries : [];
+      return SETTINGS.travelCountries.map(c=>String(c).trim()).filter(Boolean);
+    }
+    function renderTravelReasonOptions(){
+      const reasons = getTravelReasons();
+      return reasons.map(reason=>`<option value="${escapeHtml(reason)}">${escapeHtml(reason)}</option>`).join('') + `<option value="أخرى">أخرى</option>`;
+    }
+    function renderTravelCountryOptions(){
+      const countries = getTravelCountries();
+      return countries.map(country=>`<option value="${escapeHtml(country)}">${escapeHtml(country)}</option>`).join('');
+    }
 
     function renderTransfersTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للنقل والندب.</div>';
@@ -5668,6 +5814,7 @@
           <td>${escapeHtml(r.scopeLabel || (r.scope === 'external' ? 'خارجي' : 'داخلي'))}</td>
           <td>${escapeHtml(r.type)}</td>
           <td>${escapeHtml(r.travelReason || '—')}</td>
+          <td>${escapeHtml(r.travelCountry || '—')}</td>
           <td>${escapeHtml(r.fromDept)}</td>
           <td>${escapeHtml(r.toDept)}</td>
           <td>${escapeHtml(r.startDate)}</td>
@@ -5689,26 +5836,26 @@
                 <div class="col-md-3"><label class="form-label">${employeeLabel}</label><select id="transfer_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${filteredEmployees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                 <div class="col-md-2"><label class="form-label">نطاق النقل</label><select id="transfer_scope" class="form-select" onchange="updateTransferDepartmentOptions()" ${canManage ? '' : 'disabled'}><option value="internal">داخلي</option><option value="external">خارجي</option></select></div>
                 <div class="col-md-2"><label class="form-label">نوع الحركة</label><select id="transfer_type" class="form-select" onchange="toggleTransferTravelFields()" ${canManage ? '' : 'disabled'}><option value="نقل">نقل</option><option value="ندب">ندب</option><option value="سفر للخارج">سفر للخارج</option></select></div>
-                 <div class="col-md-3" id="transfer_travel_reason_wrap" style="display:none;">
-              <label class="form-label">سبب السفر</label>
-              <select id="transfer_travel_reason" class="form-select" onchange="toggleTransferTravelFields()" ${canManage ? '' : 'disabled'}>
-                <option value="">— اختر السبب —</option>
-                <option>مهمة رسمية</option>
-                <option>زيارة رسمية</option>
-                <option>دورة تدريبية</option>
-                <option>سياحة</option>
-                <option>مؤتمر</option>
-                <option>علاج</option>
-                <option>بحث علمي</option>
-                <option>إجازة معتمدة</option>
-                <option>تمثيل جهة</option>
-                <option>أخرى</option>
-              </select>
-              <input id="transfer_travel_reason_other" class="form-control mt-2" placeholder="سبب آخر" style="display:none;" ${canManage ? '' : 'disabled'}>
-            </div>
                 <div class="col-md-2"><label class="form-label">من جهة</label><select id="transfer_from" class="form-select" ${canManage ? '' : 'disabled'}></select></div>
                 <div class="col-md-2"><label class="form-label">إلى جهة</label><select id="transfer_to" class="form-select" ${canManage ? '' : 'disabled'}></select></div>
-                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addTransferRecord()" ${canManage ? '' : 'disabled'}>${transferEditActive ? 'تحديث' : 'إضافة'}</button></div>
+                <div class="col-md-1 align-self-end"><button class="btn btn-primary w-100" onclick="addTransferRecord()" ${canManage ? '' : 'disabled'}>${transferEditActive ? 'تحديث' : 'إضافة'}</button></div>
+              </div>
+              <div class="row g-2 mt-2" id="transfer_travel_row" style="display:none;">
+                <div class="col-md-4" id="transfer_travel_reason_wrap">
+                  <label class="form-label">سبب السفر</label>
+                  <select id="transfer_travel_reason" class="form-select" onchange="toggleTransferTravelFields()" ${canManage ? '' : 'disabled'}>
+                    <option value="">— اختر السبب —</option>
+                    ${renderTravelReasonOptions()}
+                  </select>
+                  <input id="transfer_travel_reason_other" class="form-control mt-2" placeholder="سبب آخر" style="display:none;" ${canManage ? '' : 'disabled'}>
+                </div>
+                <div class="col-md-4" id="transfer_travel_country_wrap">
+                  <label class="form-label">الدولة</label>
+                  <select id="transfer_travel_country" class="form-select" ${canManage ? '' : 'disabled'}>
+                    <option value="">— اختر الدولة —</option>
+                    ${renderTravelCountryOptions()}
+                  </select>
+                </div>
               </div>
               <div class="row g-2 mt-2">
                 <div class="col-md-3"><label class="form-label">تاريخ البدء</label><input id="transfer_start" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
@@ -5718,8 +5865,8 @@
             </div>
           </div>
            <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>نطاق النقل</th><th>نوع الحركة</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th>${canManage ? '<th>إجراء</th>' : ''}</tr></thead>
-            <tbody>${rows || `<tr><td colspan="${canManage ? 10 : 9}" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>`}</tbody>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>نطاق النقل</th><th>نوع الحركة</th><th>سبب السفر</th><th>الدولة</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th>${canManage ? '<th>إجراء</th>' : ''}</tr></thead>
+            <tbody>${rows || `<tr><td colspan="${canManage ? 11 : 10}" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>`}</tbody>
           </table></div>
         </div>
       </div>`;
@@ -5733,6 +5880,7 @@
      const travelReasonSelected = document.getElementById('transfer_travel_reason')?.value || '';
       const travelReasonOther = document.getElementById('transfer_travel_reason_other')?.value || '';
       const travelReason = travelReasonSelected === 'أخرى' ? travelReasonOther : travelReasonSelected;
+      const travelCountry = document.getElementById('transfer_travel_country')?.value || '';
       const fromDept = document.getElementById('transfer_from')?.value || '';
       const toDept = document.getElementById('transfer_to')?.value || '';
       const startDate = document.getElementById('transfer_start')?.value || '';
@@ -5740,9 +5888,10 @@
       const notes = document.getElementById('transfer_notes')?.value || '';
       if(!employeeId || !startDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ البدء`, 'warning');
      if(type === 'سفر للخارج' && !travelReason) return showToast('اختر سبب السفر للخارج', 'warning');
+      if(type === 'سفر للخارج' && !travelCountry) return showToast('اختر دولة السفر', 'warning');
       transferRecords[categoryId] = Array.isArray(transferRecords[categoryId]) ? transferRecords[categoryId] : [];
       const wasEditing = !!TRANSFER_EDIT_ID;
-      const payload = {id: TRANSFER_EDIT_ID || Date.now(), employeeId, scope, scopeLabel: scope === 'external' ? 'خارجي' : 'داخلي', type, travelReason, fromDept, toDept, startDate, endDate, notes};
+      const payload = {id: TRANSFER_EDIT_ID || Date.now(), employeeId, scope, scopeLabel: scope === 'external' ? 'خارجي' : 'داخلي', type, travelReason, travelCountry, fromDept, toDept, startDate, endDate, notes};
       if(wasEditing){
         transferRecords[categoryId] = transferRecords[categoryId].map(r=>r.id === TRANSFER_EDIT_ID ? payload : r);
         TRANSFER_EDIT_ID = null;
@@ -5763,10 +5912,14 @@
     function toggleTransferTravelFields(){
       const type = document.getElementById('transfer_type')?.value || '';
       const wrap = document.getElementById('transfer_travel_reason_wrap');
+      const travelRow = document.getElementById('transfer_travel_row');
       const reasonSelect = document.getElementById('transfer_travel_reason');
       const otherInput = document.getElementById('transfer_travel_reason_other');
+      const countrySelect = document.getElementById('transfer_travel_country');
+      if(travelRow) travelRow.style.display = type === 'سفر للخارج' ? 'flex' : 'none';
       if(wrap) wrap.style.display = type === 'سفر للخارج' ? 'block' : 'none';
       if(type !== 'سفر للخارج' && reasonSelect) reasonSelect.value = '';
+      if(type !== 'سفر للخارج' && countrySelect) countrySelect.value = '';
       if(otherInput){
         otherInput.style.display = reasonSelect?.value === 'أخرى' && type === 'سفر للخارج' ? 'block' : 'none';
         if(type !== 'سفر للخارج' || reasonSelect?.value !== 'أخرى') otherInput.value = '';
@@ -6965,7 +7118,39 @@
       </div>`;
     }
 
-    /* ========= Report ========= */
+  /* ========= Report ========= */
+    const CUSTOM_EMPLOYEE_REPORT_FIELDS = [
+      {id:'name', label:'الاسم'},
+      {id:'rank', label:'الرتبة'},
+      {id:'department', label:'القسم'},
+      {id:'jobTitle', label:'المسمى'},
+      {id:'status', label:'الحالة'},
+      {id:'identity', label:'رقم الهوية'},
+      {id:'phone', label:'الهاتف'},
+      {id:'address', label:'العنوان'},
+      {id:'gender', label:'الجنس'},
+      {id:'birth', label:'تاريخ الميلاد'},
+      {id:'graduationYear', label:'سنة التخرج'},
+      {id:'workStartYear', label:'سنة مباشرة العمل'},
+      {id:'admissionType', label:'نوع التعيين'},
+      {id:'secondaryDept', label:'دور قسم إضافي'},
+      {id:'emergency', label:'بيانات الطوارئ'}
+    ];
+    function getCustomEmployeeReportSelection(){
+      const stored = sessionStorage.getItem('customEmployeeReportFields');
+      if(stored){
+        try{
+          const parsed = JSON.parse(stored);
+          if(Array.isArray(parsed) && parsed.length) return parsed;
+        }catch(err){
+          console.error(err);
+        }
+      }
+      return ['name','rank','department','jobTitle','status','phone','graduationYear'];
+    }
+    function setCustomEmployeeReportSelection(fields){
+      sessionStorage.setItem('customEmployeeReportFields', JSON.stringify(fields || []));
+    }
     function renderReportTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول لرؤية التقارير.</div>';
       return `<div class="card">
@@ -6989,10 +7174,11 @@
         </div>
       </div>`;
     }
-    function renderReportContent(){
+     function renderReportContent(){
       return `
         ${renderEmployeeReportCard()}
         ${renderEmployeeStatusReportCard()}
+        ${renderCustomEmployeeReportCard()}
         ${renderTransferReportCard()}
         ${renderSubjectReportCard()}
       `;
@@ -7073,6 +7259,55 @@
         </div>
       </div>`;
     }
+    function renderCustomEmployeeReportCard(){
+      const filteredEmployees = getReportEmployees();
+      const employees = filteredEmployees.map(o=>`<option value="${o.id}">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</option>`).join('');
+      const emptyState = filteredEmployees.length ? '' : '<div class="alert alert-info">أدخل قيمة البحث أولاً لإنشاء تقرير مخصص.</div>';
+      const selected = getCustomEmployeeReportSelection();
+      const fieldOptions = CUSTOM_EMPLOYEE_REPORT_FIELDS.map(field=>`
+        <label class="form-check">
+          <input class="form-check-input custom-report-field" type="checkbox" value="${field.id}" ${selected.includes(field.id) ? 'checked' : ''} onchange="updateCustomEmployeeReportSelection()">
+          <span>${escapeHtml(field.label)}</span>
+        </label>
+      `).join('');
+      return `<div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>تقرير موظف مخصص</div>
+          <div class="small text-muted">اختر الحقول المطلوبة قبل المعاينة</div>
+        </div>
+        <div class="card-body">
+          ${emptyState}
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6"><label class="form-label">الموظف</label><select id="custom_report_employee" class="form-select"><option value="">— اختر موظف —</option>${employees}</select></div>
+            <div class="col-md-6 text-end export-row">
+              <button class="btn btn-outline-primary me-2" onclick="previewCustomEmployeeReport()">معاينة</button>
+              <button class="btn btn-outline-secondary" onclick="printCustomEmployeeReport()">طباعة PDF</button>
+            </div>
+          </div>
+          <div class="row g-2 mt-3">
+            <div class="col-md-12">
+              <label class="form-label">الحقول المتاحة</label>
+              <div class="compact-checks">${fieldOptions}</div>
+            </div>
+          </div>
+          <div class="row g-2 mt-2 align-items-center">
+            <div class="col-md-4"><label class="form-label">امتداد التصدير</label>
+              <select id="custom_report_export_format" class="form-select">
+                <option value="pdf">PDF</option>
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="html">HTML</option>
+                <option value="docx">DOCX</option>
+              </select>
+            </div>
+            <div class="col-md-8 text-end export-row">
+              <button class="btn btn-outline-primary" onclick="exportCustomEmployeeReportByFormat()">تصدير التقرير</button>
+            </div>
+          </div>
+          <div id="customEmployeeReportPreview" class="print-preview mt-3"></div>
+        </div>
+      </div>`;
+    }
     function renderTransferReportCard(){
       const filteredEmployees = getReportEmployees();
       const employeeIds = new Set(filteredEmployees.map(e=>e.id));
@@ -7083,6 +7318,7 @@
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
           <td>${escapeHtml(r.type || '—')}</td>
           <td>${escapeHtml(r.travelReason || '—')}</td>
+          <td>${escapeHtml(r.travelCountry || '—')}</td>
           <td>${escapeHtml(r.fromDept || '—')}</td>
           <td>${escapeHtml(r.toDept || '—')}</td>
           <td>${escapeHtml(r.startDate || '')}</td>
@@ -7098,8 +7334,8 @@
           ${filteredEmployees.length ? '' : '<div class="alert alert-info">أدخل قيمة البحث لعرض تقرير النقل والسفر.</div>'}
           <div class="table-responsive">
             <table class="table table-bordered table-sm">
-              <thead class="table-dark"><tr><th class="col-index">م</th><th>الموظف</th><th>النوع</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th></tr></thead>
-              <tbody>${rows || '<tr><td colspan="8" class="text-center text-muted">لا توجد سجلات مطابقة</td></tr>'}</tbody>
+              <thead class="table-dark"><tr><th class="col-index">م</th><th>الموظف</th><th>النوع</th><th>سبب السفر</th><th>الدولة</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th></tr></thead>
+              <tbody>${rows || '<tr><td colspan="9" class="text-center text-muted">لا توجد سجلات مطابقة</td></tr>'}</tbody>
             </table>
           </div>
         </div>
@@ -7157,6 +7393,75 @@
       if(!id) return showToast('اختر موظفاً للطباعة', 'warning');
       printPdfFromHtml(buildEmployeeStatusReportHtml(id), 'بيان_حالة_وظيفية.pdf');
     }
+    function updateCustomEmployeeReportSelection(){
+      const selected = Array.from(document.querySelectorAll('.custom-report-field:checked')).map(el=>el.value);
+      setCustomEmployeeReportSelection(selected);
+    }
+    function getSelectedCustomEmployeeReportFields(){
+      const selected = Array.from(document.querySelectorAll('.custom-report-field:checked')).map(el=>el.value);
+      return selected.length ? selected : getCustomEmployeeReportSelection();
+    }
+    function buildCustomEmployeeReportHtml(employeeId, fields){
+      const o = getEmployeeById(employeeId);
+      if(!o) return '<div class="alert alert-warning">لا توجد بيانات لهذا الموظف.</div>';
+      const selectedFields = Array.isArray(fields) && fields.length ? fields : getCustomEmployeeReportSelection();
+      const fieldDefs = CUSTOM_EMPLOYEE_REPORT_FIELDS.reduce((acc, field)=>{ acc[field.id] = field.label; return acc; }, {});
+      const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
+      const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
+      const statusLabel = {active:'نشط', retired:'متقاعد', transferred:'منقول'}[o.status] || o.status || 'نشط';
+      const identityLabel = getEmployeeIdentityLabel(o.category);
+      const identityValue = getEmployeeIdentityValue(o);
+      const secondaryDeptName = o.secondaryDeptId ? (departments.find(d=>d.id===o.secondaryDeptId)?.name || '') : '';
+      const secondaryDeptSummary = secondaryDeptName || o.secondaryDeptRole ? `${secondaryDeptName || '—'}${o.secondaryDeptRole ? ` — ${o.secondaryDeptRole}` : ''}` : '—';
+      const fieldValues = {
+        name: {label: fieldDefs.name, value: o.name || ''},
+        rank: {label: fieldDefs.rank, value: o.rank || ''},
+        department: {label: fieldDefs.department, value: deptName || ''},
+        jobTitle: {label: fieldDefs.jobTitle, value: jobTitle || ''},
+        status: {label: fieldDefs.status, value: statusLabel},
+        identity: {label: identityLabel || fieldDefs.identity, value: identityValue || ''},
+        phone: {label: fieldDefs.phone, value: o.phone || ''},
+        address: {label: fieldDefs.address, value: o.address || ''},
+        gender: {label: fieldDefs.gender, value: o.gender || ''},
+        birth: {label: fieldDefs.birth, value: o.birth || ''},
+        graduationYear: {label: fieldDefs.graduationYear, value: o.graduationYear || ''},
+        workStartYear: {label: fieldDefs.workStartYear, value: o.workStartYear || ''},
+        admissionType: {label: fieldDefs.admissionType, value: o.admissionType === 'transferred' ? 'منقول' : 'خريج جديد'},
+        secondaryDept: {label: fieldDefs.secondaryDept, value: secondaryDeptSummary},
+        emergency: {label: fieldDefs.emergency, value: `${o.emgName || '—'} — ${o.emgPhone || '—'}`}
+      };
+      const items = selectedFields.map(id=> fieldValues[id]).filter(Boolean);
+      const header = `${buildReportLogoHeader({categoryId: o.category, reportType: 'employee-custom'})}${buildHeaderHtml()}`;
+      const watermark = buildReportWatermarkHtml();
+      const fontSize = getReportPrintFontSize();
+      const fontFamily = getReportFontFamily();
+      const photoHtml = o.photo ? `<img src="${o.photo}" alt="صورة الموظف">` : `<div class="placeholder">📷</div>`;
+      const printMeta = buildReportPrintMetaHtml();
+      const meta = `<div class="report-meta"><div>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</div><div>رقم الموظف: ${o.id}</div>${printMeta}</div>`;
+      const fieldBlock = items.length
+        ? `<div class="report-block"><h5>البيانات المختارة</h5>${buildReportGrid(items)}</div>`
+        : '<div class="alert alert-info">لم يتم اختيار أي حقول للتقرير المخصص.</div>';
+      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير موظف مخصص</div></div>${meta}<div class="report-profile"><div class="report-profile-info"><div class="fw-bold">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</div></div>${photoHtml}</div>${fieldBlock}</div></div>`;
+    }
+    function previewCustomEmployeeReport(){
+      const id = +document.getElementById('custom_report_employee')?.value;
+      const preview = document.getElementById('customEmployeeReportPreview');
+      if(!preview) return;
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث أولاً', 'warning');
+      if(!id) return showToast('اختر موظفاً لإعداد التقرير', 'warning');
+      const fields = getSelectedCustomEmployeeReportFields();
+      if(!fields.length) return showToast('اختر حقلاً واحداً على الأقل', 'warning');
+      preview.innerHTML = buildCustomEmployeeReportHtml(id, fields);
+      preview.scrollIntoView({behavior:'smooth'});
+    }
+    function printCustomEmployeeReport(){
+      const id = +document.getElementById('custom_report_employee')?.value;
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث أولاً', 'warning');
+      if(!id) return showToast('اختر موظفاً للطباعة', 'warning');
+      const fields = getSelectedCustomEmployeeReportFields();
+      if(!fields.length) return showToast('اختر حقلاً واحداً على الأقل', 'warning');
+      printPdfFromHtml(buildCustomEmployeeReportHtml(id, fields), 'تقرير_موظف_مخصص.pdf');
+    }
     async function exportEmployeeReportByFormat(){
       if(!getReportEmployees().length) return showToast('أدخل قيمة البحث للتصدير','warning');
       const format = document.getElementById('employee_report_export_format')?.value || 'pdf';
@@ -7197,6 +7502,30 @@
       if(format === 'png' || format === 'jpeg'){
         return exportReportImage(html, 'بيان_حالة_وظيفية', format);
        }
+      showToast('صيغة التصدير غير مدعومة حالياً','warning');
+    }
+    async function exportCustomEmployeeReportByFormat(){
+      const id = +document.getElementById('custom_report_employee')?.value;
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث أولاً', 'warning');
+      if(!id) return showToast('اختر موظفاً للتصدير', 'warning');
+      const fields = getSelectedCustomEmployeeReportFields();
+      if(!fields.length) return showToast('اختر حقلاً واحداً على الأقل', 'warning');
+      const format = document.getElementById('custom_report_export_format')?.value || 'pdf';
+      const html = buildCustomEmployeeReportHtml(id, fields);
+      if(format === 'pdf') return printPdfFromHtml(html, 'تقرير_موظف_مخصص.pdf');
+      if(format === 'html'){
+        const doc = buildStandaloneReportDocument(html, 'تقرير موظف مخصص');
+        downloadTextFile(buildReportExportFilename('تقرير_موظف_مخصص', 'html'), doc, 'text/html');
+        return showToast('تم تصدير ملف HTML','success');
+      }
+      if(format === 'docx'){
+        const doc = buildStandaloneDocxDocument(html, 'تقرير موظف مخصص');
+        downloadTextFile(buildReportExportFilename('تقرير_موظف_مخصص', 'docx'), doc, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        return showToast('تم تصدير ملف DOCX','success');
+      }
+      if(format === 'png' || format === 'jpeg'){
+        return exportReportImage(html, 'تقرير_موظف_مخصص', format);
+      }
       showToast('صيغة التصدير غير مدعومة حالياً','warning');
     }
     function previewSubjectReport(){
@@ -7241,8 +7570,8 @@
         const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
         const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
         const statusLabel = {active:'نشط', retired:'متقاعد', transferred:'منقول'}[o.status] || o.status || 'نشط';
-        const startDate = getAssumedStartDate(o);
-        return `<tr>
+      const graduationYear = o.graduationYear || '';
+      return `<tr>
           <td class="col-index">${idx + 1}</td>
           <td>${escapeHtml(o.name || '')}</td>
           <td>${escapeHtml(o.rank || '')}</td>
@@ -7250,9 +7579,9 @@
           <td>${escapeHtml(jobTitle)}</td>
           <td>${escapeHtml(statusLabel)}</td>
           <td>${escapeHtml(o.phone || '')}</td>
-          <td>${escapeHtml(startDate || '')}</td>
+          <td>${escapeHtml(graduationYear || '')}</td>
         </tr>`;
-      }).join('');
+    }).join('');
        return rows || `<tr><td colspan="8" class="text-center text-muted">لا توجد بيانات لعرضها</td></tr>`;
     }
     function buildEmployeeReportHtml(){
@@ -7262,7 +7591,7 @@
       const watermark = buildReportWatermarkHtml();
       const fontSize = getReportPrintFontSize();
       const fontFamily = getReportFontFamily();
-      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>تاريخ التعيين</th></tr></thead><tbody>${buildEmployeeReportTable(reportEmployees)}</tbody></table>`;
+      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>سنة التخرج</th></tr></thead><tbody>${buildEmployeeReportTable(reportEmployees)}</tbody></table>`;
       const printMeta = buildReportPrintMetaHtml();
       const meta = `<div class="report-meta"><div>إجمالي النتائج: ${reportEmployees.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
        return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير بيانات الموظفين</div></div>${meta}${table}</div></div>`;
@@ -7274,11 +7603,18 @@
       const watermark = buildReportWatermarkHtml();
       const fontSize = getReportPrintFontSize();
       const fontFamily = getReportFontFamily();
-      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>تاريخ التعيين</th></tr></thead><tbody>${buildEmployeeReportTable(reportEmployees)}</tbody></table>`;
+      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>سنة التخرج</th></tr></thead><tbody>${buildEmployeeReportTable(reportEmployees)}</tbody></table>`;
       const printMeta = buildReportPrintMetaHtml();
       const meta = `<div class="report-meta"><div>إجمالي النتائج: ${reportEmployees.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
       const reportTitle = title || 'تقرير بيانات الموظفين';
       return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">${escapeHtml(reportTitle)}</div></div>${meta}${table}</div></div>`;
+    }
+    function buildReportGrid(items){
+      const cells = (items || []).map(item=>{
+        const value = item.value === undefined || item.value === null || item.value === '' ? '—' : item.value;
+        return `<div class="report-item"><span class="label">${escapeHtml(item.label || '')}</span><span class="value">${escapeHtml(value)}</span></div>`;
+      }).join('');
+      return `<div class="report-grid">${cells}</div>`;
     }
     function buildEmployeeStatusReportHtml(employeeId){
       const o = getEmployeeById(employeeId);
@@ -7304,51 +7640,66 @@
       const fallback = (val)=> val ? val : '—';
       const transferFromName = o.transferFromDeptId ? (departments.find(d=>d.id===o.transferFromDeptId)?.name || '') : '';
       const transferToName = o.transferToDeptId ? (departments.find(d=>d.id===o.transferToDeptId)?.name || '') : '';
+      const secondaryDeptName = o.secondaryDeptId ? (departments.find(d=>d.id===o.secondaryDeptId)?.name || '') : '';
+      const secondaryDeptSummary = secondaryDeptName || o.secondaryDeptRole ? `${secondaryDeptName || '—'}${o.secondaryDeptRole ? ` — ${o.secondaryDeptRole}` : ''}` : '';
       const identityLabel = getEmployeeIdentityLabel(o.category);
       const identityValue = getEmployeeIdentityValue(o);
       const drafteeBlock = o.category === 'draftees' ? `
         <div class="report-block">
           <h5>بيانات المجند</h5>
-          <div>نوع العمل: ${escapeHtml(fallback(o.drafteeWorkType))}</div>
-          <div>الموطن: ${escapeHtml(fallback(o.hometown))}</div>
-          <div>المؤهل الدراسي: ${escapeHtml(fallback(o.educationDegree))}</div>
-          <div>بداية التجنيد: ${escapeHtml(fallback(o.draftStart))}</div>
-          <div>نهاية التجنيد: ${escapeHtml(fallback(o.draftEnd))}</div>
+          ${buildReportGrid([
+            {label:'نوع العمل', value: fallback(o.drafteeWorkType)},
+            {label:'الموطن', value: fallback(o.hometown)},
+            {label:'المؤهل الدراسي', value: fallback(o.educationDegree)},
+            {label:'بداية التجنيد', value: fallback(o.draftStart)},
+            {label:'نهاية التجنيد', value: fallback(o.draftEnd)}
+          ])}
         </div>` : '';
+      const basicItems = [
+        {label:'الاسم', value: fallback(o.name)},
+        {label:'الرتبة', value: fallback(o.rank)},
+        {label:'المسمى', value: fallback(jobTitle)},
+        {label:'القسم', value: fallback(deptName)},
+        {label:'الحالة', value: fallback(statusLabel)}
+      ];
+      if(secondaryDeptSummary) basicItems.push({label:'دور قسم إضافي', value: secondaryDeptSummary});
       const infoList = `
         <div class="report-block">
           <h5>البيانات الأساسية</h5>
-          <div>الاسم: ${escapeHtml(fallback(o.name))}</div>
-          <div>الفئة: ${escapeHtml(fallback(getCategoryLabel(o.category)))}</div>
-          <div>الرتبة: ${escapeHtml(fallback(o.rank))}</div>
-          <div>المسمى: ${escapeHtml(fallback(jobTitle))}</div>
-          <div>القسم: ${escapeHtml(fallback(deptName))}</div>
-          <div>الحالة: ${escapeHtml(fallback(statusLabel))}</div>
-         </div>
+          ${buildReportGrid(basicItems)}
+        </div>
         <div class="report-block">
           <h5>الهوية والتواصل</h5>
-          <div>${escapeHtml(identityLabel)}: ${escapeHtml(fallback(identityValue))}</div>
-          <div>الهاتف: ${escapeHtml(fallback(o.phone))}</div>
-          <div>العنوان: ${escapeHtml(fallback(o.address))}</div>
-          <div>الجنس: ${escapeHtml(fallback(o.gender))}</div>
-          <div>تاريخ الميلاد: ${escapeHtml(fallback(o.birth))}</div>
-          <div>شخص الطوارئ: ${escapeHtml(fallback(o.emgName))} — ${escapeHtml(fallback(o.emgPhone))}</div>
+          ${buildReportGrid([
+            {label: identityLabel, value: fallback(identityValue)},
+            {label:'الهاتف', value: fallback(o.phone)},
+            {label:'العنوان', value: fallback(o.address)},
+            {label:'الجنس', value: fallback(o.gender)},
+            {label:'تاريخ الميلاد', value: fallback(o.birth)},
+            {label:'شخص الطوارئ', value: `${fallback(o.emgName)} — ${fallback(o.emgPhone)}`}
+          ])}
         </div>
         <div class="report-block">
           <h5>بيانات التعيين</h5>
-          <div>نوع التعيين: ${escapeHtml(o.admissionType === 'transferred' ? 'منقول' : 'خريج جديد')}</div>
-          <div>تاريخ التعيين: ${escapeHtml(fallback(o.hiringDate))}</div>
-          <div>سنة مباشرة العمل: ${escapeHtml(fallback(o.workStartYear))}</div>
-          <div>تاريخ مباشرة العمل (محسوب): ${escapeHtml(fallback(startDate))}</div>
-          <div>سنة التخرج: ${escapeHtml(fallback(o.graduationYear))}</div>
-          <div>جهة النقل من: ${escapeHtml(fallback(transferFromName))}</div>
-          <div>تاريخ النقل للداخل: ${escapeHtml(fallback(o.transferDate))}</div>
-          <div>جهة النقل إلى: ${escapeHtml(fallback(transferToName))}</div>
-          <div>تاريخ النقل للخارج: ${escapeHtml(fallback(o.transferToDate))}</div>
+          ${buildReportGrid([
+            {label:'نوع التعيين', value: o.admissionType === 'transferred' ? 'منقول' : 'خريج جديد'},
+            {label:'سنة مباشرة العمل', value: fallback(o.workStartYear)},
+            {label:'تاريخ مباشرة العمل (محسوب)', value: fallback(startDate)},
+            {label:'سنة التخرج', value: fallback(o.graduationYear)},
+            {label:'جهة النقل من', value: fallback(transferFromName)},
+            {label:'تاريخ النقل للداخل', value: fallback(o.transferDate)},
+            {label:'جهة النقل إلى', value: fallback(transferToName)},
+            {label:'تاريخ النقل للخارج', value: fallback(o.transferToDate)}
+          ])}
         </div>
          <div class="report-block">
           <h5>الإجازات السنوية</h5>
-          ${annualAllowance != null ? `<div>الرصيد السنوي: ${annualAllowance} يوم</div><div>المستخدم خلال العام: ${annualUsed} يوم</div><div>المتبقي: ${annualRemaining} يوم</div><div>عام الإجازات: ${vacationRange.start.toLocaleDateString('ar-EG')} → ${vacationRange.end.toLocaleDateString('ar-EG')}</div>` : '<div class="text-muted">لم يتم تحديد رصيد سنوي لهذا الموظف.</div>'}
+          ${annualAllowance != null ? buildReportGrid([
+            {label:'الرصيد السنوي', value: `${annualAllowance} يوم`},
+            {label:'المستخدم خلال العام', value: `${annualUsed} يوم`},
+            {label:'المتبقي', value: `${annualRemaining} يوم`},
+            {label:'عام الإجازات', value: `${vacationRange.start.toLocaleDateString('ar-EG')} → ${vacationRange.end.toLocaleDateString('ar-EG')}`}
+          ]) : '<div class="text-muted">لم يتم تحديد رصيد سنوي لهذا الموظف.</div>'}
         </div>
         ${drafteeBlock}
         <div class="report-block">
@@ -7361,7 +7712,7 @@
         </div>
         <div class="report-block">
           <h5>السفر خارج البلاد</h5>
-          ${travels.length ? `<ul>${travels.map(t=>`<li>${escapeHtml(t.startDate || '')} → ${escapeHtml(t.endDate || '')} — ${escapeHtml(t.travelReason || '—')}</li>`).join('')}</ul>` : '<div class="text-muted">لا توجد سفريات خارج البلاد مسجلة.</div>'}
+          ${travels.length ? `<ul>${travels.map(t=>`<li>${escapeHtml(t.startDate || '')} → ${escapeHtml(t.endDate || '')} — ${escapeHtml(t.travelReason || '—')}${t.travelCountry ? ` • ${escapeHtml(t.travelCountry)}` : ''}</li>`).join('')}</ul>` : '<div class="text-muted">لا توجد سفريات خارج البلاد مسجلة.</div>'}
         </div>`;
       const transferHistoryBlock = `
         <div class="report-block">
@@ -7373,7 +7724,7 @@
           }).join('')}</ul>` : '<div class="text-muted">لا توجد سجلات نقل أو ندب.</div>'}
         </div>`;
       const meta = `<div class="report-meta"><div>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</div><div>رقم الموظف: ${o.id}</div>${printMeta}</div>`;
-      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">بيان حالة وظيفية</div></div>${meta}<div class="report-profile">${photoHtml}<div><div class="fw-bold">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</div><div class="small-muted">${escapeHtml(getCategoryLabel(o.category))}</div></div></div>${infoList}${transferHistoryBlock}</div></div>`;
+       return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">بيان حالة وظيفية</div></div>${meta}<div class="report-profile"><div class="report-profile-info"><div class="fw-bold">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</div></div>${photoHtml}</div>${infoList}${transferHistoryBlock}</div></div>`;
     }
     function saveReportSettingsFromTab(){
       SETTINGS.reportFontFamily = document.getElementById('report_font_family')?.value || SETTINGS.reportFontFamily;
