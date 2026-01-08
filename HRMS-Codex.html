@@ -171,6 +171,9 @@
     .report-title { font-size:18px; font-weight:700; text-align:center; color:#111; }
     .report-logo { position:absolute; top:0; right:0; display:flex; align-items:center; justify-content:center; }
     .report-logo img { max-height:36px; width:auto; height:auto; }
+    .report-logo-block { display:flex; flex-direction:column; align-items:center; gap:4px; margin-bottom:6px; }
+    .report-logo-block img { max-height:46px; width:auto; height:auto; }
+    .report-logo-subtitle { font-weight:700; color:#111; font-size:14px; }
     .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:4px double #0f172a; }
      .report-table th, .report-table td { border-top:1px solid #0f172a; border-bottom:1px solid #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:normal; word-break:break-word; }
     .report-table th { background:#d1d5db; color:#111; font-weight:700; border-top:4px double #0f172a; border-bottom:4px double #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; }
@@ -371,13 +374,17 @@
     let trainingCatalog = {};
     let trainingCourses = [];
     let trainingInstitutes = [];
-     let annualReviews = {};
+    let TRAINING_ASSIGNMENT_EDIT = null;
+    let annualReviews = {};
     let promotions = {};
     let transferRecords = {};
+    let TRANSFER_EDIT_ID = null;
     let vacationRecords = {};
     let disciplinaryRecords = {};
+    let DISCIPLINARY_EDIT_ID = null;
     let honorRecipients = [];
     let honorTypes = [];
+    let HONOR_EDIT_ID = null;
     let activityLog = [];
      let SELECTED_OFFICER_ID = null;
     let CURRENT_TAB = 'landing';
@@ -1398,6 +1405,7 @@
         case 'training':
           c.innerHTML = renderTrainingTab();
           toggleTrainingCourseTypeFields();
+          applyTrainingAssignmentEditState();
           break;
         case 'annual-review':
           c.innerHTML = renderAnnualReviewTab();
@@ -1409,19 +1417,22 @@
           c.innerHTML = renderTransfersTab();
           updateTransferDepartmentOptions();
           toggleTransferTravelFields();
+          applyTransferEditState();
           break;
         case 'vacations':
           c.innerHTML = renderVacationsTab();
           toggleVacationFields();
           break;
-        case 'disciplinary':
+         case 'disciplinary':
           c.innerHTML = renderDisciplinaryTab();
           updateDisciplinaryActionOptions();
           toggleDisciplinaryFields();
           if(getDisciplinarySubTab() === 'actions') toggleDisciplinaryActionCategorySelect();
+          applyDisciplinaryEditState();
           break;
         case 'honors':
           c.innerHTML = renderHonorsTab();
+          applyHonorEditState();
           break;
         case 'report':
           c.innerHTML = renderReportTab();
@@ -2397,6 +2408,31 @@
         ${Object.keys(stats).map(rank => `<div class="badge-stat"><div style="font-size:12px">${escapeHtml(rank)}</div><div class="fw-bold">${stats[rank]}</div></div>`).join('')}
       </div>`;
     }
+    function renderEmployeeStatsSummary(){
+      const total = officers.length;
+      const active = officers.filter(o=>(o.status || 'active') === 'active').length;
+      const retired = officers.filter(o=>o.status === 'retired').length;
+      const transferred = officers.filter(o=>o.status === 'transferred').length;
+      const byCategory = EMPLOYEE_CATEGORIES.map(cat=>({
+        label: cat.label,
+        count: officers.filter(o=>o.category === cat.id).length
+      }));
+      const categoryRows = byCategory.map(c=>`<tr><td>${escapeHtml(c.label)}</td><td>${c.count}</td></tr>`).join('');
+      return `
+        <div class="card mb-3">
+          <div class="card-header">إحصاء الموظفين</div>
+          <div class="card-body">
+            <div class="mb-2">الإجمالي: <strong>${total}</strong> • نشطون: <strong>${active}</strong> • متقاعدون: <strong>${retired}</strong> • منقولون: <strong>${transferred}</strong></div>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="table-dark"><tr><th>الفئة</th><th>العدد</th></tr></thead>
+                <tbody>${categoryRows}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
     function computeDeptGroupStats(){
       const groupDefs = SETTINGS.deptGroups || [{key:'internal', name:'المجموعة الداخلية'},{key:'external', name:'المجموعة الخارجية'}];
       const stats = {};
@@ -2494,6 +2530,7 @@
       const monthOptions = [`<option value="${savedMonth}">الحالي: ${savedMonth}</option>`].concat(monthsAvailable.map(m=>`<option value="${m}">${m}</option>`)).join('');
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>الإحصاءات والأرشيف</div><div><button class="btn btn-sm btn-outline-primary" onclick="renderTab('employees')">عودة</button></div></div>
         <div class="card-body">
+          ${renderEmployeeStatsSummary()}
           <h5>إحصاء مجموعات الأقسام</h5>
           <div id="deptGroupStats">${renderDeptGroupStatsTable()}</div>
           <hr/>
@@ -3504,9 +3541,68 @@
       });
     }
 
-    function buildHeaderHtml(){
+     function buildHeaderHtml(){
       if(!SETTINGS.includeHeaderOnPrint) return '';
       return SETTINGS.headerHtml || '';
+    }
+    function getSingleCategoryFromEmployees(list){
+      const categories = Array.from(new Set((list || []).map(emp=>emp?.category).filter(Boolean)));
+      return categories.length === 1 ? categories[0] : null;
+    }
+    function getReportSubtitle({categoryId, reportType, employees}){
+      if(reportType === 'training') return 'التدريب';
+      const resolvedCategory = categoryId || getSingleCategoryFromEmployees(employees);
+      const map = {
+        officers: 'شئون الضباط',
+        personnel: 'شئون الأفراد',
+        civil: 'الموارد البشرية',
+        draftees: 'شئون المجندين'
+      };
+      return map[resolvedCategory] || 'الموارد البشرية';
+    }
+    function buildReportLogoHeader({categoryId=null, reportType='', employees=[]} = {}){
+      const subtitle = getReportSubtitle({categoryId, reportType, employees});
+      const logoHtml = SETTINGS.logoData ? `<img src="${SETTINGS.logoData}" alt="logo">` : '';
+      if(!logoHtml && !subtitle) return '';
+      return `<div class="report-logo-block">${logoHtml}${subtitle ? `<div class="report-logo-subtitle">${escapeHtml(subtitle)}</div>` : ''}</div>`;
+    }
+    function formatDateAr(dateStr){
+      if(!dateStr) return '';
+      const dateObj = new Date(dateStr);
+      if(Number.isNaN(dateObj.getTime())) return dateStr;
+      return dateObj.toLocaleDateString('ar-EG');
+    }
+    function getEmployeeTransferHistory(employee){
+      if(!employee) return [];
+      const records = (transferRecords[employee.category] || [])
+        .filter(r=>r.employeeId === employee.id && r.type !== 'سفر للخارج')
+        .filter(r=>r.startDate)
+        .slice()
+        .sort((a,b)=> String(a.startDate || '').localeCompare(String(b.startDate || '')));
+      return records.map((record, idx)=>{
+        const next = records[idx + 1];
+        let computedEnd = record.endDate || '';
+        if(next?.startDate){
+          const nextDate = new Date(next.startDate);
+          if(!Number.isNaN(nextDate.getTime())){
+            nextDate.setDate(nextDate.getDate() - 1);
+            computedEnd = nextDate.toISOString().slice(0,10);
+          }
+        }
+        return Object.assign({}, record, {computedEnd});
+      });
+    }
+    function applyTransferToCurrentDepartment(employeeId, recordId){
+      const employee = getEmployeeById(employeeId);
+      if(!employee) return;
+      if(!canEditCategory(employee.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      const record = (transferRecords[employee.category] || []).find(r=>r.id === recordId);
+      if(!record) return;
+      const dept = departments.find(d=>d.groupKey === 'internal' && d.name === record.toDept);
+      if(!dept) return showToast('لا توجد جهة مطابقة لتعيين القسم الحالي', 'warning');
+      updateOfficer(employeeId, 'deptId', dept.id);
+      showToast('تم تحديث القسم الحالي', 'success');
+      refreshEmployeeDetailIfOpen(employeeId);
     }
     function getReportFontFamily(){
       return SETTINGS.reportFontFamily || 'Arial';
@@ -3533,6 +3629,9 @@
           .report-title{font-size:16px;font-weight:700;text-align:center;color:#111}
           .report-logo{position:absolute;top:0;right:0;display:flex;align-items:center;justify-content:center}
           .report-logo img{max-height:32px;width:auto;height:auto}
+          .report-logo-block{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px}
+          .report-logo-block img{max-height:40px;width:auto;height:auto}
+          .report-logo-subtitle{font-weight:700;color:#111;font-size:14px}
           .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
           .report-signatures{display:flex;flex-direction:column;gap:12px;margin-top:10px;font-size:12px;line-height:1.5;width:100%;align-items:center;text-align:center}
           .report-signatures-row{display:flex;justify-content:space-between;gap:18px;width:100%}
@@ -3962,12 +4061,18 @@
       const list = categoryId ? officers.filter(o=>o.category===categoryId) : officers;
       return filterEmployeesBySearch(list, term);
     }
-    function printEmployeesReportFromEmployeesTab(){
+     function printEmployeesReportFromEmployeesTab(){
       const activeCategory = getActiveCategory('employeeCategory', 'officers');
       const results = getEmployeesFromOfficerSearch(activeCategory);
       if(!results.length) return showToast('أدخل قيمة البحث لطباعة التقرير', 'warning');
       const title = `تقرير بيانات ${getEmployeeLabel(activeCategory, 'plural')}`;
       printPdfFromHtml(buildEmployeeReportHtmlForList(results, title), 'تقرير_الموظفين.pdf');
+    }
+    function printEmployeeStatusReportFromEmployeesTab(employeeId){
+      const employee = getEmployeeById(employeeId);
+      if(!employee) return showToast('لا يوجد موظف للطباعة', 'warning');
+      const filename = `بيان_حالة_${employee.name || 'موظف'}.pdf`;
+      printPdfFromHtml(buildEmployeeStatusReportHtml(employeeId), filename);
     }
     function renderOfficersList(categoryId){
       const filters = getOfficerFilterState();
@@ -4018,7 +4123,7 @@
       const isDraftee = o.category === 'draftees';
       const generalDeptLabel = getGeneralAdministrationLabel();
       const trainings = Array.isArray(o.trainings) ? o.trainings : [];
-        const trainingsMarkup = trainings.length ? trainings.map(t=>`<li class="list-group-item"><span>${escapeHtml(t.name)}</span><span class="relation-tag">رقم: ${escapeHtml(t.courseNumber || '—')} | ${escapeHtml(t.startDate)} → ${escapeHtml(t.endDate)} | ${escapeHtml(t.institute || t.center || t.location || '')}</span></li>`).join('') : '<li class="list-group-item text-muted">لا توجد دورات مسندة</li>';
+        const trainingsMarkup = trainings.length ? trainings.map((t, idx)=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(t.name)}</span><span class="relation-tag">رقم: ${escapeHtml(t.courseNumber || '—')} | ${escapeHtml(t.startDate)} → ${escapeHtml(t.endDate)} | ${escapeHtml(t.institute || t.center || t.location || '')}</span></div>${canManage ? `<button class="btn btn-sm btn-outline-primary" onclick="startTrainingAssignmentEdit(${o.id}, ${idx})">تعديل</button>` : ''}</li>`).join('') : '<li class="list-group-item text-muted">لا توجد دورات مسندة</li>';
       const degrees = Array.isArray(o.educationDegrees) ? o.educationDegrees : [];
       const degreesMarkup = degrees.length
         ? degrees.map((d, idx)=>`<li class="list-group-item"><span>${escapeHtml(`${d.type || ''} ${d.name || ''}`.trim()) || '—'}</span><span class="relation-tag">${escapeHtml(d.date || '')}</span>${canManage ? `<button class="btn btn-sm btn-outline-danger" onclick="removeEducationDegree(${o.id},${idx})">حذف</button>` : ''}</li>`).join('')
@@ -4039,8 +4144,26 @@
         : '<li class="list-group-item text-muted">لا توجد تقارير خلال آخر 5 سنوات</li>';
       const travelRecords = (transferRecords[o.category] || []).filter(r=>r.employeeId === o.id && r.type === 'سفر للخارج');
       const travelMarkup = travelRecords.length
-        ? travelRecords.map(r=>`<li class="list-group-item"><span>${escapeHtml(r.startDate)} → ${escapeHtml(r.endDate || '—')}</span><span class="relation-tag">${escapeHtml(r.travelReason || '—')}</span></li>`).join('')
+        ? travelRecords.map(r=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(r.startDate)} → ${escapeHtml(r.endDate || '—')}</span><span class="relation-tag">${escapeHtml(r.travelReason || '—')}</span></div>${canManage ? `<button class="btn btn-sm btn-outline-primary" onclick="startTransferEdit(${r.id})">تعديل</button>` : ''}</li>`).join('')
         : '<li class="list-group-item text-muted">لا توجد سفريات خارج البلاد مسجلة</li>';
+      const honorEntries = honorRecipients.filter(r=>r.employeeId === o.id);
+      const honorsMarkup = honorEntries.length
+        ? honorEntries.map(r=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(getHonorTypeLabel(r.typeId))}</span><span class="relation-tag">${escapeHtml(r.date || '')}</span><div class="small-muted">${escapeHtml(r.notes || '')}</div></div>${canManage ? `<button class="btn btn-sm btn-outline-primary" onclick="startHonorEdit(${r.id})">تعديل</button>` : ''}</li>`).join('')
+        : '<li class="list-group-item text-muted">لا توجد تكريمات مسجلة</li>';
+      const employeeDisciplinary = (disciplinaryRecords[o.category] || []).filter(r=>r.employeeId === o.id);
+      const disciplinaryMarkup = employeeDisciplinary.length
+        ? employeeDisciplinary.map(r=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(r.caseCategoryLabel || (r.caseCategory === 'criminal' ? 'جنائي' : 'إداري'))}</span><span class="relation-tag">${escapeHtml(r.caseType || r.disciplinaryActionName || '—')} • ${escapeHtml(r.caseDate || '')}</span><div class="small-muted">${escapeHtml(r.brief || '')}</div></div>${canManage ? `<button class="btn btn-sm btn-outline-primary" onclick="startDisciplinaryEdit(${r.id})">تعديل</button>` : ''}</li>`).join('')
+        : '<li class="list-group-item text-muted">لا توجد حالات تأديبية مسجلة</li>';
+      const transferHistory = getEmployeeTransferHistory(o);
+      const transferHistoryMarkup = transferHistory.length
+        ? transferHistory.map(r=>{
+          const end = r.computedEnd || r.endDate || '';
+          const dateLabel = `${formatDateAr(r.startDate)} → ${formatDateAr(end)}`;
+          const actionButton = canManage && r.scope === 'internal'
+            ? `<button class="btn btn-sm btn-outline-secondary" onclick="applyTransferToCurrentDepartment(${o.id}, ${r.id})">تعيين كقسم حالي</button>` : '';
+          return `<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(r.fromDept || '—')} → ${escapeHtml(r.toDept || '—')}</span><span class="relation-tag">${escapeHtml(dateLabel)}</span></div>${actionButton}</li>`;
+        }).join('')
+        : '<li class="list-group-item text-muted">لا توجد سجلات نقل/ندب</li>';
       const badgeField = o.category === 'officers'
         ? `
           <div class="col-md-6"><label class="form-label">رقم الأقدمية</label>
@@ -4090,7 +4213,7 @@
              <div class="col-md-3"><label class="form-label">نهاية التجنيد</label><input type="date" class="form-control" ${disabledAttr} value="${o.draftEnd||''}" oninput="updateOfficer(${o.id},'draftEnd',this.value)"></div>
            </div>`
         : '';
-      return `<div class="card sticky-panel"><div class="card-header d-flex justify-content-between align-items-center"><div>تفاصيل ${categoryLabel}</div><div class="d-flex align-items-center gap-2"><div class="badge-stat">${officerTitle}</div>${canManage ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteOfficerInCategory(${o.id},'${o.category}')">حذف</button>` : ''}<button class="btn btn-sm btn-outline-secondary" onclick="clearSelectedOfficer()">إغلاق</button></div></div><div class="card-body">
+       return `<div class="card sticky-panel"><div class="card-header d-flex justify-content-between align-items-center"><div>تفاصيل ${categoryLabel}</div><div class="d-flex align-items-center gap-2 flex-wrap"><div class="badge-stat">${officerTitle}</div><button class="btn btn-sm btn-outline-primary" onclick="printEmployeeStatusReportFromEmployeesTab(${o.id})">طباعة البيان</button>${canManage ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteOfficerInCategory(${o.id},'${o.category}')">حذف</button>` : ''}<button class="btn btn-sm btn-outline-secondary" onclick="clearSelectedOfficer()">إغلاق</button></div></div><div class="card-body">
         <div class="row g-2 mb-3 align-items-center">
           <div class="col-md-3">
             ${photoPreview}
@@ -4182,6 +4305,18 @@
           <div class="employee-section-card">
             <h6>سفريات خارج البلاد والغرض</h6>
             <ul class="list-group">${travelMarkup}</ul>
+          </div>
+          <div class="employee-section-card">
+            <h6>سجل النقل والندب (داخلي/خارجي)</h6>
+            <ul class="list-group">${transferHistoryMarkup}</ul>
+          </div>
+          <div class="employee-section-card">
+            <h6>التكريمات والتحفيزات</h6>
+            <ul class="list-group">${honorsMarkup}</ul>
+          </div>
+          <div class="employee-section-card">
+            <h6>السجل التأديبي</h6>
+            <ul class="list-group">${disciplinaryMarkup}</ul>
           </div>
         </div>
       </div></div>`;
@@ -4870,12 +5005,49 @@
       const jointWrap = document.getElementById('training_joint_wrap');
       if(jointWrap) jointWrap.style.display = typeId === 'joint' ? 'block' : 'none';
     }
+    function startTrainingAssignmentEdit(employeeId, trainingIndex){
+      const employee = getEmployeeById(employeeId);
+      if(!employee) return;
+      TRAINING_ASSIGNMENT_EDIT = {employeeId, trainingIndex};
+      setTrainingSubTab('assignments');
+      sessionStorage.setItem('tabSearch_training', employee.name || '');
+      renderTab('training');
+    }
+    function cancelTrainingAssignmentEdit(){
+      TRAINING_ASSIGNMENT_EDIT = null;
+      renderTab('training');
+    }
+    function applyTrainingAssignmentEditState(){
+      if(!TRAINING_ASSIGNMENT_EDIT) return;
+      const {employeeId, trainingIndex} = TRAINING_ASSIGNMENT_EDIT;
+      const employee = getEmployeeById(employeeId);
+      const assignment = employee?.trainings?.[trainingIndex];
+      if(!employee || !assignment){
+        TRAINING_ASSIGNMENT_EDIT = null;
+        return;
+      }
+      const employeeSelect = document.getElementById('training_employee');
+      if(employeeSelect) employeeSelect.value = employee.id || '';
+      const courseSelect = document.getElementById('training_course');
+      if(courseSelect) courseSelect.value = assignment.courseId || '';
+      const numberInput = document.getElementById('training_course_number_assign');
+      if(numberInput) numberInput.value = assignment.courseNumber || '';
+      const startInput = document.getElementById('training_assign_start');
+      if(startInput) startInput.value = assignment.startDate || '';
+      const endInput = document.getElementById('training_assign_end');
+      if(endInput) endInput.value = assignment.endDate || '';
+      const notice = document.getElementById('training_edit_notice');
+      if(notice){
+        notice.innerHTML = `<div class="alert alert-warning d-flex justify-content-between align-items-center"><div>تعديل إسناد تدريب لـ ${escapeHtml(employee.name)}</div><button class="btn btn-sm btn-outline-secondary" onclick="cancelTrainingAssignmentEdit()">إلغاء التعديل</button></div>`;
+      }
+    }
     function renderTrainingAssignments(categoryId, searchTerm){
       if(!(searchTerm || '').trim()) return `<div class="text-muted">أدخل قيمة البحث لعرض بيانات الموظفين والدورات المسندة.</div>`;
       const employees = filterEmployeesBySearch(getEmployeesByCategory(categoryId), searchTerm);
       const employeeLabel = getEmployeeLabel(categoryId, 'singular');
       if(!employees.length) return `<div class="text-muted">لا توجد بيانات ${getEmployeeLabel(categoryId, 'plural')} لهذه الفئة.</div>`;
-      const rows = employees.flatMap(emp => (emp.trainings || []).map(t=>`
+      const canManage = canEditTraining();
+      const rows = employees.flatMap(emp => (emp.trainings || []).map((t, idx)=>`
         <tr>
           <td>${escapeHtml(emp.name)}</td>
           <td>${escapeHtml(t.name)}</td>
@@ -4883,13 +5055,26 @@
           <td>${escapeHtml(t.startDate)}</td>
           <td>${escapeHtml(t.endDate)}</td>
           <td>${escapeHtml(t.institute || '')}</td>
+          ${canManage ? `<td class="text-end"><button class="btn btn-sm btn-outline-primary me-1" onclick="startTrainingAssignmentEdit(${emp.id}, ${idx})">تعديل</button><button class="btn btn-sm btn-outline-danger" onclick="removeTrainingAssignment(${emp.id}, ${idx})">حذف</button></td>` : ''}
         </tr>
       `));
       if(!rows.length) return '<div class="text-muted">لا توجد دورات مسندة بعد.</div>';
       return `<div class="table-responsive"><table class="table table-bordered table-sm">
-        <thead class="table-dark"><tr><th>${employeeLabel}</th><th>الدورة</th><th>رقم الدورة</th><th>بداية</th><th>نهاية</th><th>معهد التدريب</th></tr></thead>
+        <thead class="table-dark"><tr><th>${employeeLabel}</th><th>الدورة</th><th>رقم الدورة</th><th>بداية</th><th>نهاية</th><th>معهد التدريب</th>${canManage ? '<th>إجراء</th>' : ''}</tr></thead>
         <tbody>${rows.join('')}</tbody>
       </table></div>`;
+    }
+    function removeTrainingAssignment(employeeId, trainingIndex){
+      if(!canEditTraining()) return showToast('لا تملك صلاحية تعديل التدريب','warning');
+      const employee = getEmployeeById(employeeId);
+      if(!employee) return;
+      requestConfirmation('حذف إسناد الدورة التدريبية؟', ()=>{
+        employee.trainings = (employee.trainings || []).filter((_, idx)=>idx !== trainingIndex);
+        saveAll();
+        showToast('تم حذف الإسناد', 'warning');
+        refreshEmployeeDetailIfOpen(employeeId);
+        renderTab('training');
+      }, {type:'warning'});
     }
     function hasTrainingRunConflict(courseId, courseNumber, startDate, endDate){
       const runs = officers.flatMap(o=>o.trainings || []).filter(t=>t.courseId===courseId && t.courseNumber===courseNumber);
@@ -4912,12 +5097,17 @@
       if(hasTrainingRunConflict(courseId, courseNumber, startDate, endDate)){
         return showToast('رقم الدورة مستخدم لدورة بتاريخ مختلف. غيّر الرقم أو التواريخ.', 'warning');
       }
-      employee.trainings = Array.isArray(employee.trainings) ? employee.trainings : [];
-      if(employee.trainings.some(t=>t.courseId===courseId && t.courseNumber===courseNumber && t.startDate===startDate && t.endDate===endDate)){
+      const editState = TRAINING_ASSIGNMENT_EDIT;
+      const editing = editState && Number.isInteger(editState.trainingIndex);
+      const originalEmployee = editing ? getEmployeeById(editState.employeeId) : null;
+      const originalAssignments = originalEmployee ? (originalEmployee.trainings || []) : [];
+      const isDuplicate = employee.trainings?.some(t=>t.courseId===courseId && t.courseNumber===courseNumber && t.startDate===startDate && t.endDate===endDate);
+      if(isDuplicate && (!editing || employeeId !== editState.employeeId || editState.trainingIndex == null)){
         return showToast(`الدورة مسندة لهذا ${getEmployeeLabel(categoryId, 'singular')} بالفعل`, 'info');
       }
+      employee.trainings = Array.isArray(employee.trainings) ? employee.trainings : [];
       const instituteName = course.instituteName || getTrainingInstituteName(course.instituteId);
-      employee.trainings.push({
+      const payload = {
         courseId: course.id,
         name: course.name,
         courseNumber,
@@ -4925,9 +5115,20 @@
         endDate,
         institute: instituteName,
         assignedAt: new Date().toISOString().slice(0,10)
-      });
+      };
+      if(editing && originalEmployee){
+        if(originalEmployee.id === employee.id && originalAssignments[editState.trainingIndex]){
+          originalAssignments[editState.trainingIndex] = payload;
+        } else {
+          originalEmployee.trainings = originalAssignments.filter((_, idx)=>idx !== editState.trainingIndex);
+          employee.trainings.push(payload);
+        }
+        TRAINING_ASSIGNMENT_EDIT = null;
+      } else {
+        employee.trainings.push(payload);
+      }
       saveAll();
-      showToast('تم إسناد الدورة التدريبية', 'success');
+      showToast(editing ? 'تم تحديث إسناد الدورة التدريبية' : 'تم إسناد الدورة التدريبية', 'success');
       refreshEmployeeDetailIfOpen(employeeId);
       renderTab('training');
     }
@@ -4985,7 +5186,7 @@
         renderTab('training');
       }, {type:'warning'});
     }
-    function renderTrainingTab(){
+     function renderTrainingTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للتدريب.</div>';
       const activeCategory = getActiveCategory('trainingCategory', 'officers');
       const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
@@ -4997,6 +5198,7 @@
       const searchBar = renderTabSearchBar('training', `ابحث عن ${employeeLabel} لإظهار البيانات`);
       const storedSubTab = getTrainingSubTab();
       const activeSubTab = ['courses','assignments'].includes(storedSubTab) ? storedSubTab : 'courses';
+      const trainingEditActive = !!(TRAINING_ASSIGNMENT_EDIT && Number.isInteger(TRAINING_ASSIGNMENT_EDIT.trainingIndex));
       const sectionTabs = `<div class="sub-tabs">
         <button class="sub-tab-btn ${activeSubTab==='courses'?'active':''}" onclick="setTrainingSubTab('courses');renderTab('training')">الدورات التدريبية</button>
         <button class="sub-tab-btn ${activeSubTab==='assignments'?'active':''}" onclick="setTrainingSubTab('assignments');renderTab('training')">إسناد الموظفين للدورات</button>
@@ -5064,14 +5266,15 @@
       const assignmentsSection = `
           <div class="card mb-3">
             <div class="card-header">إسناد دورة تدريبية</div>
-            <div class="card-body">
+             <div class="card-body">
+              <div id="training_edit_notice"></div>
               <div class="row g-2">
                 <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="training_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                 <div class="col-md-4"><label class="form-label">الدورة</label><select id="training_course" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر دورة —</option>${courses.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('')}</select></div>
                 <div class="col-md-4"><label class="form-label">رقم الدورة</label><input id="training_course_number_assign" class="form-control" ${canManage ? '' : 'disabled'}></div>
                 <div class="col-md-3"><label class="form-label">من تاريخ</label><input id="training_assign_start" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
                 <div class="col-md-3"><label class="form-label">إلى تاريخ</label><input id="training_assign_end" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
-                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="assignTrainingToEmployee()" ${canManage ? '' : 'disabled'}>إسناد</button></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="assignTrainingToEmployee()" ${canManage ? '' : 'disabled'}>${trainingEditActive ? 'تحديث' : 'إسناد'}</button></div>
               </div>
               <div class="small-muted mt-2">رقم الدورة لا يتكرر إلا إذا كانت نفس الدورة وفي نفس تواريخ التنفيذ.</div>
             </div>
@@ -5233,7 +5436,7 @@
       }
       updatePromotionNextRankOptions();
     }
-    function updatePromotionNextRankOptions(){
+     function updatePromotionNextRankOptions(){
       const categoryId = getActiveCategory('promotionsCategory', 'officers');
       const ladder = getCategoryRankLadder(categoryId);
       const currentRank = document.getElementById('promotion_current_rank')?.value || '';
@@ -5245,7 +5448,87 @@
         .filter(item=>currentIndex >= 0 ? item.idx > currentIndex : true)
         .map(item=>`<option value="${escapeHtml(item.rank)}">${escapeHtml(item.rank)}</option>`)
         .join('');
-      nextSelect.innerHTML = options || '<option value="">— لا توجد رتبة أعلى —</option>';
+       nextSelect.innerHTML = options || '<option value="">— لا توجد رتبة أعلى —</option>';
+    }
+
+    function startTransferEdit(recordId){
+      let categoryId = null;
+      let record = null;
+      Object.keys(transferRecords || {}).forEach(cat=>{
+        const found = (transferRecords[cat] || []).find(r=>r.id === recordId);
+        if(found){
+          categoryId = cat;
+          record = found;
+        }
+      });
+      if(!record || !categoryId) return;
+      const employee = getEmployeeById(record.employeeId);
+      TRANSFER_EDIT_ID = recordId;
+      setActiveCategory('transfersCategory', categoryId);
+      sessionStorage.setItem('tabSearch_transfers', employee?.name || '');
+      renderTab('transfers');
+    }
+    function cancelTransferEdit(){
+      TRANSFER_EDIT_ID = null;
+      renderTab('transfers');
+    }
+    function applyTransferEditState(){
+      if(!TRANSFER_EDIT_ID) return;
+      const categoryId = getActiveCategory('transfersCategory', 'officers');
+      const record = (transferRecords[categoryId] || []).find(r=>r.id === TRANSFER_EDIT_ID);
+      if(!record){
+        TRANSFER_EDIT_ID = null;
+        return;
+      }
+      const notice = document.getElementById('transfer_edit_notice');
+      if(notice){
+        notice.innerHTML = `<div class="alert alert-warning d-flex justify-content-between align-items-center"><div>تعديل سجل نقل/ندب لـ ${escapeHtml(getEmployeeNameById(record.employeeId))}</div><button class="btn btn-sm btn-outline-secondary" onclick="cancelTransferEdit()">إلغاء التعديل</button></div>`;
+      }
+      const employeeSelect = document.getElementById('transfer_employee');
+      if(employeeSelect) employeeSelect.value = record.employeeId || '';
+      const scopeSelect = document.getElementById('transfer_scope');
+      if(scopeSelect) scopeSelect.value = record.scope || 'internal';
+      updateTransferDepartmentOptions();
+      const typeSelect = document.getElementById('transfer_type');
+      if(typeSelect) typeSelect.value = record.type || '';
+      toggleTransferTravelFields();
+      const reasonSelect = document.getElementById('transfer_travel_reason');
+      const reasonOther = document.getElementById('transfer_travel_reason_other');
+      if(reasonSelect) reasonSelect.value = record.travelReason || '';
+      if(reasonOther) reasonOther.value = '';
+      if(reasonSelect && record.type === 'سفر للخارج'){
+        const optionValues = Array.from(reasonSelect.options).map(o=>o.value);
+        if(record.travelReason && !optionValues.includes(record.travelReason)){
+          reasonSelect.value = 'أخرى';
+          if(reasonOther) reasonOther.value = record.travelReason;
+        } else if(reasonSelect.value === 'أخرى' && reasonOther){
+          reasonOther.value = record.travelReason || '';
+        }
+      }
+      const fromSelect = document.getElementById('transfer_from');
+      if(fromSelect) fromSelect.value = record.fromDept || '';
+      const toSelect = document.getElementById('transfer_to');
+      if(toSelect) toSelect.value = record.toDept || '';
+      const startInput = document.getElementById('transfer_start');
+      if(startInput) startInput.value = record.startDate || '';
+      const endInput = document.getElementById('transfer_end');
+      if(endInput) endInput.value = record.endDate || '';
+      const notesInput = document.getElementById('transfer_notes');
+      if(notesInput) notesInput.value = record.notes || '';
+    }
+    function deleteTransferRecord(recordId){
+      if(!canEditCategoryRecords(getActiveCategory('transfersCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل النقل والندب','warning');
+      let categoryId = null;
+      (Object.keys(transferRecords || {})).forEach(cat=>{
+        if((transferRecords[cat] || []).some(r=>r.id === recordId)) categoryId = cat;
+      });
+      if(!categoryId) return;
+      requestConfirmation('حذف سجل النقل/الندب؟', ()=>{
+        transferRecords[categoryId] = (transferRecords[categoryId] || []).filter(r=>r.id !== recordId);
+        saveAll();
+        showToast('تم حذف السجل', 'warning');
+        renderTab('transfers');
+      }, {type:'warning'});
     }
 
     function renderTransfersTab(){
@@ -5253,6 +5536,7 @@
       const activeCategory = getActiveCategory('transfersCategory', 'officers');
       const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
       const canManage = canEditCategoryRecords(activeCategory);
+      const transferEditActive = !!(TRANSFER_EDIT_ID && (transferRecords[activeCategory] || []).some(r=>r.id === TRANSFER_EDIT_ID));
       const subTabs = renderCategorySubTabs('transfersCategory', activeCategory, 'transfers');
       const searchTerm = getTabEmployeeSearchTerm('transfers');
       const filteredEmployees = filterEmployeesBySearch(getEmployeesByCategory(activeCategory), searchTerm);
@@ -5269,6 +5553,7 @@
           <td>${escapeHtml(r.startDate)}</td>
           <td>${escapeHtml(r.endDate)}</td>
           <td>${escapeHtml(r.notes)}</td>
+          ${canManage ? `<td class="text-end"><button class="btn btn-sm btn-outline-primary me-1" onclick="startTransferEdit(${r.id})">تعديل</button><button class="btn btn-sm btn-outline-danger" onclick="deleteTransferRecord(${r.id})">حذف</button></td>` : ''}
         </tr>
       `).join('');
       return `<div class="card">
@@ -5279,6 +5564,7 @@
           <div class="card mb-3">
             <div class="card-header">إضافة سجل نقل/ندب</div>
             <div class="card-body">
+              <div id="transfer_edit_notice"></div>
               <div class="row g-2">
                 <div class="col-md-3"><label class="form-label">${employeeLabel}</label><select id="transfer_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${filteredEmployees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                 <div class="col-md-2"><label class="form-label">نطاق النقل</label><select id="transfer_scope" class="form-select" onchange="updateTransferDepartmentOptions()" ${canManage ? '' : 'disabled'}><option value="internal">داخلي</option><option value="external">خارجي</option></select></div>
@@ -5302,7 +5588,7 @@
             </div>
                 <div class="col-md-2"><label class="form-label">من جهة</label><select id="transfer_from" class="form-select" ${canManage ? '' : 'disabled'}></select></div>
                 <div class="col-md-2"><label class="form-label">إلى جهة</label><select id="transfer_to" class="form-select" ${canManage ? '' : 'disabled'}></select></div>
-                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addTransferRecord()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addTransferRecord()" ${canManage ? '' : 'disabled'}>${transferEditActive ? 'تحديث' : 'إضافة'}</button></div>
               </div>
               <div class="row g-2 mt-2">
                 <div class="col-md-3"><label class="form-label">تاريخ البدء</label><input id="transfer_start" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
@@ -5312,8 +5598,8 @@
             </div>
           </div>
            <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>نطاق النقل</th><th>نوع الحركة</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="9" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>'}</tbody>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>نطاق النقل</th><th>نوع الحركة</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th>${canManage ? '<th>إجراء</th>' : ''}</tr></thead>
+            <tbody>${rows || `<tr><td colspan="${canManage ? 10 : 9}" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>`}</tbody>
           </table></div>
         </div>
       </div>`;
@@ -5335,7 +5621,14 @@
       if(!employeeId || !startDate) return showToast(`أدخل ${getEmployeeLabel(categoryId, 'singular')} وتاريخ البدء`, 'warning');
      if(type === 'سفر للخارج' && !travelReason) return showToast('اختر سبب السفر للخارج', 'warning');
       transferRecords[categoryId] = Array.isArray(transferRecords[categoryId]) ? transferRecords[categoryId] : [];
-      transferRecords[categoryId].push({id: Date.now(), employeeId, scope, scopeLabel: scope === 'external' ? 'خارجي' : 'داخلي', type, travelReason, fromDept, toDept, startDate, endDate, notes});
+      const wasEditing = !!TRANSFER_EDIT_ID;
+      const payload = {id: TRANSFER_EDIT_ID || Date.now(), employeeId, scope, scopeLabel: scope === 'external' ? 'خارجي' : 'داخلي', type, travelReason, fromDept, toDept, startDate, endDate, notes};
+      if(wasEditing){
+        transferRecords[categoryId] = transferRecords[categoryId].map(r=>r.id === TRANSFER_EDIT_ID ? payload : r);
+        TRANSFER_EDIT_ID = null;
+      } else {
+        transferRecords[categoryId].push(payload);
+      }
       const employee = getEmployeeById(employeeId);
       if(employee && scope === 'external' && type === 'نقل'){
         const transferDept = departments.find(d=>d.groupKey === 'transfer' && d.name === toDept);
@@ -5344,7 +5637,7 @@
         setOfficerStatus(employee.id, 'transferred', {skipRender: true});
       }
       saveAll();
-      showToast('تمت إضافة سجل النقل/الندب', 'success');
+      showToast(wasEditing ? 'تم تحديث سجل النقل/الندب' : 'تمت إضافة سجل النقل/الندب', 'success');
       renderTab('transfers');
     }
     function toggleTransferTravelFields(){
@@ -5495,11 +5788,87 @@
       }
     }
 
+    function startDisciplinaryEdit(recordId){
+      let categoryId = null;
+      let record = null;
+      Object.keys(disciplinaryRecords || {}).forEach(cat=>{
+        const found = (disciplinaryRecords[cat] || []).find(r=>r.id === recordId);
+        if(found){
+          categoryId = cat;
+          record = found;
+        }
+      });
+      if(!record || !categoryId) return;
+      DISCIPLINARY_EDIT_ID = recordId;
+      setActiveCategory('disciplinaryCategory', categoryId);
+      setDisciplinarySubTab('records');
+      sessionStorage.setItem('tabSearch_disciplinary', getEmployeeNameById(record.employeeId) || '');
+      renderTab('disciplinary');
+    }
+    function cancelDisciplinaryEdit(){
+      DISCIPLINARY_EDIT_ID = null;
+      renderTab('disciplinary');
+    }
+    function applyDisciplinaryEditState(){
+      if(!DISCIPLINARY_EDIT_ID) return;
+      const categoryId = getActiveCategory('disciplinaryCategory', 'officers');
+      const record = (disciplinaryRecords[categoryId] || []).find(r=>r.id === DISCIPLINARY_EDIT_ID);
+      if(!record){
+        DISCIPLINARY_EDIT_ID = null;
+        return;
+      }
+      const notice = document.getElementById('disciplinary_edit_notice');
+      if(notice){
+        notice.innerHTML = `<div class="alert alert-warning d-flex justify-content-between align-items-center"><div>تعديل حالة تأديبية لـ ${escapeHtml(getEmployeeNameById(record.employeeId))}</div><button class="btn btn-sm btn-outline-secondary" onclick="cancelDisciplinaryEdit()">إلغاء التعديل</button></div>`;
+      }
+      const employeeSelect = document.getElementById('disciplinary_employee');
+      if(employeeSelect) employeeSelect.value = record.employeeId || '';
+      const categorySelect = document.getElementById('disciplinary_case_category');
+      if(categorySelect) categorySelect.value = record.caseCategory || 'criminal';
+      toggleDisciplinaryFields();
+      const dateInput = document.getElementById('disciplinary_date');
+      if(dateInput) dateInput.value = record.caseDate || '';
+      if(record.caseCategory === 'criminal'){
+        const numberInput = document.getElementById('disciplinary_case_number');
+        const typeInput = document.getElementById('disciplinary_case_type');
+        const briefInput = document.getElementById('disciplinary_brief');
+        const finalInput = document.getElementById('disciplinary_final_actions');
+        const statusInput = document.getElementById('disciplinary_status');
+        if(numberInput) numberInput.value = record.caseNumber || '';
+        if(typeInput) typeInput.value = record.caseType || '';
+        if(briefInput) briefInput.value = record.brief || '';
+        if(finalInput) finalInput.value = record.finalActions || '';
+        if(statusInput) statusInput.value = record.status || '';
+      } else {
+        const briefInput = document.getElementById('disciplinary_admin_brief');
+        const actionSelect = document.getElementById('disciplinary_admin_action');
+        const statusInput = document.getElementById('disciplinary_admin_status');
+        if(briefInput) briefInput.value = record.brief || '';
+        if(actionSelect) actionSelect.value = record.disciplinaryActionId || '';
+        if(statusInput) statusInput.value = record.status || '';
+      }
+    }
+    function deleteDisciplinaryRecord(recordId){
+      if(!canEditCategoryRecords(getActiveCategory('disciplinaryCategory', 'officers'))) return showToast('لا تملك صلاحية تعديل السجل التأديبي','warning');
+      let categoryId = null;
+      Object.keys(disciplinaryRecords || {}).forEach(cat=>{
+        if((disciplinaryRecords[cat] || []).some(r=>r.id === recordId)) categoryId = cat;
+      });
+      if(!categoryId) return;
+      requestConfirmation('حذف الحالة التأديبية؟', ()=>{
+        disciplinaryRecords[categoryId] = (disciplinaryRecords[categoryId] || []).filter(r=>r.id !== recordId);
+        saveAll();
+        showToast('تم حذف الحالة', 'warning');
+        renderTab('disciplinary');
+      }, {type:'warning'});
+    }
+
     function renderDisciplinaryTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للسجل التأديبي.</div>';
       const activeCategory = getActiveCategory('disciplinaryCategory', 'officers');
       const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
       const canManage = canEditCategoryRecords(activeCategory);
+      const disciplinaryEditActive = !!(DISCIPLINARY_EDIT_ID && (disciplinaryRecords[activeCategory] || []).some(r=>r.id === DISCIPLINARY_EDIT_ID));
       const subTabs = renderCategorySubTabs('disciplinaryCategory', activeCategory, 'disciplinary');
       const storedDiscSubTab = getDisciplinarySubTab();
       const activeSubTab = ['records','actions'].includes(storedDiscSubTab) ? storedDiscSubTab : 'records';
@@ -5521,17 +5890,19 @@
           <td>${escapeHtml(r.finalActions || r.action || '—')}</td>
           <td>${escapeHtml(r.status || '—')}</td>
           <td>${escapeHtml(r.caseDate || '')}</td>
+          ${canManage ? `<td class="text-end"><button class="btn btn-sm btn-outline-primary me-1" onclick="startDisciplinaryEdit(${r.id})">تعديل</button><button class="btn btn-sm btn-outline-danger" onclick="deleteDisciplinaryRecord(${r.id})">حذف</button></td>` : ''}
         </tr>
       `).join('');
        const recordsSection = `
           <div class="card mb-3">
             <div class="card-header">إضافة حالة</div>
             <div class="card-body">
+              <div id="disciplinary_edit_notice"></div>
               <div class="row g-2">
                 <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="disciplinary_employee" class="form-select" onchange="updateDisciplinaryActionOptions()" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${filteredEmployees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                 <div class="col-md-3"><label class="form-label">تصنيف القضية</label><select id="disciplinary_case_category" class="form-select" onchange="toggleDisciplinaryFields()" ${canManage ? '' : 'disabled'}><option value="criminal">جنائي</option><option value="administrational">إداري</option></select></div>
                 <div class="col-md-3"><label class="form-label">تاريخ</label><input id="disciplinary_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
-                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addDisciplinaryRecord()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
+                <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addDisciplinaryRecord()" ${canManage ? '' : 'disabled'}>${disciplinaryEditActive ? 'تحديث' : 'إضافة'}</button></div>
               </div>
               <div class="row g-2 mt-2" id="disciplinary_criminal_fields">
                 <div class="col-md-3"><label class="form-label">رقم القضية</label><input id="disciplinary_case_number" class="form-control" ${canManage ? '' : 'disabled'}></div>
@@ -5548,8 +5919,8 @@
             </div>
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
-            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>التصنيف</th><th>رقم القضية</th><th>النوع/الإجراء</th><th>ملخص</th><th>إجراءات نهائية</th><th>الحالة</th><th>التاريخ</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="8" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>'}</tbody>
+            <thead class="table-dark"><tr><th>${employeeLabel}</th><th>التصنيف</th><th>رقم القضية</th><th>النوع/الإجراء</th><th>ملخص</th><th>إجراءات نهائية</th><th>الحالة</th><th>التاريخ</th>${canManage ? '<th>إجراء</th>' : ''}</tr></thead>
+            <tbody>${rows || `<tr><td colspan="${canManage ? 9 : 8}" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>`}</tbody>
           </table></div>`;
       const actionsSection = `
           <div class="card mb-3">
@@ -5605,9 +5976,16 @@
         payload = {brief, disciplinaryActionId: action?.id || null, disciplinaryActionName: action?.name || '', status};
       }
       disciplinaryRecords[categoryId] = Array.isArray(disciplinaryRecords[categoryId]) ? disciplinaryRecords[categoryId] : [];
-      disciplinaryRecords[categoryId].push(Object.assign({id: Date.now(), employeeId, caseCategory, caseCategoryLabel: caseCategory === 'criminal' ? 'جنائي' : 'إداري', caseDate}, payload));
+      const wasEditing = !!DISCIPLINARY_EDIT_ID;
+      const record = Object.assign({id: DISCIPLINARY_EDIT_ID || Date.now(), employeeId, caseCategory, caseCategoryLabel: caseCategory === 'criminal' ? 'جنائي' : 'إداري', caseDate}, payload);
+      if(wasEditing){
+        disciplinaryRecords[categoryId] = disciplinaryRecords[categoryId].map(r=>r.id === DISCIPLINARY_EDIT_ID ? record : r);
+        DISCIPLINARY_EDIT_ID = null;
+      } else {
+        disciplinaryRecords[categoryId].push(record);
+      }
       saveAll();
-      showToast('تمت إضافة الحالة', 'success');
+      showToast(wasEditing ? 'تم تحديث الحالة' : 'تمت إضافة الحالة', 'success');
       refreshEmployeeDetailIfOpen(employeeId);
       renderTab('disciplinary');
     }
@@ -5645,13 +6023,52 @@
       saveAll();
       renderTab('honors');
     }
+    function startHonorEdit(recordId){
+      const record = honorRecipients.find(r=>r.id === recordId);
+      if(!record) return;
+      HONOR_EDIT_ID = recordId;
+      sessionStorage.setItem('tabSearch_honors', getEmployeeNameById(record.employeeId) || '');
+      setHonorsSubTab('recipients');
+      renderTab('honors');
+    }
+    function cancelHonorEdit(){
+      HONOR_EDIT_ID = null;
+      renderTab('honors');
+    }
+    function applyHonorEditState(){
+      if(!HONOR_EDIT_ID) return;
+      const record = honorRecipients.find(r=>r.id === HONOR_EDIT_ID);
+      if(!record){
+        HONOR_EDIT_ID = null;
+        return;
+      }
+      const notice = document.getElementById('honor_edit_notice');
+      if(notice){
+        notice.innerHTML = `<div class="alert alert-warning d-flex justify-content-between align-items-center"><div>تعديل تكريم لـ ${escapeHtml(getEmployeeNameById(record.employeeId))}</div><button class="btn btn-sm btn-outline-secondary" onclick="cancelHonorEdit()">إلغاء التعديل</button></div>`;
+      }
+      const employeeSelect = document.getElementById('honor_employee');
+      const typeSelect = document.getElementById('honor_type');
+      const dateInput = document.getElementById('honor_date');
+      const notesInput = document.getElementById('honor_notes');
+      if(employeeSelect) employeeSelect.value = record.employeeId || '';
+      if(typeSelect) typeSelect.value = record.typeId || '';
+      if(dateInput) dateInput.value = record.date || '';
+      if(notesInput) notesInput.value = record.notes || '';
+    }
     function addHonorRecipient(){
       const employeeId = +document.getElementById('honor_employee')?.value;
       const typeId = +document.getElementById('honor_type')?.value;
       const date = document.getElementById('honor_date')?.value || '';
       const notes = document.getElementById('honor_notes')?.value || '';
       if(!employeeId || !typeId || !date) return showToast('أدخل الموظف ونوع التكريم والتاريخ', 'warning');
-      honorRecipients.push({id: Date.now(), employeeId, typeId, date, notes});
+      const wasEditing = !!HONOR_EDIT_ID;
+      const payload = {id: HONOR_EDIT_ID || Date.now(), employeeId, typeId, date, notes};
+      if(wasEditing){
+        honorRecipients = honorRecipients.map(r=>r.id === HONOR_EDIT_ID ? payload : r);
+        HONOR_EDIT_ID = null;
+      } else {
+        honorRecipients.push(payload);
+      }
       saveAll();
       refreshEmployeeDetailIfOpen(employeeId);
       renderTab('honors');
@@ -5669,6 +6086,7 @@
       const employeeIds = new Set(filteredEmployees.map(e=>e.id));
       const employees = filteredEmployees.map(o=>`<option value="${o.id}">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</option>`).join('');
       const typeOptions = honorTypes.map(t=>`<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+      const honorEditActive = !!(HONOR_EDIT_ID && honorRecipients.some(r=>r.id === HONOR_EDIT_ID));
       const recipientsRows = honorRecipients.filter(r=>employeeIds.has(r.employeeId)).map((r, idx)=>`
         <tr>
           <td>${idx + 1}</td>
@@ -5676,7 +6094,7 @@
           <td>${escapeHtml(getHonorTypeLabel(r.typeId))}</td>
           <td>${escapeHtml(r.date || '')}</td>
           <td>${escapeHtml(r.notes || '—')}</td>
-          <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteHonorRecipient(${r.id})">حذف</button></td>
+          <td class="text-end"><button class="btn btn-sm btn-outline-primary me-1" onclick="startHonorEdit(${r.id})">تعديل</button><button class="btn btn-sm btn-outline-danger" onclick="deleteHonorRecipient(${r.id})">حذف</button></td>
         </tr>
       `).join('');
       const typesRows = honorTypes.map((t, idx)=>`
@@ -5691,11 +6109,12 @@
         <div class="card mb-3">
           <div class="card-header">تسجيل تكريم/تحفيز</div>
           <div class="card-body">
+            <div id="honor_edit_notice"></div>
             <div class="row g-2">
               <div class="col-md-4"><label class="form-label">الموظف</label><select id="honor_employee" class="form-select"><option value="">— اختر موظف —</option>${employees}</select></div>
               <div class="col-md-4"><label class="form-label">النوع</label><select id="honor_type" class="form-select"><option value="">— اختر النوع —</option>${typeOptions}</select></div>
               <div class="col-md-2"><label class="form-label">التاريخ</label><input id="honor_date" type="date" class="form-control"></div>
-              <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addHonorRecipient()">إضافة</button></div>
+              <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addHonorRecipient()">${honorEditActive ? 'تحديث' : 'إضافة'}</button></div>
             </div>
             <div class="row g-2 mt-2">
               <div class="col-md-12"><label class="form-label">ملاحظات</label><input id="honor_notes" class="form-control" placeholder="ملاحظات إضافية"></div>
@@ -6470,6 +6889,7 @@
     function renderEmployeeReportCard(){
       const filteredEmployees = getReportEmployees();
       const emptyState = filteredEmployees.length ? '' : '<div class="alert alert-info">أدخل قيمة البحث لعرض تقرير الموظفين.</div>';
+      const autoPreview = filteredEmployees.length ? buildEmployeeReportHtml() : '';
       return `<div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <div>تقرير بيانات الموظفين</div>
@@ -6493,7 +6913,7 @@
             </div>
           </div>
           ${emptyState}
-          <div id="employeeReportPreview" class="print-preview"></div>
+          <div id="employeeReportPreview" class="print-preview">${autoPreview}</div>
         </div>
       </div>`;
     }
@@ -6669,7 +7089,7 @@
     }
     function buildSubjectReportHtml(subject){
       const employees = getReportEmployees();
-      const header = buildHeaderHtml();
+      const header = `${buildReportLogoHeader({employees, reportType: subject === 'training' ? 'training' : subject})}${buildHeaderHtml()}`;
       const watermark = buildReportWatermarkHtml();
       const fontSize = getReportPrintFontSize();
       const fontFamily = getReportFontFamily();
@@ -6718,19 +7138,19 @@
     function buildEmployeeReportHtml(){
       const reportEmployees = getReportEmployees();
       if(!reportEmployees.length) return '<div class="alert alert-info">أدخل قيمة البحث لعرض التقرير.</div>';
-      const header = buildHeaderHtml();
+      const header = `${buildReportLogoHeader({employees: reportEmployees, reportType: 'employee-list'})}${buildHeaderHtml()}`;
       const watermark = buildReportWatermarkHtml();
       const fontSize = getReportPrintFontSize();
       const fontFamily = getReportFontFamily();
       const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>تاريخ التعيين</th></tr></thead><tbody>${buildEmployeeReportTable(reportEmployees)}</tbody></table>`;
       const printMeta = buildReportPrintMetaHtml();
       const meta = `<div class="report-meta"><div>إجمالي النتائج: ${reportEmployees.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
-      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير بيانات الموظفين</div></div>${meta}${table}</div></div>`;
+       return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير بيانات الموظفين</div></div>${meta}${table}</div></div>`;
     }
     function buildEmployeeReportHtmlForList(list, title){
       const reportEmployees = Array.isArray(list) ? list : [];
       if(!reportEmployees.length) return '<div class="alert alert-info">لا توجد بيانات لعرضها.</div>';
-      const header = buildHeaderHtml();
+      const header = `${buildReportLogoHeader({employees: reportEmployees, reportType: 'employee-list'})}${buildHeaderHtml()}`;
       const watermark = buildReportWatermarkHtml();
       const fontSize = getReportPrintFontSize();
       const fontFamily = getReportFontFamily();
@@ -6743,7 +7163,7 @@
     function buildEmployeeStatusReportHtml(employeeId){
       const o = getEmployeeById(employeeId);
       if(!o) return '<div class="alert alert-warning">لا توجد بيانات لهذا الموظف.</div>';
-      const header = buildHeaderHtml();
+      const header = `${buildReportLogoHeader({categoryId: o.category, reportType: 'employee-status'})}${buildHeaderHtml()}`;
       const watermark = buildReportWatermarkHtml();
       const fontSize = getReportPrintFontSize();
       const fontFamily = getReportFontFamily();
@@ -6754,6 +7174,7 @@
       const degrees = Array.isArray(o.educationDegrees) ? o.educationDegrees : [];
       const trainings = Array.isArray(o.trainings) ? o.trainings : [];
       const travels = (transferRecords[o.category] || []).filter(r=>r.employeeId === o.id && r.type === 'سفر للخارج');
+      const transferHistory = getEmployeeTransferHistory(o);
       const vacationRange = getVacationYearRange(o.category);
       const annualAllowance = getAnnualVacationAllowance(o);
       const annualUsed = getAnnualVacationUsage((vacationRecords[o.category] || []).filter(r=>r.employeeId === o.id), vacationRange);
@@ -6822,8 +7243,17 @@
           <h5>السفر خارج البلاد</h5>
           ${travels.length ? `<ul>${travels.map(t=>`<li>${escapeHtml(t.startDate || '')} → ${escapeHtml(t.endDate || '')} — ${escapeHtml(t.travelReason || '—')}</li>`).join('')}</ul>` : '<div class="text-muted">لا توجد سفريات خارج البلاد مسجلة.</div>'}
         </div>`;
+      const transferHistoryBlock = `
+        <div class="report-block">
+          <h5>سجل النقل والندب (من → إلى)</h5>
+          ${transferHistory.length ? `<ul>${transferHistory.map(r=>{
+            const end = r.computedEnd || r.endDate || '';
+            const dateLabel = `${formatDateAr(r.startDate)} → ${formatDateAr(end)}`;
+            return `<li>${escapeHtml(r.fromDept || '—')} → ${escapeHtml(r.toDept || '—')} (${escapeHtml(dateLabel)})</li>`;
+          }).join('')}</ul>` : '<div class="text-muted">لا توجد سجلات نقل أو ندب.</div>'}
+        </div>`;
       const meta = `<div class="report-meta"><div>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</div><div>رقم الموظف: ${o.id}</div>${printMeta}</div>`;
-      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">بيان حالة وظيفية</div></div>${meta}<div class="report-profile">${photoHtml}<div><div class="fw-bold">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</div><div class="small-muted">${escapeHtml(getCategoryLabel(o.category))}</div></div></div>${infoList}</div></div>`;
+      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">بيان حالة وظيفية</div></div>${meta}<div class="report-profile">${photoHtml}<div><div class="fw-bold">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</div><div class="small-muted">${escapeHtml(getCategoryLabel(o.category))}</div></div></div>${infoList}${transferHistoryBlock}</div></div>`;
     }
     function saveReportSettingsFromTab(){
       SETTINGS.reportFontFamily = document.getElementById('report_font_family')?.value || SETTINGS.reportFontFamily;
