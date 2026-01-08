@@ -30,11 +30,11 @@
     .btn-outline-light { background: transparent; color:#fff; border-color:#fff; }
     .btn-sm { padding: 4px 10px; font-size: 13px; }
     .container-fluid { width: 100%; padding: 0 16px; }
-    .nav-tabs { display:flex; flex-wrap:wrap; gap:8px; row-gap:6px; border-bottom: 1px solid #ddd; padding:4px 0 10px; margin:0; list-style:none; position:sticky; top:72px; z-index:950; background:rgba(240,249,255,0.98); }
+    .nav-tabs { display:flex; flex-direction:column; gap:8px; border-bottom:none; padding:10px; margin:0; list-style:none; position:sticky; top:72px; z-index:950; background:rgba(240,249,255,0.98); }
     .nav-tabs .nav-item { flex:0 0 auto; }
-    .nav-link { padding: 12px 16px; border: 1px solid #c7d2fe; border-radius:12px 12px 0 0; background:linear-gradient(180deg,#fff,#eef2ff); font-weight:700; color:#111; box-shadow:0 4px 10px rgba(0,0,0,.08); transform:translateY(4px); transition:all .15s ease; font-family: var(--tab-font); display:inline-flex; align-items:center; gap:6px; }
+    .nav-link { padding: 12px 16px; border: 1px solid #c7d2fe; border-radius:12px; background:linear-gradient(180deg,#fff,#eef2ff); font-weight:700; color:#111; box-shadow:0 4px 10px rgba(0,0,0,.08); transition:all .15s ease; font-family: var(--tab-font); display:flex; align-items:center; justify-content:flex-start; gap:8px; width:100%; }
     .nav-link::before { content: attr(data-icon); font-size: 16px; line-height:1; }
-    .nav-link.active { background:#fff; border-color:#a5b4fc; border-bottom-color:#fff; color: var(--brand); transform:translateY(0); box-shadow:0 8px 16px rgba(0,0,0,.12); }
+    .nav-link.active { background:#fff; border-color:#a5b4fc; color: var(--brand); transform:translateY(0); box-shadow:0 8px 16px rgba(0,0,0,.12); }
     .nav-link.disabled { opacity:.4; cursor:not-allowed; }
     .p-3 { padding:16px; }
     .py-3 { padding-top:12px; padding-bottom:12px; }
@@ -81,6 +81,10 @@
     .toast-item { background:#111827; color:#fff; padding:10px 14px; margin-bottom:6px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,.15); min-width:220px; text-align:center; }
     .toast-item.success{background:#16a34a;} .toast-item.danger{background:#dc2626;} .toast-item.warning{background:#f59e0b;}
     .toast-item.info{background:#0ea5e9;} .toast-item.request{background:#312e81;}
+    .toast-item .toast-actions { display:flex; gap:8px; justify-content:center; margin-top:6px; }
+    .toast-item .toast-btn { border: none; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:700; cursor:pointer; }
+    .toast-item .toast-btn.confirm { background:#facc15; color:#111; }
+    .toast-item .toast-btn.cancel { background:#e5e7eb; color:#111; }    
     .badge-status { border-radius:8px; padding:2px 8px; font-size:12px; }
     .status-retired { background:#fce7f3; color:#9d174d; }
     .status-transferred { background:#ecfeff; color:#0ea5e9; }
@@ -107,8 +111,8 @@
     .first-run-option p { margin:0; color:#475569; font-size:14px; line-height:1.7; }
     .first-run-option .btn { width:100%; justify-content:center; }
     .first-run-option input[type="file"] { border:1px dashed #cbd5f5; background:#f8fafc; }
-    .one-duty-page { position:relative; min-height:270mm; }
-    .duty-content { position:relative; z-index:2; }
+    .report-page { position:relative; min-height:270mm; }
+    .report-content { position:relative; z-index:2; }
     .watermark { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:64px; color:var(--brand-dark); opacity:0.08; white-space:pre-wrap; text-align:center; width:160%; pointer-events:none; z-index:1; user-select:none; }
     .drag-over { outline:2px dashed #0ea5e9; background:#e0f2fe; }
      .splash-screen { position:fixed; inset:0; background:radial-gradient(circle at 20% 20%, #eef2ff, #1e3a8a); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:5000; gap:18px; transition:opacity .6s ease, visibility .6s ease; overflow:hidden; padding:clamp(16px,4vw,48px); text-align:center; }
@@ -197,7 +201,25 @@
     @keyframes floatLogo { 0%{transform:translateY(0);} 50%{transform:translateY(-6px);} 100%{transform:translateY(0);} }
     @keyframes splashPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
      @keyframes splashBounce { 0%, 80%, 100% { transform: translateY(0); opacity:.6; } 40% { transform: translateY(-8px); opacity:1; } }
-    @keyframes splashAutoHide { to { opacity:0; visibility:hidden; pointer-events:none; } }
+     @keyframes splashAutoHide { to { opacity:0; visibility:hidden; pointer-events:none; } }
+    .app-shell { display:flex; flex-direction:row-reverse; gap:16px; align-items:flex-start; }
+    .app-shell #mainContent { flex:1; min-width:0; }
+    .side-tabs { width:260px; flex:0 0 260px; transition:width .2s ease; }
+    .side-tabs .tabs-toggle { width:100%; margin-bottom:10px; }
+    .tabs-toggle { background:#fff; border:1px solid #c7d2fe; border-radius:12px; padding:10px 12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(0,0,0,.08); }
+    .tabs-toggle::before { content:"📂"; }
+    .tabs-collapsed .side-tabs { width:72px; flex-basis:72px; }
+    .tabs-collapsed .nav-link { justify-content:center; padding:12px; }
+    .tabs-collapsed .nav-link .tab-label { display:none; }
+    .tabs-collapsed .tabs-toggle { font-size:12px; }
+    .tab-label { white-space:nowrap; }
+    @media(max-width:1100px){
+      .app-shell { flex-direction:column; }
+      .side-tabs { width:100%; flex-basis:auto; position:static; }
+      .nav-tabs { flex-direction:row; flex-wrap:wrap; }
+      .nav-link { width:auto; }
+      .tabs-toggle { display:none; }
+    }
     .app-footer { position:fixed; bottom:0; left:0; right:0; background:#0f172a; color:#e2e8f0; padding:10px 16px; text-align:center; font-size:12px; z-index:900; }
     @media print { @page { size:A4 portrait; margin:10mm; } .no-print { display:none !important; } body { background:#fff; color:#000; } }
   </style>
@@ -254,27 +276,33 @@
   </nav>
 
   <div class="container-fluid py-5 mt-5 no-print">
-    <ul class="nav nav-tabs mb-4" id="mainTabs">
-       <li class="nav-item"><button class="nav-link active" data-icon="🏠" data-tab="landing" onclick="renderTab('landing')">الواجهة الرئيسية</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🏢" data-tab="employees" onclick="renderTab('employees')">العاملين بالإدارة</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🎓" data-tab="training" onclick="renderTab('training')">التدريب</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="📁" data-tab="annual-review" onclick="renderTab('annual-review')">التقارير السرية</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="⬆️" data-tab="promotions" onclick="renderTab('promotions')">الترقيات</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🔁" data-tab="transfers" onclick="renderTab('transfers')">النقل والندب</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🏖️" data-tab="vacations" onclick="renderTab('vacations')">الإجازات</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="⚖️" data-tab="disciplinary" onclick="renderTab('disciplinary')">الجزاءات والقضايا</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🏅" data-tab="honors" onclick="renderTab('honors')">التكريمات والأنواط</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')">سلم الرتب والترتيب</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🗂️" data-tab="archive" onclick="renderTab('archive')">الأرشيف</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🌴" data-tab="departments" onclick="renderTab('departments')">الأقسام والإدارات</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="⏱️" data-tab="transfer-departments" onclick="renderTab('transfer-departments')">جهات النقل</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="📝" data-tab="jobtitles" onclick="renderTab('jobtitles')">المسميات الوظيفية</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="⚙️" data-tab="settings" onclick="renderTab('settings')">الإعدادات</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🧭" data-tab="admin" onclick="renderTab('admin')">لوحة التحكم</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="🔐" data-tab="account" onclick="renderTab('account')">الأمن والصلاحيات</button></li>
-      <li class="nav-item"><button class="nav-link" data-icon="ℹ️" data-tab="about" onclick="renderTab('about')">حول التطبيق</button></li>
-    </ul>
+    <div class="app-shell" id="appShell">
+      <aside class="side-tabs">
+        <button class="tabs-toggle" type="button" onclick="toggleTabsCollapse()">طي القوائم</button>
+        <ul class="nav nav-tabs mb-4" id="mainTabs">
+          <li class="nav-item"><button class="nav-link active" data-icon="🏠" data-tab="landing" onclick="renderTab('landing')"><span class="tab-label">الواجهة الرئيسية</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🏢" data-tab="employees" onclick="renderTab('employees')"><span class="tab-label">العاملين بالإدارة</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🎓" data-tab="training" onclick="renderTab('training')"><span class="tab-label">التدريب</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="📁" data-tab="annual-review" onclick="renderTab('annual-review')"><span class="tab-label">التقارير السرية</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="⬆️" data-tab="promotions" onclick="renderTab('promotions')"><span class="tab-label">الترقيات</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🔁" data-tab="transfers" onclick="renderTab('transfers')"><span class="tab-label">النقل والندب</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🏖️" data-tab="vacations" onclick="renderTab('vacations')"><span class="tab-label">الإجازات</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="⚖️" data-tab="disciplinary" onclick="renderTab('disciplinary')"><span class="tab-label">الجزاءات والقضايا</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🏅" data-tab="honors" onclick="renderTab('honors')"><span class="tab-label">التكريمات والأنواط</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="📊" data-tab="report" onclick="renderTab('report')"><span class="tab-label">التقارير</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')"><span class="tab-label">سلم الرتب والترتيب</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🗂️" data-tab="archive" onclick="renderTab('archive')"><span class="tab-label">الأرشيف</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🌴" data-tab="departments" onclick="renderTab('departments')"><span class="tab-label">الأقسام والإدارات</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="⏱️" data-tab="transfer-departments" onclick="renderTab('transfer-departments')"><span class="tab-label">جهات النقل</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="📝" data-tab="jobtitles" onclick="renderTab('jobtitles')"><span class="tab-label">المسميات الوظيفية</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="⚙️" data-tab="settings" onclick="renderTab('settings')"><span class="tab-label">الإعدادات</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🧭" data-tab="admin" onclick="renderTab('admin')"><span class="tab-label">لوحة التحكم</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="🔐" data-tab="account" onclick="renderTab('account')"><span class="tab-label">الأمن والصلاحيات</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-icon="ℹ️" data-tab="about" onclick="renderTab('about')"><span class="tab-label">حول التطبيق</span></button></li>
+        </ul>
+      </aside>
       <div id="mainContent" class="p-3"></div>
+    </div>
   </div>
 
   <div class="toast-container position-fixed top-0 start-50 translate-middle-x pt-3" style="z-index:12000"></div>
@@ -589,7 +617,7 @@
           'تصنيف الحالات حسب الفئة'
         ]
       },
-      {
+       {
         id: 'honors',
         label: 'التكريمات والتحفيزات',
         description: 'متابعة التكريمات والحوافز للمستفيدين.',
@@ -597,6 +625,16 @@
           'تسجيل المستفيدين والملاحظات',
           'إدارة أنواع التكريم والتحفيز',
           'مراجعة التواريخ والأثر الإداري'
+        ]
+      },
+      {
+        id: 'report',
+        label: 'التقارير',
+        description: 'تقارير مخصصة للموظفين والسفر والموضوعات الإدارية.',
+        options: [
+          'تقرير بيانات الموظف',
+          'تقارير النقل والسفر',
+          'تقارير الموضوعات حسب الحاجة'
         ]
       },
       {
@@ -947,6 +985,7 @@
       applyCustomFont();
       applyFontSettings();
       updateNavLogo();
+      applyTabsCollapseState();
       resetIdleTimer();
     }
 
@@ -1371,6 +1410,9 @@
         case 'honors':
           c.innerHTML = renderHonorsTab();
           break;
+        case 'report':
+          c.innerHTML = renderReportTab();
+          break;
         case 'ranks':
           c.innerHTML = renderRanksTab();
           break;
@@ -1480,15 +1522,16 @@
     function deleteRank(idx){
       const categoryId = getActiveCategory('ranksCategory', 'officers');
       const ladder = getCategoryRankLadder(categoryId).slice();
-      if(!confirm('حذف الرتبة؟')) return;
-      const name = ladder[idx];
-      if(officers.some(o=>o.rank===name && o.category===categoryId)) return showToast('لا يمكن حذف رتبة مستخدمة', 'danger');
-      ladder.splice(idx,1);
-      rankLadders[categoryId] = ladder;
-      if(categoryId === 'officers') ranks = ladder.slice();
-      saveAll();
-      showToast('تم حذف الرتبة', 'warning');
-      renderTab('ranks');
+      requestConfirmation('حذف الرتبة؟', ()=>{
+        const name = ladder[idx];
+        if(officers.some(o=>o.rank===name && o.category===categoryId)) return showToast('لا يمكن حذف رتبة مستخدمة', 'danger');
+        ladder.splice(idx,1);
+        rankLadders[categoryId] = ladder;
+        if(categoryId === 'officers') ranks = ladder.slice();
+        saveAll();
+        showToast('تم حذف الرتبة', 'warning');
+        renderTab('ranks');
+      }, {type:'warning'});
     }
     function moveRank(idx, dir){
       const categoryId = getActiveCategory('ranksCategory', 'officers');
@@ -1504,11 +1547,12 @@
     }
     function restoreDefaultRanks(){
       const categoryId = getActiveCategory('ranksCategory', 'officers');
-      if(!confirm('سيتم استبدال الرتب الحالية بالقائمة الافتراضية. متابعة؟')) return;
-      rankLadders[categoryId] = (defaultRankLadders[categoryId] || []).slice();
-      if(categoryId === 'officers') ranks = rankLadders[categoryId].slice();
-      saveAll();
-      renderTab('ranks');
+      requestConfirmation('سيتم استبدال الرتب الحالية بالقائمة الافتراضية. متابعة؟', ()=>{
+        rankLadders[categoryId] = (defaultRankLadders[categoryId] || []).slice();
+        if(categoryId === 'officers') ranks = rankLadders[categoryId].slice();
+        saveAll();
+        renderTab('ranks');
+      }, {type:'warning'});
     }
 
     /* ========= Auth ========= */
@@ -1688,11 +1732,105 @@
       setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(), 400); }, 3600);
     }
     function safeShowToast(msg,type='info'){ try{ showToast(msg,type); } catch(_) { console.log(msg); } }
+    function requestConfirmation(message, onConfirm, options = {}){
+      const c=document.querySelector('.toast-container');
+      if(!c) return;
+      const allowed = ['danger','success','warning','info','request'];
+      const cls = allowed.includes(options.type) ? options.type : 'warning';
+      const el=document.createElement('div');
+      el.className=`toast-item ${cls}`;
+      const text=document.createElement('div');
+      text.textContent = message;
+      const actions=document.createElement('div');
+      actions.className = 'toast-actions';
+      const confirmBtn=document.createElement('button');
+      confirmBtn.type = 'button';
+      confirmBtn.className = 'toast-btn confirm';
+      confirmBtn.textContent = options.confirmLabel || 'تأكيد';
+      const cancelBtn=document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'toast-btn cancel';
+      cancelBtn.textContent = options.cancelLabel || 'إلغاء';
+      actions.appendChild(confirmBtn);
+      actions.appendChild(cancelBtn);
+      el.appendChild(text);
+      el.appendChild(actions);
+      c.appendChild(el);
+      const timeout = setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(), 400); }, options.timeoutMs || 10000);
+      const cleanup = ()=>{
+        clearTimeout(timeout);
+        el.style.opacity='0';
+        setTimeout(()=>el.remove(), 400);
+      };
+      confirmBtn.addEventListener('click', ()=>{
+        cleanup();
+        if(typeof onConfirm === 'function') onConfirm();
+      });
+      cancelBtn.addEventListener('click', cleanup);
+    }
+    function requestTextInput(message, defaultValue, onConfirm, options = {}){
+      const c=document.querySelector('.toast-container');
+      if(!c) return;
+      const el=document.createElement('div');
+      el.className=`toast-item ${options.type || 'info'}`;
+      const text=document.createElement('div');
+      text.textContent = message;
+      const input=document.createElement('input');
+      input.type = options.inputType || 'text';
+      input.value = defaultValue || '';
+      input.className = 'form-control';
+      input.style.marginTop = '6px';
+      const actions=document.createElement('div');
+      actions.className = 'toast-actions';
+      const confirmBtn=document.createElement('button');
+      confirmBtn.type = 'button';
+      confirmBtn.className = 'toast-btn confirm';
+      confirmBtn.textContent = options.confirmLabel || 'حفظ';
+      const cancelBtn=document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'toast-btn cancel';
+      cancelBtn.textContent = options.cancelLabel || 'إلغاء';
+      actions.appendChild(confirmBtn);
+      actions.appendChild(cancelBtn);
+      el.appendChild(text);
+      el.appendChild(input);
+      el.appendChild(actions);
+      c.appendChild(el);
+      input.focus();
+      const cleanup = ()=>{
+        el.style.opacity='0';
+        setTimeout(()=>el.remove(), 400);
+      };
+      confirmBtn.addEventListener('click', ()=>{
+        const val = input.value;
+        cleanup();
+        if(typeof onConfirm === 'function') onConfirm(val);
+      });
+      cancelBtn.addEventListener('click', cleanup);
+      input.addEventListener('keydown', (event)=>{
+        if(event.key === 'Enter'){
+          event.preventDefault();
+          confirmBtn.click();
+        }
+      });
+    }
     function guardSearchInput(event){
       if(event.key === 'Enter'){
         event.preventDefault();
         event.stopPropagation();
       }
+    }
+    const TABS_COLLAPSE_KEY = 'tabsCollapsed';
+    function applyTabsCollapseState(){
+      const collapsed = sessionStorage.getItem(TABS_COLLAPSE_KEY) === 'true';
+      document.body.classList.toggle('tabs-collapsed', collapsed);
+      const toggleBtn = document.querySelector('.tabs-toggle');
+      if(toggleBtn) toggleBtn.textContent = collapsed ? 'توسيع القوائم' : 'طي القوائم';
+    }
+    function toggleTabsCollapse(){
+      const collapsed = !document.body.classList.contains('tabs-collapsed');
+      sessionStorage.setItem(TABS_COLLAPSE_KEY, String(collapsed));
+      applyTabsCollapseState();
     }
      function renderSessionChips(){ 
      if(!ACTIVE_SESSIONS.length) return '';
@@ -1842,12 +1980,13 @@
       if(!canEditRoster()) return safeShowToast('ليس لديك صلاحية للتعديل','danger');
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth');
       if(!month) return safeShowToast('اختر الشهر','danger');
-      if(!confirm(`سيتم حذف جدول ${month}. متابعة؟`)) return;
-      roster[month] = {};
-      saveAll();
-      logActivity('تفريغ جدول شهر', {month});
-      safeShowToast('تم التفريغ','success');
-      renderTab('employees');
+      requestConfirmation(`سيتم حذف جدول ${month}. متابعة؟`, ()=>{
+        roster[month] = {};
+        saveAll();
+        logActivity('تفريغ جدول شهر', {month});
+        safeShowToast('تم التفريغ','success');
+        renderTab('employees');
+      }, {type:'warning'});
     }
 
     function toggleDutyCollapse(id){ dutyCollapseState[id] = !dutyCollapseState[id]; renderTab('employees'); }
@@ -2617,11 +2756,12 @@
       </table></div>`;
     }
     function clearActivityLog(){
-      if(!confirm('سيتم مسح كل سجلات النشاط. متابعة؟')) return;
-      activityLog = [];
-      saveAll();
-      renderTab('admin');
-      showToast('تم مسح سجل النشاط','info');
+      requestConfirmation('سيتم مسح كل سجلات النشاط. متابعة؟', ()=>{
+        activityLog = [];
+        saveAll();
+        renderTab('admin');
+        showToast('تم مسح سجل النشاط','info');
+      }, {type:'warning'});
     }
     function refreshActivityLogTable(){
       const holder = document.getElementById('activityLogTableArea');
@@ -2803,20 +2943,21 @@
     function generateTempPassword(){ return 'Tmp'+Math.random().toString(36).slice(2,6)+'#'+Math.floor(Math.random()*90+10); }
     function adminResetPasswordForUser(idx, requestId=null){
       const u = (SETTINGS.users||[])[idx]; if(!u) return;
-      const temp = prompt('أدخل كلمة مرور مؤقتة (سيُطلب تغييرها عند أول دخول):', generateTempPassword());
-      if(!temp) return;
-      u.pwd = temp;
-      u.mustChangePassword = true;
-      saveAll();
-      if(CURRENT_USER && CURRENT_USER.name === u.name){ CURRENT_USER.mustChangePassword = true; saveAll(); }
-      applyNavPermissions();
-      document.getElementById('admin_usersTable').innerHTML = renderUsersTable();
-      if(requestId) resolveSupportRequest(requestId, 'done', 'تمت إعادة التعيين');
-      refreshSupportRequestsTable();
-      logActivity('إعادة تعيين كلمة مرور', {target: u.name});
-      showToast('تمت إعادة تعيين كلمة المرور','success');
-      const viewerSheet = document.getElementById('viewerUsersSheet');
-      if(viewerSheet) viewerSheet.innerHTML = renderViewerUsersSheet();
+      requestTextInput('أدخل كلمة مرور مؤقتة (سيُطلب تغييرها عند أول دخول):', generateTempPassword(), (temp)=>{
+        if(!temp) return;
+        u.pwd = temp;
+        u.mustChangePassword = true;
+        saveAll();
+        if(CURRENT_USER && CURRENT_USER.name === u.name){ CURRENT_USER.mustChangePassword = true; saveAll(); }
+        applyNavPermissions();
+        document.getElementById('admin_usersTable').innerHTML = renderUsersTable();
+        if(requestId) resolveSupportRequest(requestId, 'done', 'تمت إعادة التعيين');
+        refreshSupportRequestsTable();
+        logActivity('إعادة تعيين كلمة مرور', {target: u.name});
+        showToast('تمت إعادة تعيين كلمة المرور','success');
+        const viewerSheet = document.getElementById('viewerUsersSheet');
+        if(viewerSheet) viewerSheet.innerHTML = renderViewerUsersSheet();
+      }, {inputType:'password'});
     }
     function saveIdleMinutes(val){
       const minutes = Math.max(0, +val || 0);
@@ -2826,13 +2967,14 @@
       showToast('تم حفظ مدة الخمول','success');
     }
     function adminRestoreDefaults(){
-      if(!confirm('سيتم استعادة الإعدادات الافتراضية للشعار والطباعة. متابعة؟')) return;
-      SETTINGS = Object.assign({}, defaultSettings);
-      saveAll();
-      loadAll();
-      renderTab('admin');
-      logActivity('استعادة الإعدادات الافتراضية', {});
-      showToast('تمت الاستعادة الافتراضية','success');
+      requestConfirmation('سيتم استعادة الإعدادات الافتراضية للشعار والطباعة. متابعة؟', ()=>{
+        SETTINGS = Object.assign({}, defaultSettings);
+        saveAll();
+        loadAll();
+        renderTab('admin');
+        logActivity('استعادة الإعدادات الافتراضية', {});
+        showToast('تمت الاستعادة الافتراضية','success');
+      }, {type:'warning'});
     }
     function clearSessionOnly(){
       const prevUser = CURRENT_USER;
@@ -2843,29 +2985,30 @@
       showToast('تم مسح الجلسة الحالية','success');
     }
     function resetAllData(){
-      if(!confirm('سيتم حذف كل البيانات المحلية وإعادة ضبط الإعدادات. متابعة؟')) return;
-      localStorage.clear();
-      sessionStorage.clear();
-      officers = [];
-      departments = getDefaultDepartments();
-      jobTitles = [{id:1,name:"قائد الوحدة",parentId:null,isUpper:true,categoryId:'officers'},{id:2,name:"رئيس قسم الشئون الإدارية",parentId:null,isUpper:false,categoryId:'officers'}];
-      trainingCatalog = getDefaultTrainingCatalog();
-      trainingCourses = [];
-      trainingInstitutes = [];
-      annualReviews = { officers: [], personnel: [], civil: [] };
-      promotions = { officers: [], personnel: [], civil: [], draftees: [] };
-      transferRecords = { officers: [], personnel: [], civil: [], draftees: [] };
-      vacationRecords = { officers: [], personnel: [], civil: [], draftees: [] };
-      disciplinaryRecords = { officers: [], personnel: [], civil: [], draftees: [] };
-      ranks = defaultRanks.slice();
-      SETTINGS = Object.assign({}, defaultSettings);
-      CURRENT_USER = null;
-      activityLog = [];
-      logActivity('إعادة ضبط كاملة', {});
-      saveAll();
-      loadAll();
-      renderTab('employees');
-      showToast('تمت إعادة الضبط بالكامل','success');
+      requestConfirmation('سيتم حذف كل البيانات المحلية وإعادة ضبط الإعدادات. متابعة؟', ()=>{
+        localStorage.clear();
+        sessionStorage.clear();
+        officers = [];
+        departments = getDefaultDepartments();
+        jobTitles = [{id:1,name:"قائد الوحدة",parentId:null,isUpper:true,categoryId:'officers'},{id:2,name:"رئيس قسم الشئون الإدارية",parentId:null,isUpper:false,categoryId:'officers'}];
+        trainingCatalog = getDefaultTrainingCatalog();
+        trainingCourses = [];
+        trainingInstitutes = [];
+        annualReviews = { officers: [], personnel: [], civil: [] };
+        promotions = { officers: [], personnel: [], civil: [], draftees: [] };
+        transferRecords = { officers: [], personnel: [], civil: [], draftees: [] };
+        vacationRecords = { officers: [], personnel: [], civil: [], draftees: [] };
+        disciplinaryRecords = { officers: [], personnel: [], civil: [], draftees: [] };
+        ranks = defaultRanks.slice();
+        SETTINGS = Object.assign({}, defaultSettings);
+        CURRENT_USER = null;
+        activityLog = [];
+        logActivity('إعادة ضبط كاملة', {});
+        saveAll();
+        loadAll();
+        renderTab('employees');
+        showToast('تمت إعادة الضبط بالكامل','success');
+      }, {type:'warning'});
     }
 
     /* ========= Smart generator ========= */
@@ -3354,7 +3497,7 @@
       return `
           @page{size:A4 portrait;margin:8mm}
           body{font-family:${fontFamily},"Fanan","Sultan bold","PT Bold Heading","Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm;${includeBackground ? 'background:#fff;' : ''}}
-          .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid}
+          .report-page{position:relative;min-height:277mm;page-break-inside:avoid}
              .report-table{width:100%;border-collapse:collapse;table-layout:auto;font-size:${fontSize}px;border:4px double #0f172a}
            .report-table th,.report-table td{border-top:1px solid #0f172a;border-bottom:1px solid #0f172a;border-left:2px solid #0f172a;border-right:2px solid #0f172a;padding:4px 3px;text-align:center;white-space:nowrap}
           .report-table th{background:#d1d5db;color:#111;font-weight:700;border-top:4px double #0f172a;border-bottom:4px double #0f172a;border-left:2px solid #0f172a;border-right:2px solid #0f172a}
@@ -3589,7 +3732,7 @@
   const sigs = SETTINGS.signatures || [];
   const signatureHtml = buildSignatureHtml(fontFamily, fontSize);
   const watermark = buildReportWatermarkHtml();
-  return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}${reportHeader}${table}<div style="margin-top:8px">${signatureHtml}</div></div></div>`;
+   return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}${reportHeader}${table}<div style="margin-top:8px">${signatureHtml}</div></div></div>`;
 }
 
     function printSelectedDuties(){
@@ -3678,6 +3821,47 @@
     function setHonorsSubTab(tabId){
       sessionStorage.setItem('honorsSubTab', tabId);
     }
+    function getTabEmployeeSearchTerm(tabId){
+      return sessionStorage.getItem(`tabSearch_${tabId}`) || '';
+    }
+    function updateTabEmployeeSearch(tabId, value){
+      sessionStorage.setItem(`tabSearch_${tabId}`, value || '');
+      renderTab(tabId);
+    }
+    function resetTabEmployeeSearch(tabId){
+      sessionStorage.removeItem(`tabSearch_${tabId}`);
+      renderTab(tabId);
+    }
+    function employeeMatchesSearch(employee, q){
+      if(!q) return true;
+      const deptName = employee.category === 'draftees' ? getGeneralAdministrationLabel() : (employee.deptId ? (departments.find(d=>d.id===employee.deptId)?.name || '') : '');
+      const statusLabel = renderStatusBadge(employee.status||'active').replace(/<[^>]+>/g,'');
+      const jobTitle = employee.jobTitleId ? (jobTitles.find(j=>j.id===employee.jobTitleId)?.name || '') : '';
+      return employee.name?.toLowerCase().includes(q)
+        || employee.rank?.toLowerCase().includes(q)
+        || (employee.badge||employee.policeId||'').toLowerCase().includes(q)
+        || (employee.nationalId||'').toLowerCase().includes(q)
+        || deptName.toLowerCase().includes(q)
+        || statusLabel.toLowerCase().includes(q)
+        || jobTitle.toLowerCase().includes(q);
+    }
+    function filterEmployeesBySearch(list, searchTerm){
+      const q = (searchTerm || '').trim().toLowerCase();
+      if(!q) return [];
+      return list.filter(emp=>employeeMatchesSearch(emp, q));
+    }
+    function renderTabSearchBar(tabId, placeholder){
+      const term = getTabEmployeeSearchTerm(tabId);
+      return `<div class="card mb-3">
+        <div class="card-body">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-8"><label class="form-label">بحث الموظفين</label><input class="form-control" value="${escapeHtml(term)}" placeholder="${escapeHtml(placeholder || 'اكتب بيانات الموظف للبحث')}" oninput="updateTabEmployeeSearch('${tabId}', this.value)" onkeydown="guardSearchInput(event)"></div>
+            <div class="col-md-4 text-end"><button class="btn btn-outline-secondary" onclick="resetTabEmployeeSearch('${tabId}')">إخفاء النتائج</button></div>
+          </div>
+          <div class="small-muted mt-2">لن تظهر أي بيانات للموظفين حتى يتم إدخال قيمة بحث.</div>
+        </div>
+      </div>`;
+    }
     function getOfficerFilterState(){
       return {
         search: sessionStorage.getItem('officerSearch') || ''
@@ -3704,12 +3888,13 @@
       const canManage = canEditCategory(activeCategory);
       const categoryLabelSingular = getEmployeeLabel(activeCategory, 'singular');
       const filters = getOfficerFilterState();
+      const hasSearch = !!(filters.search || '').trim();
       const subTabs = renderCategorySubTabs('employeeCategory', activeCategory, 'employees');
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>العاملين بالإدارة العامة للمساعدات الفنية</div>
         <div>${canManage?`<button class="btn btn-success btn-sm" onclick="addOfficerForm()">${`إضافة ${categoryLabelSingular}`}</button>`:''}</div></div>
         <div class="card-body">
-          ${manpowerStats}
-          ${renderRankStatsBar(activeCategory)}
+          ${hasSearch ? manpowerStats : '<div class="alert alert-info">أدخل قيمة البحث لعرض بيانات الموظفين.</div>'}
+          ${hasSearch ? renderRankStatsBar(activeCategory) : ''}
           ${subTabs}
           <div class="row mb-2 g-2">
             <div class="col-md-6"><input id="officerSearch" class="form-control" placeholder="ابحث بالاسم، الرتبة، الرقم، القسم، أو الحالة" value="${escapeHtml(filters.search)}" oninput="updateOfficerFilters()" onkeydown="guardSearchInput(event)"></div>
@@ -3734,22 +3919,13 @@
    }
      function renderOfficersList(categoryId){
       const filters = getOfficerFilterState();
-      const q = (filters.search || '').toLowerCase();
+      const q = (filters.search || '').trim().toLowerCase();
+      if(!q) return `<p class="text-center text-muted py-3">أدخل قيمة البحث لعرض الموظفين ضمن الفئة المحددة.</p>`;
       const list = officers.filter(o=>{
         if(categoryId && o.category !== categoryId) return false;
-        if(!q) return true;
-        const deptName = o.category === 'draftees' ? getGeneralAdministrationLabel() : (o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '');
-        const statusLabel = renderStatusBadge(o.status||'active').replace(/<[^>]+>/g,'');
-        const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
-        return o.name?.toLowerCase().includes(q)
-          || o.rank?.toLowerCase().includes(q)
-          || (o.badge||o.policeId||'').toLowerCase().includes(q)
-          || (o.nationalId||'').toLowerCase().includes(q)
-          || deptName.toLowerCase().includes(q)
-          || statusLabel.toLowerCase().includes(q)
-          || jobTitle.toLowerCase().includes(q);
+        return employeeMatchesSearch(o, q);
       });
-      if(!list.length) return `<p class="text-center text-muted py-3">لا توجد نتائج</p>`;
+      if(!list.length) return `<p class="text-center text-muted py-3">لا توجد نتائج مطابقة.</p>`;
       const rows = list.map(o=>`<tr onclick="SELECTED_OFFICER_ID=${o.id};renderTab('employees');" style="cursor:pointer;${SELECTED_OFFICER_ID===o.id?'background:#eef2ff;':''}">
         <td>${escapeHtml(o.name)}</td>
         <td>${escapeHtml(o.rank)}</td>
@@ -3764,6 +3940,8 @@
       return `<span class="badge-status ${cls}">${label}</span>`;
     }
     function renderOfficerDetail(categoryId){
+      const q = (getOfficerFilterState().search || '').trim();
+      if(!q) return `<div class="text-muted">أدخل قيمة البحث أولاً لعرض تفاصيل الموظف.</div>`;
       const list = categoryId ? officers.filter(o=>o.category===categoryId) : officers;
       const o = list.find(x=>x.id===SELECTED_OFFICER_ID);
       if(!o) return `<div class="text-muted">اختر ${getEmployeeLabel(categoryId, 'singular')} لعرض التفاصيل</div>`;
@@ -4296,10 +4474,11 @@
       const o = officers.find(x=>x.id===id);
       if(!o) return;
       if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
-      if(!confirm('حذف الدرجة العلمية؟')) return;
-      o.educationDegrees = (o.educationDegrees || []).filter((_, i)=>i!==idx);
-      saveAll();
-      renderTab('employees');
+      requestConfirmation('حذف الدرجة العلمية؟', ()=>{
+        o.educationDegrees = (o.educationDegrees || []).filter((_, i)=>i!==idx);
+        saveAll();
+        renderTab('employees');
+      }, {type:'warning'});
     }
     function deleteOfficerInCategory(id, categoryId){
       const activeCategory = getActiveCategory('employeeCategory', 'officers');
@@ -4308,7 +4487,15 @@
       }
       deleteOfficer(id);
     }
-    function deleteOfficer(id){ if(!confirm('حذف الموظف؟')) return; const removed = officers.find(o=>o.id===id); officers = officers.filter(o=>o.id!==id); saveAll(); logActivity('حذف موظف', {target: removed?.name || id}); renderTab('employees'); }
+    function deleteOfficer(id){
+      requestConfirmation('حذف الموظف؟', ()=>{
+        const removed = officers.find(o=>o.id===id);
+        officers = officers.filter(o=>o.id!==id);
+        saveAll();
+        logActivity('حذف موظف', {target: removed?.name || id});
+        renderTab('employees');
+      }, {type:'warning'});
+    }
     function openSubordinatesForm(id){
       const o = officers.find(x=>x.id===id); if(!o) return;
       const area = document.getElementById('officerEditorArea');
@@ -4358,6 +4545,31 @@
         ].map(csvEscape).join(',');
       });
       downloadCSVFile('officers_full.csv', header + lines.join('\n'));
+    }
+    function exportFilteredEmployeesCSV(){
+      const filtered = getReportEmployees();
+      if(!filtered.length) return showToast('أدخل قيمة البحث لتصدير CSV', 'warning');
+      const header = 'id,name,category,rank,badgeOrPoliceId,status,deptId,deptName,jobTitleId,jobTitle,drafteeWorkType,subs,phone,gender,birth,address,emgName,emgPhone,admissionType,hiringDate,transferFromDeptId,transferFromDeptName,transferToDeptId,transferToDeptName,transferDate,transferToDate,transferNote\n';
+      const lines = filtered.map(o=>{
+        const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
+        const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
+        const transferFromName = o.transferFromDeptId ? (departments.find(d=>d.id===o.transferFromDeptId)?.name || '') : '';
+        const transferToName = o.transferToDeptId ? (departments.find(d=>d.id===o.transferToDeptId)?.name || '') : '';
+        return [
+          o.id,o.name,o.category||'officers',o.rank,getOfficerIdentityValue(o),o.status||'',
+          o.deptId||'',deptName,
+          o.jobTitleId||'',jobTitle,o.drafteeWorkType||'',
+          (o.subs||[]).join('|'),
+          o.phone||'',o.gender||'',o.birth||'',o.address||'',o.emgName||'',o.emgPhone||'',
+          o.admissionType||'fresh',o.hiringDate||'',
+          o.transferFromDeptId||'',transferFromName,
+          o.transferToDeptId||'',transferToName,
+          o.transferDate||'',o.transferToDate||'',
+          o.transferNote||''
+        ].map(csvEscape).join(',');
+      });
+      downloadCSVFile('officers_filtered.csv', header + lines.join('\n'));
+      showToast('تم تصدير CSV للنتائج','success');
     }
     function exportOfficersFullCSVArabic(){
       const header = 'المعرف,الاسم,الفئة,الرتبة,رقم_الهوية,الحالة,رقم_القسم,اسم_القسم,رقم_المسمى,المسمى_الوظيفي,نوع_عمل_المجند,التوابع,الهاتف,النوع,تاريخ_الميلاد,العنوان,اسم_الطوارئ,هاتف_الطوارئ,نوع_التعيين,تاريخ_التعيين,جهة_النقل_من_رقم,جهة_النقل_من_اسم,جهة_النقل_إلى_رقم,جهة_النقل_إلى_اسم,تاريخ_النقل_للداخل,تاريخ_النقل_للخارج,ملاحظة_النقل\n';
@@ -4591,8 +4803,9 @@
       const jointWrap = document.getElementById('training_joint_wrap');
       if(jointWrap) jointWrap.style.display = typeId === 'joint' ? 'block' : 'none';
     }
-    function renderTrainingAssignments(categoryId){
-      const employees = getEmployeesByCategory(categoryId);
+    function renderTrainingAssignments(categoryId, searchTerm){
+      if(!(searchTerm || '').trim()) return `<div class="text-muted">أدخل قيمة البحث لعرض بيانات الموظفين والدورات المسندة.</div>`;
+      const employees = filterEmployeesBySearch(getEmployeesByCategory(categoryId), searchTerm);
       const employeeLabel = getEmployeeLabel(categoryId, 'singular');
       if(!employees.length) return `<div class="text-muted">لا توجد بيانات ${getEmployeeLabel(categoryId, 'plural')} لهذه الفئة.</div>`;
       const rows = employees.flatMap(emp => (emp.trainings || []).map(t=>`
@@ -4672,14 +4885,15 @@
     }
     function removeTrainingCourse(courseId){
       if(!canEditTraining()) return showToast('لا تملك صلاحية تعديل التدريب','warning');
-      if(!confirm('حذف الدورة التدريبية؟')) return;
-      trainingCourses = (trainingCourses || []).filter(c=>+c.id !== +courseId);
-      officers.forEach(o=>{
-        o.trainings = (o.trainings || []).filter(t=>+t.courseId !== +courseId);
-      });
-      saveAll();
-      showToast('تم حذف الدورة التدريبية', 'warning');
-      renderTab('training');
+      requestConfirmation('حذف الدورة التدريبية؟', ()=>{
+        trainingCourses = (trainingCourses || []).filter(c=>+c.id !== +courseId);
+        officers.forEach(o=>{
+          o.trainings = (o.trainings || []).filter(t=>+t.courseId !== +courseId);
+        });
+        saveAll();
+        showToast('تم حذف الدورة التدريبية', 'warning');
+        renderTab('training');
+      }, {type:'warning'});
     }
     function addTrainingInstitute(){
       if(!canManageTrainingInstitutes()) return showToast('لا تملك صلاحية تعديل المعاهد','warning');
@@ -4695,12 +4909,13 @@
     }
     function removeTrainingInstitute(id){
       if(!canManageTrainingInstitutes()) return showToast('لا تملك صلاحية تعديل المعاهد','warning');
-      if(!confirm('حذف المعهد؟')) return;
-      trainingInstitutes = trainingInstitutes.filter(i=>Number(i.id) !== Number(id));
-      trainingCourses = trainingCourses.map(c=>Number(c.instituteId)===Number(id) ? Object.assign({}, c, {instituteId: null, instituteName: c.instituteName || ''}) : c);
-      saveAll();
-      showToast('تم حذف المعهد', 'warning');
-      renderTab('training');
+      requestConfirmation('حذف المعهد؟', ()=>{
+        trainingInstitutes = trainingInstitutes.filter(i=>Number(i.id) !== Number(id));
+        trainingCourses = trainingCourses.map(c=>Number(c.instituteId)===Number(id) ? Object.assign({}, c, {instituteId: null, instituteName: c.instituteName || ''}) : c);
+        saveAll();
+        showToast('تم حذف المعهد', 'warning');
+        renderTab('training');
+      }, {type:'warning'});
     }
     function renderTrainingTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للتدريب.</div>';
@@ -4709,6 +4924,9 @@
       const canManage = canEditTraining();
       const canManageInstitutes = canManageTrainingInstitutes();
       const subTabs = renderCategorySubTabs('trainingCategory', activeCategory, 'training');
+      const searchTerm = getTabEmployeeSearchTerm('training');
+      const filteredEmployees = filterEmployeesBySearch(getEmployeesByCategory(activeCategory), searchTerm);
+      const searchBar = renderTabSearchBar('training', `ابحث عن ${employeeLabel} لإظهار البيانات`);
       const storedSubTab = getTrainingSubTab();
       const activeSubTab = ['courses','assignments'].includes(storedSubTab) ? storedSubTab : 'courses';
       const sectionTabs = `<div class="sub-tabs">
@@ -4732,7 +4950,7 @@
           ${canManageInstitutes ? `<button class="btn btn-sm btn-outline-danger" onclick="removeTrainingInstitute(${inst.id})">حذف</button>` : ''}
         </li>
       `).join('');
-      const employees = getEmployeesByCategory(activeCategory);
+      const employees = filteredEmployees;
       const instituteOptions = (trainingInstitutes || []).map(i=>`<option value="${i.id}">${escapeHtml(i.name)}</option>`).join('');
       const coursesSection = `
           <div class="card mb-3">
@@ -4790,14 +5008,15 @@
               <div class="small-muted mt-2">رقم الدورة لا يتكرر إلا إذا كانت نفس الدورة وفي نفس تواريخ التنفيذ.</div>
             </div>
           </div>
-          <div class="card">
+           <div class="card">
             <div class="card-header">الدورات المسندة</div>
-            <div class="card-body">${renderTrainingAssignments(activeCategory)}</div>
+            <div class="card-body">${renderTrainingAssignments(activeCategory, searchTerm)}</div>
           </div>`;
       return `<div class="card">
         <div class="card-header d-flex justify-content-between align-items-center"><div>خطة التدريب حسب الفئات</div></div>
         <div class="card-body">
           ${subTabs}
+          ${searchBar}
           ${sectionTabs}
           ${activeSubTab === 'courses' ? coursesSection : assignmentsSection}
         </div>
@@ -4811,8 +5030,10 @@
       const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
       const canManage = canEditCategoryRecords(activeCategory);
       const subTabs = renderCategorySubTabs('annualReviewCategory', activeCategory, 'annual-review', categories);
-      const records = annualReviews[activeCategory] || [];
-      const employees = getEmployeesByCategory(activeCategory);
+      const searchTerm = getTabEmployeeSearchTerm('annual-review');
+      const filteredEmployees = filterEmployeesBySearch(getEmployeesByCategory(activeCategory), searchTerm);
+      const employeeIds = new Set(filteredEmployees.map(e=>e.id));
+      const records = (annualReviews[activeCategory] || []).filter(r=>employeeIds.has(r.employeeId));
       const rows = records.map(r=>`
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
@@ -4825,11 +5046,12 @@
         <div class="card-header">التقارير السنوية (سرية)</div>
         <div class="card-body">
           ${subTabs}
+          ${renderTabSearchBar('annual-review', `ابحث عن ${employeeLabel} لإظهار التقارير`)}
           <div class="card mb-3">
             <div class="card-header">إضافة تقرير</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="annual_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="annual_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${filteredEmployees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                 <div class="col-md-3"><label class="form-label">تاريخ التقرير</label><input id="annual_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
                 <div class="col-md-3"><label class="form-label">نسبة التقييم (%)</label><input id="annual_rating" type="number" min="0" max="100" class="form-control" placeholder="مثال: 92" ${canManage ? '' : 'disabled'}></div>
                 <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addAnnualReview()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
@@ -4839,7 +5061,7 @@
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
             <thead class="table-dark"><tr><th>${employeeLabel}</th><th>التاريخ</th><th>نسبة التقييم</th><th>ملاحظات</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="4" class="text-center text-muted">لا توجد تقارير</td></tr>'}</tbody>
+            <tbody>${rows || '<tr><td colspan="4" class="text-center text-muted">أدخل قيمة البحث لعرض التقارير.</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
@@ -4865,8 +5087,10 @@
       const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
       const canManage = canEditCategoryRecords(activeCategory);
       const subTabs = renderCategorySubTabs('promotionsCategory', activeCategory, 'promotions');
-      const records = promotions[activeCategory] || [];
-      const employees = getEmployeesByCategory(activeCategory);
+      const searchTerm = getTabEmployeeSearchTerm('promotions');
+      const filteredEmployees = filterEmployeesBySearch(getEmployeesByCategory(activeCategory), searchTerm);
+      const employeeIds = new Set(filteredEmployees.map(e=>e.id));
+      const records = (promotions[activeCategory] || []).filter(r=>employeeIds.has(r.employeeId));
       const ladder = getCategoryRankLadder(activeCategory);
       const rows = records.map(r=>`
         <tr>
@@ -4881,11 +5105,12 @@
         <div class="card-header">الترقيات حسب الفئات</div>
         <div class="card-body">
           ${subTabs}
+          ${renderTabSearchBar('promotions', `ابحث عن ${employeeLabel} لإظهار الترقيات`)}
           <div class="card mb-3">
             <div class="card-header">تسجيل ترقية</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="promotion_employee" class="form-select" onchange="updatePromotionRankOptions()" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="promotion_employee" class="form-select" onchange="updatePromotionRankOptions()" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${filteredEmployees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                  <div class="col-md-3"><label class="form-label">الرتبة الحالية</label><select id="promotion_current_rank" class="form-select" onchange="updatePromotionNextRankOptions()" ${canManage ? '' : 'disabled'}><option value="">—</option></select></div>
                 <div class="col-md-3"><label class="form-label">الرتبة الأعلى</label><select id="promotion_next_rank" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر رتبة —</option></select></div>
                 <div class="col-md-2"><label class="form-label">تاريخ السريان</label><input id="promotion_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
@@ -4896,7 +5121,7 @@
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
             <thead class="table-dark"><tr><th>${employeeLabel}</th><th>من</th><th>إلى</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="5" class="text-center text-muted">لا توجد ترقيات</td></tr>'}</tbody>
+            <tbody>${rows || '<tr><td colspan="5" class="text-center text-muted">أدخل قيمة البحث لعرض الترقيات.</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
@@ -4960,8 +5185,10 @@
       const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
       const canManage = canEditCategoryRecords(activeCategory);
       const subTabs = renderCategorySubTabs('transfersCategory', activeCategory, 'transfers');
-      const records = transferRecords[activeCategory] || [];
-      const employees = getEmployeesByCategory(activeCategory);
+      const searchTerm = getTabEmployeeSearchTerm('transfers');
+      const filteredEmployees = filterEmployeesBySearch(getEmployeesByCategory(activeCategory), searchTerm);
+      const employeeIds = new Set(filteredEmployees.map(e=>e.id));
+      const records = (transferRecords[activeCategory] || []).filter(r=>employeeIds.has(r.employeeId));
       const rows = records.map(r=>`
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
@@ -4979,11 +5206,12 @@
         <div class="card-header">النقل والندب</div>
         <div class="card-body">
           ${subTabs}
+          ${renderTabSearchBar('transfers', `ابحث عن ${employeeLabel} لإظهار سجلات النقل`)}
           <div class="card mb-3">
             <div class="card-header">إضافة سجل نقل/ندب</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-3"><label class="form-label">${employeeLabel}</label><select id="transfer_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">${employeeLabel}</label><select id="transfer_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${filteredEmployees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                 <div class="col-md-2"><label class="form-label">نطاق النقل</label><select id="transfer_scope" class="form-select" onchange="updateTransferDepartmentOptions()" ${canManage ? '' : 'disabled'}><option value="internal">داخلي</option><option value="external">خارجي</option></select></div>
                 <div class="col-md-2"><label class="form-label">نوع الحركة</label><select id="transfer_type" class="form-select" onchange="toggleTransferTravelFields()" ${canManage ? '' : 'disabled'}><option value="نقل">نقل</option><option value="ندب">ندب</option><option value="سفر للخارج">سفر للخارج</option></select></div>
                  <div class="col-md-3" id="transfer_travel_reason_wrap" style="display:none;">
@@ -5014,9 +5242,9 @@
               </div>
             </div>
           </div>
-          <div class="table-responsive"><table class="table table-bordered table-sm">
+           <div class="table-responsive"><table class="table table-bordered table-sm">
             <thead class="table-dark"><tr><th>${employeeLabel}</th><th>نطاق النقل</th><th>نوع الحركة</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th><th>ملاحظات</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="9" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
+            <tbody>${rows || '<tr><td colspan="9" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
@@ -5086,8 +5314,9 @@
       }
       return 1;
     }
-    function renderVacationsSummary(categoryId){
-      const employees = getEmployeesByCategory(categoryId);
+    function renderVacationsSummary(categoryId, searchTerm){
+      if(!(searchTerm || '').trim()) return '<div class="text-muted">أدخل قيمة البحث لعرض ملخص الإجازات.</div>';
+      const employees = filterEmployeesBySearch(getEmployeesByCategory(categoryId), searchTerm);
       if(!employees.length) return '<div class="text-muted">لا توجد بيانات للعرض.</div>';
       const records = vacationRecords[categoryId] || [];
       const summaryRows = employees.map(emp=>{
@@ -5112,10 +5341,12 @@
       const employeeLabel = getEmployeeLabel(activeCategory, 'singular');
       const canManage = canEditCategoryRecords(activeCategory);
       const subTabs = renderCategorySubTabs('vacationsCategory', activeCategory, 'vacations');
+      const searchTerm = getTabEmployeeSearchTerm('vacations');
+      const filteredEmployees = filterEmployeesBySearch(getEmployeesByCategory(activeCategory), searchTerm);
+      const employeeIds = new Set(filteredEmployees.map(e=>e.id));
       const vacationRange = getVacationYearRange(activeCategory);
       const vacationRangeLabel = `${vacationRange.start.toLocaleDateString('ar-EG')} → ${vacationRange.end.toLocaleDateString('ar-EG')}`;
-      const records = vacationRecords[activeCategory] || [];
-      const employees = getEmployeesByCategory(activeCategory);
+      const records = (vacationRecords[activeCategory] || []).filter(r=>employeeIds.has(r.employeeId));
       const rows = records.map(r=>`
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
@@ -5130,12 +5361,13 @@
         <div class="card-header">الإجازات حسب الفئات</div>
         <div class="card-body">
           ${subTabs}
+          ${renderTabSearchBar('vacations', `ابحث عن ${employeeLabel} لإظهار الإجازات`)}
           <div class="alert alert-info">عام الإجازات لهذه الفئة: ${vacationRangeLabel}.</div>
           <div class="card mb-3">
             <div class="card-header">تسجيل إجازة</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-3"><label class="form-label">${employeeLabel}</label><select id="vacation_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-3"><label class="form-label">${employeeLabel}</label><select id="vacation_employee" class="form-select" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${filteredEmployees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                 <div class="col-md-3"><label class="form-label">نوع الإجازة</label><select id="vacation_type" class="form-select" onchange="toggleVacationFields()" ${canManage ? '' : 'disabled'}>
                   <option value="إجازة سنوية">إجازة سنوية</option>
                   <option value="إجازة طارئة">إجازة طارئة</option>
@@ -5156,11 +5388,11 @@
           </div>
           <div class="card mb-3">
             <div class="card-header">ملخص الإجازات لكل موظف</div>
-            <div class="card-body">${renderVacationsSummary(activeCategory)}</div>
+            <div class="card-body">${renderVacationsSummary(activeCategory, searchTerm)}</div>
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
             <thead class="table-dark"><tr><th>${employeeLabel}</th><th>النوع</th><th>بداية</th><th>نهاية</th><th>مدة الإذن</th><th>ملاحظات</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="6" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
+            <tbody>${rows || '<tr><td colspan="6" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>'}</tbody>
           </table></div>
         </div>
       </div>`;
@@ -5205,8 +5437,10 @@
         <button class="sub-tab-btn ${activeSubTab==='records'?'active':''}" onclick="setDisciplinarySubTab('records');renderTab('disciplinary')">السجلات التأديبية</button>
         <button class="sub-tab-btn ${activeSubTab==='actions'?'active':''}" onclick="setDisciplinarySubTab('actions');renderTab('disciplinary')">إجراءات الجزاءات</button>
       </div>`;
-      const records = disciplinaryRecords[activeCategory] || [];
-      const employees = getEmployeesByCategory(activeCategory);
+      const searchTerm = getTabEmployeeSearchTerm('disciplinary');
+      const filteredEmployees = filterEmployeesBySearch(getEmployeesByCategory(activeCategory), searchTerm);
+      const employeeIds = new Set(filteredEmployees.map(e=>e.id));
+      const records = (disciplinaryRecords[activeCategory] || []).filter(r=>employeeIds.has(r.employeeId));
       const rows = records.map(r=>`
         <tr>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
@@ -5224,7 +5458,7 @@
             <div class="card-header">إضافة حالة</div>
             <div class="card-body">
               <div class="row g-2">
-                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="disciplinary_employee" class="form-select" onchange="updateDisciplinaryActionOptions()" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${employees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
+                <div class="col-md-4"><label class="form-label">${employeeLabel}</label><select id="disciplinary_employee" class="form-select" onchange="updateDisciplinaryActionOptions()" ${canManage ? '' : 'disabled'}><option value="">— اختر ${employeeLabel} —</option>${filteredEmployees.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('')}</select></div>
                 <div class="col-md-3"><label class="form-label">تصنيف القضية</label><select id="disciplinary_case_category" class="form-select" onchange="toggleDisciplinaryFields()" ${canManage ? '' : 'disabled'}><option value="criminal">جنائي</option><option value="administrational">إداري</option></select></div>
                 <div class="col-md-3"><label class="form-label">تاريخ</label><input id="disciplinary_date" type="date" class="form-control" ${canManage ? '' : 'disabled'}></div>
                 <div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" onclick="addDisciplinaryRecord()" ${canManage ? '' : 'disabled'}>إضافة</button></div>
@@ -5245,7 +5479,7 @@
           </div>
           <div class="table-responsive"><table class="table table-bordered table-sm">
             <thead class="table-dark"><tr><th>${employeeLabel}</th><th>التصنيف</th><th>رقم القضية</th><th>النوع/الإجراء</th><th>ملخص</th><th>إجراءات نهائية</th><th>الحالة</th><th>التاريخ</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="8" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
+            <tbody>${rows || '<tr><td colspan="8" class="text-center text-muted">أدخل قيمة البحث لعرض السجلات.</td></tr>'}</tbody>
           </table></div>`;
       const actionsSection = `
           <div class="card mb-3">
@@ -5270,6 +5504,7 @@
         <div class="card-header">السجل التأديبي والقانوني</div>
         <div class="card-body">
           ${subTabs}
+          ${renderTabSearchBar('disciplinary', `ابحث عن ${employeeLabel} لإظهار السجل التأديبي`)}
           ${sectionTabs}
           ${activeSubTab === 'actions' ? actionsSection : recordsSection}
         </div>
@@ -5357,9 +5592,12 @@
     function renderHonorsTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول إلى التكريمات والتحفيزات.</div>';
       const activeSubTab = ['recipients','types'].includes(getHonorsSubTab()) ? getHonorsSubTab() : 'recipients';
-      const employees = officers.map(o=>`<option value="${o.id}">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</option>`).join('');
+      const searchTerm = getTabEmployeeSearchTerm('honors');
+      const filteredEmployees = filterEmployeesBySearch(officers, searchTerm);
+      const employeeIds = new Set(filteredEmployees.map(e=>e.id));
+      const employees = filteredEmployees.map(o=>`<option value="${o.id}">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</option>`).join('');
       const typeOptions = honorTypes.map(t=>`<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
-      const recipientsRows = honorRecipients.map((r, idx)=>`
+      const recipientsRows = honorRecipients.filter(r=>employeeIds.has(r.employeeId)).map((r, idx)=>`
         <tr>
           <td>${idx + 1}</td>
           <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
@@ -5394,7 +5632,7 @@
         </div>
         <div class="table-responsive"><table class="table table-bordered table-sm">
           <thead class="table-dark"><tr><th>#</th><th>الموظف</th><th>النوع</th><th>التاريخ</th><th>ملاحظات</th><th></th></tr></thead>
-          <tbody>${recipientsRows || '<tr><td colspan="6" class="text-center text-muted">لا توجد تكريمات مسجلة</td></tr>'}</tbody>
+          <tbody>${recipientsRows || `<tr><td colspan="6" class="text-center text-muted">${(searchTerm || '').trim() ? 'لا توجد تكريمات مطابقة' : 'أدخل قيمة البحث لعرض التكريمات.'}</td></tr>`}</tbody>
         </table></div>
       `;
       const typesSection = `
@@ -5420,6 +5658,7 @@
       return `<div class="card">
         <div class="card-header">التكريم والأنواط</div>
         <div class="card-body">
+          ${renderTabSearchBar('honors', 'ابحث عن الموظف لإظهار سجلات التكريم')}
           ${sectionTabs}
           ${activeSubTab === 'types' ? typesSection : recipientsSection}
         </div>
@@ -5721,7 +5960,7 @@
           <div>
             <button class="btn btn-sm btn-outline-primary me-1" onclick="openJobTitleForm('edit',${j.id})">تعديل</button>
             <button class="btn btn-sm btn-outline-success me-1" onclick="openJobTitleForm('add',null,${j.id})">فرعي</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="if(confirm('حذف المسمى ووحداته الفرعية؟')) deleteJobTitleRecursive(${j.id})">حذف</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="requestConfirmation('حذف المسمى ووحداته الفرعية؟', function(){ deleteJobTitleRecursive(${j.id}); }, {type:'warning'})">حذف</button>
           </div>
         </div>
         ${renderJobTitleTree(j.id, level+1)}
@@ -5877,7 +6116,7 @@
           <div class="col-md-2"><label class="form-label">اللون</label><select class="form-select" onchange="updateDuty(${d.id},'color',this.value)">${['danger','success','warning','dark','primary','info'].map(c=>`<option value="${c}" ${c===d.color?'selected':''}>${c}</option>`).join('')}</select></div>
           <div class="col-md-1"><label class="form-label">ساعات</label><input type="number" class="form-control" value="${d.duration}" onchange="updateDuty(${d.id},'duration',+this.value)"></div>
           <div class="col-md-1"><label class="form-label">راحة (س)</label><input type="number" class="form-control" value="${d.restHours}" onchange="updateDuty(${d.id},'restHours',+this.value)"></div>
-          <div class="col-md-1 text-end"><label class="form-label d-block">&nbsp;</label><button class="btn btn-danger" onclick="if(confirm('حذف؟')) deleteDuty(${d.id})">حذف</button></div>
+          <div class="col-md-1 text-end"><label class="form-label d-block">&nbsp;</label><button class="btn btn-danger" onclick="requestConfirmation('حذف؟', function(){ deleteDuty(${d.id}); }, {type:'warning'})">حذف</button></div>
         </div>
 
        <div class="mt-3"><label class="form-label fw-bold">الرتب المسموحة</label><div class="compact-checks">${allowedRanksHtml}</div></div>
@@ -6118,21 +6357,10 @@
     /* ========= Report ========= */
     function renderReportTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجّل الدخول لرؤية التقارير.</div>';
-      const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
-      const title = new Date(month+'-01').toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
-     let savedSelection = [];
-      try { savedSelection = JSON.parse(sessionStorage.getItem('selectedReportDutyIds')) || []; } catch(_) { savedSelection = []; }
-      const dutyOptions = duties.map(d=>`<div class="form-check form-check-inline"><input class="form-check-input rpt-duty-chk" type="checkbox" id="rpd_${d.id}" value="${d.id}" ${savedSelection.includes(d.id)?'checked':''} onchange="cacheReportSelection()"><label class="form-check-label" for="rpd_${d.id}">${escapeHtml(d.printLabel||d.name)}</label></div>`).join(' ');
-        return `<div class="card"><div class="card-header d-flex justify-content-between"><div>التقرير — ${title}</div>
-        <div>
-          <button class="btn btn-outline-primary btn-sm me-2" onclick="printAllDuties()">طباعة كل الأنواع</button>
-          <button class="btn btn-outline-secondary btn-sm" onclick="exportDutiesByFormat('all')">تصدير الكل</button>
-        </div></div>
+      return `<div class="card">
+        <div class="card-header">لوحة التقارير</div>
         <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-4"><label class="form-label">شهر</label><input id="rpt_month" type="month" class="form-control" value="${month}" onchange="document.getElementById('rosterMonth').value=this.value; onRosterMonthChange();"></div>
-            <div class="col-md-8"><label class="form-label">اختر أنواع للطباعة/التصدير</label><div class="compact-checks">${dutyOptions}</div></div>
-          </div>
+          ${renderTabSearchBar('report', 'ابحث عن موظف أو رقم أو قسم لإظهار التقارير')}
           <div class="card mb-3">
             <div class="card-header">إعدادات الخط والتخطيط</div>
             <div class="card-body">
@@ -6144,24 +6372,25 @@
               <div class="mt-3 text-end"><button class="btn btn-outline-primary" onclick="saveReportSettingsFromTab()">حفظ إعدادات التقرير</button></div>
             </div>
           </div>
-          <div class="row g-2 mb-3 align-items-end">
-            <div class="col-md-4"><label class="form-label">امتداد التصدير</label><select id="rpt_export_format" class="form-select"><option value="pdf">PDF</option><option value="png">PNG</option><option value="jpeg">JPEG</option><option value="html">HTML</option><option value="docx">DOCX</option></select></div>
-            <div class="col-md-8 text-end">
-              <button class="btn btn-success me-2" onclick="previewSelectedDuties()">معاينة</button>
-              <button class="btn btn-outline-primary me-2" onclick="exportDutiesByFormat('selected')">تصدير المحدد</button>
-              <button class="btn btn-outline-secondary" onclick="printSelectedDuties()">طباعة المحدد</button>
-            </div>
-          </div>
-          <div id="reportPreview" class="print-preview"></div>
-        </div></div>
-       ${renderEmployeeReportCard()}${renderEmployeeStatusReportCard()}`;
+          ${renderEmployeeReportCard()}
+          ${renderEmployeeStatusReportCard()}
+          ${renderTransferReportCard()}
+          ${renderSubjectReportCard()}
+        </div>
+      </div>`;
+    }
+    function getReportEmployees(){
+      const searchTerm = (getTabEmployeeSearchTerm('report') || '').trim();
+      if(!searchTerm) return [];
+      return filterEmployeesBySearch(officers, searchTerm);
     }
     function renderEmployeeReportCard(){
-      const emptyState = officers.length ? '' : '<div class="alert alert-info">لا توجد بيانات موظفين للعرض.</div>';
+      const filteredEmployees = getReportEmployees();
+      const emptyState = filteredEmployees.length ? '' : '<div class="alert alert-info">أدخل قيمة البحث لعرض تقرير الموظفين.</div>';
       return `<div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <div>تقرير بيانات الموظفين</div>
-          <div class="small text-muted">إجمالي الموظفين: ${officers.length}</div>
+          <div class="small text-muted">إجمالي النتائج: ${filteredEmployees.length}</div>
         </div>
         <div class="card-body">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -6177,17 +6406,18 @@
                 <option value="docx">DOCX</option>
               </select>
               <button class="btn btn-outline-primary" onclick="exportEmployeeReportByFormat()">تصدير التقرير</button>
-              <button class="btn btn-outline-info" onclick="exportOfficersFullCSV()">تصدير CSV كامل</button>
+              <button class="btn btn-outline-info" onclick="exportFilteredEmployeesCSV()">تصدير CSV مطابق للبحث</button>
             </div>
           </div>
-           ${emptyState}
+          ${emptyState}
           <div id="employeeReportPreview" class="print-preview"></div>
         </div>
       </div>`;
     }
     function renderEmployeeStatusReportCard(){
-      const employees = officers.map(o=>`<option value="${o.id}">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</option>`).join('');
-      const emptyState = officers.length ? '' : '<div class="alert alert-info">لا توجد بيانات موظفين لإنشاء بيان حالة وظيفية.</div>';
+      const filteredEmployees = getReportEmployees();
+      const employees = filteredEmployees.map(o=>`<option value="${o.id}">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</option>`).join('');
+      const emptyState = filteredEmployees.length ? '' : '<div class="alert alert-info">أدخل قيمة البحث أولاً لعرض بيان حالة موظف.</div>';
       return `<div class="card mt-3">
         <div class="card-header d-flex justify-content-between align-items-center">
           <div>بيان حالة وظيفية</div>
@@ -6195,7 +6425,7 @@
         </div>
         <div class="card-body">
           ${emptyState}
-          <<div class="row g-2 align-items-end">
+          <div class="row g-2 align-items-end">
             <div class="col-md-6"><label class="form-label">الموظف</label><select id="status_report_employee" class="form-select"><option value="">— اختر موظف —</option>${employees}</select></div>
             <div class="col-md-6 text-end">
               <button class="btn btn-outline-primary me-2" onclick="previewEmployeeStatusReport()">معاينة</button>
@@ -6220,46 +6450,92 @@
         </div>
       </div>`;
     }
-    function getSelectedDutyIdsInReport(){
-      return Array.from(document.querySelectorAll('.rpt-duty-chk:checked')).map(i=>+i.value);
+    function renderTransferReportCard(){
+      const filteredEmployees = getReportEmployees();
+      const employeeIds = new Set(filteredEmployees.map(e=>e.id));
+      const records = Object.values(transferRecords || {}).flatMap(list=>Array.isArray(list) ? list : []).filter(r=>employeeIds.has(r.employeeId));
+      const rows = records.map((r, idx)=>`
+        <tr>
+          <td class="col-index">${idx + 1}</td>
+          <td>${escapeHtml(getEmployeeNameById(r.employeeId))}</td>
+          <td>${escapeHtml(r.type || '—')}</td>
+          <td>${escapeHtml(r.travelReason || '—')}</td>
+          <td>${escapeHtml(r.fromDept || '—')}</td>
+          <td>${escapeHtml(r.toDept || '—')}</td>
+          <td>${escapeHtml(r.startDate || '')}</td>
+          <td>${escapeHtml(r.endDate || '')}</td>
+        </tr>
+      `).join('');
+      return `<div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>تقرير النقل والسفر</div>
+          <div class="small text-muted">يعرض الحركات المرتبطة بنتائج البحث فقط</div>
+        </div>
+        <div class="card-body">
+          ${filteredEmployees.length ? '' : '<div class="alert alert-info">أدخل قيمة البحث لعرض تقرير النقل والسفر.</div>'}
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+              <thead class="table-dark"><tr><th class="col-index">م</th><th>الموظف</th><th>النوع</th><th>سبب السفر</th><th>من</th><th>إلى</th><th>بداية</th><th>نهاية</th></tr></thead>
+              <tbody>${rows || '<tr><td colspan="8" class="text-center text-muted">لا توجد سجلات مطابقة</td></tr>'}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
     }
-    function cacheReportSelection(){
-      const ids = getSelectedDutyIdsInReport();
-      sessionStorage.setItem('selectedReportDutyIds', JSON.stringify(ids));
-    }
-    function previewSelectedDuties(){
-      const ids = getSelectedDutyIdsInReport();
-      const month = document.getElementById('rpt_month')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
-      if(!ids.length) return showToast('اختر نوعاً واحداً أو أكثر للمعاينة','danger');
-      const preview = document.getElementById('reportPreview');
-      preview.innerHTML = ids.map(id=> buildDutyInnerHtml(id, month)).join('<hr/>');
-      preview.scrollIntoView({behavior:'smooth'});
+    function renderSubjectReportCard(){
+      return `<div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>تقارير الموضوعات</div>
+          <div class="small text-muted">اختر موضوعاً لإظهار ملخص سريع</div>
+        </div>
+        <div class="card-body">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6"><label class="form-label">موضوع التقرير</label>
+              <select id="subject_report_type" class="form-select">
+                <option value="training">التدريب</option>
+                <option value="promotions">الترقيات</option>
+                <option value="transfers">النقل والندب</option>
+                <option value="vacations">الإجازات</option>
+                <option value="disciplinary">السجل التأديبي</option>
+                <option value="honors">التكريمات</option>
+              </select>
+            </div>
+            <div class="col-md-6 text-end">
+              <button class="btn btn-outline-primary" onclick="previewSubjectReport()">معاينة الملخص</button>
+            </div>
+          </div>
+          <div id="subjectReportPreview" class="print-preview mt-3"></div>
+        </div>
+      </div>`;
     }
     function previewEmployeeReport(){
       const preview = document.getElementById('employeeReportPreview');
       if(!preview) return;
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث لعرض التقرير','warning');
       preview.innerHTML = buildEmployeeReportHtml();
       preview.scrollIntoView({behavior:'smooth'});
     }
     function printEmployeeReport(){
-      if(!officers.length) return showToast('لا توجد بيانات موظفين للطباعة','warning');
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث للطباعة','warning');
       printPdfFromHtml(buildEmployeeReportHtml(), 'تقرير_الموظفين.pdf');
     }
     function previewEmployeeStatusReport(){
       const id = +document.getElementById('status_report_employee')?.value;
       const preview = document.getElementById('employeeStatusReportPreview');
       if(!preview) return;
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث أولاً', 'warning');
       if(!id) return showToast('اختر موظفاً لإعداد البيان', 'warning');
       preview.innerHTML = buildEmployeeStatusReportHtml(id);
       preview.scrollIntoView({behavior:'smooth'});
     }
     function printEmployeeStatusReport(){
       const id = +document.getElementById('status_report_employee')?.value;
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث أولاً', 'warning');
       if(!id) return showToast('اختر موظفاً للطباعة', 'warning');
       printPdfFromHtml(buildEmployeeStatusReportHtml(id), 'بيان_حالة_وظيفية.pdf');
     }
     async function exportEmployeeReportByFormat(){
-      if(!officers.length) return showToast('لا توجد بيانات موظفين للتصدير','warning');
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث للتصدير','warning');
       const format = document.getElementById('employee_report_export_format')?.value || 'pdf';
       const html = buildEmployeeReportHtml();
       if(format === 'pdf') return printPdfFromHtml(html, 'تقرير_الموظفين.pdf');
@@ -6278,8 +6554,9 @@
       }
       showToast('صيغة التصدير غير مدعومة حالياً','warning');
     }
-    async function exportEmployeeStatusReportByFormat(){
+     async function exportEmployeeStatusReportByFormat(){
       const id = +document.getElementById('status_report_employee')?.value;
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث أولاً', 'warning');
       if(!id) return showToast('اختر موظفاً للتصدير', 'warning');
       const format = document.getElementById('status_report_export_format')?.value || 'pdf';
       const html = buildEmployeeStatusReportHtml(id);
@@ -6296,11 +6573,48 @@
       }
       if(format === 'png' || format === 'jpeg'){
         return exportReportImage(html, 'بيان_حالة_وظيفية', format);
-      }
+       }
       showToast('صيغة التصدير غير مدعومة حالياً','warning');
     }
-    function buildEmployeeReportTable(){
-      const rows = officers.map((o, idx)=>{
+    function previewSubjectReport(){
+      const preview = document.getElementById('subjectReportPreview');
+      if(!preview) return;
+      if(!getReportEmployees().length) return showToast('أدخل قيمة البحث لإظهار التقرير', 'warning');
+      const subject = document.getElementById('subject_report_type')?.value || 'training';
+      preview.innerHTML = buildSubjectReportHtml(subject);
+      preview.scrollIntoView({behavior:'smooth'});
+    }
+    function buildSubjectReportHtml(subject){
+      const employees = getReportEmployees();
+      const header = buildHeaderHtml();
+      const watermark = buildReportWatermarkHtml();
+      const fontSize = getReportPrintFontSize();
+      const fontFamily = getReportFontFamily();
+      const subjectLabel = {
+        training: 'التدريب',
+        promotions: 'الترقيات',
+        transfers: 'النقل والندب',
+        vacations: 'الإجازات',
+        disciplinary: 'السجل التأديبي',
+        honors: 'التكريمات'
+      }[subject] || 'الموضوع';
+      const rows = employees.map((emp, idx)=>{
+        let count = 0;
+        if(subject === 'training') count = (emp.trainings || []).length;
+        if(subject === 'promotions') count = (promotions[emp.category] || []).filter(r=>r.employeeId === emp.id).length;
+        if(subject === 'transfers') count = (transferRecords[emp.category] || []).filter(r=>r.employeeId === emp.id).length;
+        if(subject === 'vacations') count = (vacationRecords[emp.category] || []).filter(r=>r.employeeId === emp.id).length;
+        if(subject === 'disciplinary') count = (disciplinaryRecords[emp.category] || []).filter(r=>r.employeeId === emp.id).length;
+        if(subject === 'honors') count = honorRecipients.filter(r=>r.employeeId === emp.id).length;
+        return `<tr><td class="col-index">${idx + 1}</td><td>${escapeHtml(emp.name || '')}</td><td>${escapeHtml(emp.rank || '')}</td><td>${count}</td></tr>`;
+      }).join('');
+      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الموظف</th><th>الرتبة</th><th>إجمالي السجلات</th></tr></thead><tbody>${rows || '<tr><td colspan="4" class="text-center text-muted">لا توجد بيانات</td></tr>'}</tbody></table>`;
+      const printMeta = buildReportPrintMetaHtml();
+      const meta = `<div class="report-meta"><div>إجمالي النتائج: ${employees.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
+      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير موضوعات — ${subjectLabel}</div></div>${meta}${table}</div></div>`;
+    }
+    function buildEmployeeReportTable(list){
+      const rows = (list || []).map((o, idx)=>{
         const deptName = o.deptId ? (departments.find(d=>d.id===o.deptId)?.name || '') : '';
         const jobTitle = o.jobTitleId ? (jobTitles.find(j=>j.id===o.jobTitleId)?.name || '') : '';
         const statusLabel = {active:'نشط', retired:'متقاعد', transferred:'منقول'}[o.status] || o.status || 'نشط';
@@ -6316,17 +6630,19 @@
           <td>${escapeHtml(startDate || '')}</td>
         </tr>`;
       }).join('');
-      return rows || `<tr><td colspan="8" class="text-center text-muted">لا توجد بيانات لعرضها</td></tr>`;
+       return rows || `<tr><td colspan="8" class="text-center text-muted">لا توجد بيانات لعرضها</td></tr>`;
     }
     function buildEmployeeReportHtml(){
+      const reportEmployees = getReportEmployees();
+      if(!reportEmployees.length) return '<div class="alert alert-info">أدخل قيمة البحث لعرض التقرير.</div>';
       const header = buildHeaderHtml();
       const watermark = buildReportWatermarkHtml();
       const fontSize = getReportPrintFontSize();
       const fontFamily = getReportFontFamily();
-      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>تاريخ التعيين</th></tr></thead><tbody>${buildEmployeeReportTable()}</tbody></table>`;
+      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>تاريخ التعيين</th></tr></thead><tbody>${buildEmployeeReportTable(reportEmployees)}</tbody></table>`;
       const printMeta = buildReportPrintMetaHtml();
-      const meta = `<div class="report-meta"><div>إجمالي الموظفين: ${officers.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
-      return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير بيانات الموظفين</div></div>${meta}${table}</div></div>`;
+      const meta = `<div class="report-meta"><div>إجمالي النتائج: ${reportEmployees.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
+      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير بيانات الموظفين</div></div>${meta}${table}</div></div>`;
     }
     function buildEmployeeStatusReportHtml(employeeId){
       const o = getEmployeeById(employeeId);
@@ -6407,7 +6723,7 @@
           ${travels.length ? `<ul>${travels.map(t=>`<li>${escapeHtml(t.startDate || '')} → ${escapeHtml(t.endDate || '')} — ${escapeHtml(t.travelReason || '—')}</li>`).join('')}</ul>` : '<div class="text-muted">لا توجد سفريات خارج البلاد مسجلة.</div>'}
         </div>`;
       const meta = `<div class="report-meta"><div>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</div><div>رقم الموظف: ${o.id}</div>${printMeta}</div>`;
-      return `<div class="one-duty-page report-preview-paper">${watermark}<div class="duty-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">بيان حالة وظيفية</div></div>${meta}<div class="report-profile">${photoHtml}<div><div class="fw-bold">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</div><div class="small-muted">${escapeHtml(getCategoryLabel(o.category))}</div></div></div>${infoList}</div></div>`;
+      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">بيان حالة وظيفية</div></div>${meta}<div class="report-profile">${photoHtml}<div><div class="fw-bold">${escapeHtml(`${o.rank || ''} ${o.name || ''}`.trim())}</div><div class="small-muted">${escapeHtml(getCategoryLabel(o.category))}</div></div></div>${infoList}</div></div>`;
     }
     function saveReportSettingsFromTab(){
       SETTINGS.reportFontFamily = document.getElementById('report_font_family')?.value || SETTINGS.reportFontFamily;
