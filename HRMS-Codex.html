@@ -169,11 +169,11 @@
     .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#111; margin-bottom:6px; flex-wrap:wrap; }
      .report-header { position:relative; display:flex; justify-content:center; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px; gap:12px; }
     .report-title { font-size:18px; font-weight:700; text-align:center; color:#111; }
-    .report-logo { position:absolute; top:0; right:0; display:flex; align-items:center; justify-content:center; }
+     .report-logo { position:absolute; top:0; left:0; right:auto; display:flex; align-items:flex-start; justify-content:flex-start; }
     .report-logo img { max-height:36px; width:auto; height:auto; }
-    .report-logo-block { display:flex; flex-direction:column; align-items:center; gap:4px; margin-bottom:6px; }
+    .report-logo-block { display:flex; flex-direction:column; align-items:flex-start; gap:4px; margin-bottom:6px; }
     .report-logo-block img { max-height:46px; width:auto; height:auto; }
-    .report-logo-subtitle { font-weight:700; color:#111; font-size:14px; }
+    .report-logo-subtitle { font-weight:700; color:#111; font-size:12.5px; }
     .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:4px double #0f172a; }
      .report-table th, .report-table td { border-top:1px solid #0f172a; border-bottom:1px solid #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:normal; word-break:break-word; }
     .report-table th { background:#d1d5db; color:#111; font-weight:700; border-top:4px double #0f172a; border-bottom:4px double #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; }
@@ -198,6 +198,14 @@
      .report-signature .signature-title { text-align:center; width:100%; }
     .report-signature.edge .signature-line { margin-inline:0; }
     .sub-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+    .export-row { display:flex; flex-wrap:nowrap; gap:8px; align-items:center; justify-content:flex-end; overflow-x:auto; }
+    .export-row.start { justify-content:flex-start; }
+    .nav-group { width:100%; }
+    .nav-group-toggle { width:100%; padding:12px 16px; border-radius:12px; border:1px solid #c7d2fe; background:linear-gradient(180deg,#eef2ff,#e0e7ff); font-weight:800; display:flex; align-items:center; justify-content:space-between; cursor:pointer; color:#1f2937; box-shadow:0 4px 10px rgba(0,0,0,.06); }
+    .nav-group-toggle::after { content:"▾"; font-size:14px; transition:transform .2s ease; }
+    .nav-group.open .nav-group-toggle::after { transform:rotate(180deg); }
+    .nav-group-list { list-style:none; padding:8px 0 0; margin:0; display:none; flex-direction:column; gap:8px; }
+    .nav-group.open .nav-group-list { display:flex; }
     .sub-tab-btn { border:1px solid #c7d2fe; background:#fff; color:#1f2937; padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:all .15s ease; }
     .sub-tab-btn.active { background:#1e40af; color:#fff; border-color:#1e40af; box-shadow:0 6px 16px rgba(30,64,175,.2); }
     .sub-tab-btn:focus-visible { outline:2px solid rgba(250,204,21,.9); outline-offset:2px; }
@@ -284,24 +292,39 @@
         <button class="tabs-toggle" type="button" onclick="toggleTabsCollapse()">طي القوائم</button>
         <ul class="nav nav-tabs mb-4" id="mainTabs">
           <li class="nav-item"><button class="nav-link active" data-icon="🏠" data-tab="landing" onclick="renderTab('landing')"><span class="tab-label">الواجهة الرئيسية</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🏢" data-tab="employees" onclick="renderTab('employees')"><span class="tab-label">العاملين بالإدارة</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🎓" data-tab="training" onclick="renderTab('training')"><span class="tab-label">التدريب</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="📁" data-tab="annual-review" onclick="renderTab('annual-review')"><span class="tab-label">التقارير السرية</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="⬆️" data-tab="promotions" onclick="renderTab('promotions')"><span class="tab-label">الترقيات</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🔁" data-tab="transfers" onclick="renderTab('transfers')"><span class="tab-label">النقل والندب</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🏖️" data-tab="vacations" onclick="renderTab('vacations')"><span class="tab-label">الإجازات</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="⚖️" data-tab="disciplinary" onclick="renderTab('disciplinary')"><span class="tab-label">الجزاءات والقضايا</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🏅" data-tab="honors" onclick="renderTab('honors')"><span class="tab-label">التكريمات والأنواط</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="📊" data-tab="report" onclick="renderTab('report')"><span class="tab-label">التقارير</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')"><span class="tab-label">سلم الرتب والترتيب</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🗂️" data-tab="archive" onclick="renderTab('archive')"><span class="tab-label">الأرشيف</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🌴" data-tab="departments" onclick="renderTab('departments')"><span class="tab-label">الأقسام والإدارات</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="⏱️" data-tab="transfer-departments" onclick="renderTab('transfer-departments')"><span class="tab-label">جهات النقل</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="📝" data-tab="jobtitles" onclick="renderTab('jobtitles')"><span class="tab-label">المسميات الوظيفية</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="⚙️" data-tab="settings" onclick="renderTab('settings')"><span class="tab-label">الإعدادات</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🧭" data-tab="admin" onclick="renderTab('admin')"><span class="tab-label">لوحة التحكم</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="🔐" data-tab="account" onclick="renderTab('account')"><span class="tab-label">الأمن والصلاحيات</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-icon="ℹ️" data-tab="about" onclick="renderTab('about')"><span class="tab-label">حول التطبيق</span></button></li>
+          <li class="nav-group open" data-group="core">
+            <button class="nav-group-toggle" type="button" onclick="toggleTabGroup('core')">إدارة الموارد البشرية</button>
+            <ul class="nav-group-list">
+              <li class="nav-item"><button class="nav-link" data-icon="🏢" data-tab="employees" onclick="renderTab('employees')"><span class="tab-label">العاملين بالإدارة</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="🎓" data-tab="training" onclick="renderTab('training')"><span class="tab-label">التدريب</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="📁" data-tab="annual-review" onclick="renderTab('annual-review')"><span class="tab-label">التقارير السرية</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="⬆️" data-tab="promotions" onclick="renderTab('promotions')"><span class="tab-label">الترقيات</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="🔁" data-tab="transfers" onclick="renderTab('transfers')"><span class="tab-label">النقل والندب</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="🏖️" data-tab="vacations" onclick="renderTab('vacations')"><span class="tab-label">الإجازات</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="⚖️" data-tab="disciplinary" onclick="renderTab('disciplinary')"><span class="tab-label">الجزاءات والقضايا</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="🏅" data-tab="honors" onclick="renderTab('honors')"><span class="tab-label">التكريمات والأنواط</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="📊" data-tab="report" onclick="renderTab('report')"><span class="tab-label">التقارير</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="🗂️" data-tab="archive" onclick="renderTab('archive')"><span class="tab-label">الأرشيف</span></button></li>
+            </ul>
+          </li>
+          <li class="nav-group" data-group="structure">
+            <button class="nav-group-toggle" type="button" onclick="toggleTabGroup('structure')">الهيكل والتنظيم</button>
+            <ul class="nav-group-list">
+              <li class="nav-item"><button class="nav-link" data-icon="🧲" data-tab="ranks" onclick="renderTab('ranks')"><span class="tab-label">سلم الرتب والترتيب</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="🌴" data-tab="departments" onclick="renderTab('departments')"><span class="tab-label">الأقسام والإدارات</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="⏱️" data-tab="transfer-departments" onclick="renderTab('transfer-departments')"><span class="tab-label">جهات النقل</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="📝" data-tab="jobtitles" onclick="renderTab('jobtitles')"><span class="tab-label">المسميات الوظيفية</span></button></li>
+            </ul>
+          </li>
+          <li class="nav-group" data-group="system">
+            <button class="nav-group-toggle" type="button" onclick="toggleTabGroup('system')">الإعدادات والإدارة</button>
+            <ul class="nav-group-list">
+              <li class="nav-item"><button class="nav-link" data-icon="⚙️" data-tab="settings" onclick="renderTab('settings')"><span class="tab-label">الإعدادات</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="🧭" data-tab="admin" onclick="renderTab('admin')"><span class="tab-label">لوحة التحكم</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="🔐" data-tab="account" onclick="renderTab('account')"><span class="tab-label">الأمن والصلاحيات</span></button></li>
+              <li class="nav-item"><button class="nav-link" data-icon="ℹ️" data-tab="about" onclick="renderTab('about')"><span class="tab-label">حول التطبيق</span></button></li>
+            </ul>
+          </li>
         </ul>
       </aside>
       <div id="mainContent" class="p-3"></div>
@@ -382,8 +405,13 @@
     let vacationRecords = {};
     let disciplinaryRecords = {};
     let DISCIPLINARY_EDIT_ID = null;
-    let honorRecipients = [];
+     let honorRecipients = [];
     let honorTypes = [];
+    let duties = [];
+    let roster = {};
+    let archivedRoster = {};
+    let exceptions = [];
+    let officerLimits = {};
     let HONOR_EDIT_ID = null;
     let activityLog = [];
      let SELECTED_OFFICER_ID = null;
@@ -769,13 +797,35 @@
         const parsed = JSON.parse(raw);
         return parsed === null || parsed === undefined ? fallback : parsed;
       } catch(_) {
-        return fallback;
+        try {
+          const raw = sessionStorage.getItem(key);
+          if(raw === null || raw === undefined) return fallback;
+          const parsed = JSON.parse(raw);
+          return parsed === null || parsed === undefined ? fallback : parsed;
+        } catch(_) {
+          return fallback;
+        }
       }
+    }
+    function safeSetToStorage(key, value){
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch(_) {
+        try {
+          sessionStorage.setItem(key, value);
+        } catch(_) {}
+        return false;
+      }
+    }
+    function safeRemoveFromStorage(key){
+      try { localStorage.removeItem(key); } catch(_) {}
+      try { sessionStorage.removeItem(key); } catch(_) {}
     }
     function shouldShowFirstRunPrompt(){
       if(localStorage.getItem(FIRST_RUN_KEY) === 'true') return false;
-      const keys = [HRMS_DB_KEY, 'officers','departments','jobTitles','trainingCatalog','trainingCourses','trainingInstitutes','annualReviews','promotions','transferRecords','vacationRecords','disciplinaryRecords','ranks','settings'];
-      const hasAnyStored = keys.some(key => localStorage.getItem(key) !== null);
+      const keys = [HRMS_DB_KEY, 'officers','departments','jobTitles','trainingCatalog','trainingCourses','trainingInstitutes','annualReviews','promotions','transferRecords','vacationRecords','disciplinaryRecords','ranks','duties','roster','exceptions','officerLimits','settings'];
+      const hasAnyStored = keys.some(key => localStorage.getItem(key) !== null || sessionStorage.getItem(key) !== null);
       if(!hasAnyStored) return true;
       const storedOfficers = safeLoadFromStorage('officers', []);
       const storedSettings = safeLoadFromStorage('settings', {});
@@ -837,15 +887,25 @@
         trainingCatalog = db.trainingCatalog || getDefaultTrainingCatalog();
         trainingCourses = Array.isArray(db.trainingCourses) ? db.trainingCourses : [];
         trainingInstitutes = Array.isArray(db.trainingInstitutes) ? db.trainingInstitutes : [];
+        duties = Array.isArray(db.duties) ? db.duties : [];
+        roster = db.roster || {};
+        archivedRoster = db.archivedRoster || {};
+        exceptions = Array.isArray(db.exceptions) ? db.exceptions : [];
+        officerLimits = db.officerLimits || {};
         vacationRecords = db.vacationRecords || { officers: [], personnel: [], civil: [], draftees: [] };
       } else {
-        try { officers = JSON.parse(localStorage.getItem('officers')) || []; } catch(_) { officers = []; }
-        try { departments = JSON.parse(localStorage.getItem('departments')) || getDefaultDepartments(); } catch(_) { departments = getDefaultDepartments(); }
-        try { jobTitles = JSON.parse(localStorage.getItem('jobTitles')) || defaultJobTitles; } catch(_) { jobTitles = defaultJobTitles; }
-        try { trainingCatalog = JSON.parse(localStorage.getItem('trainingCatalog')) || getDefaultTrainingCatalog(); } catch(_) { trainingCatalog = getDefaultTrainingCatalog(); }
-        try { trainingCourses = JSON.parse(localStorage.getItem('trainingCourses')) || []; } catch(_) { trainingCourses = []; }
-        try { trainingInstitutes = JSON.parse(localStorage.getItem('trainingInstitutes')) || []; } catch(_) { trainingInstitutes = []; }
-        try { vacationRecords = JSON.parse(localStorage.getItem('vacationRecords')) || { officers: [], personnel: [], civil: [], draftees: [] }; } catch(_) { vacationRecords = { officers: [], personnel: [], civil: [], draftees: [] }; }
+        officers = safeLoadFromStorage('officers', []);
+        departments = safeLoadFromStorage('departments', getDefaultDepartments());
+        jobTitles = safeLoadFromStorage('jobTitles', defaultJobTitles);
+        trainingCatalog = safeLoadFromStorage('trainingCatalog', getDefaultTrainingCatalog());
+        trainingCourses = safeLoadFromStorage('trainingCourses', []);
+        trainingInstitutes = safeLoadFromStorage('trainingInstitutes', []);
+        duties = safeLoadFromStorage('duties', []);
+        roster = safeLoadFromStorage('roster', {});
+        archivedRoster = safeLoadFromStorage('archivedRoster', {});
+        exceptions = safeLoadFromStorage('exceptions', []);
+        officerLimits = safeLoadFromStorage('officerLimits', {});
+        vacationRecords = safeLoadFromStorage('vacationRecords', { officers: [], personnel: [], civil: [], draftees: [] });
       }
       trainingCatalog = Object.assign(getDefaultTrainingCatalog(), trainingCatalog || {});
       Object.keys(trainingCatalog || {}).forEach(key=>{
@@ -876,7 +936,13 @@
         const uniqueInstitutes = Array.from(new Set(trainingCourses.map(c=>c.instituteName).filter(Boolean)));
         trainingInstitutes = uniqueInstitutes.map(name=>({id: Date.now()+Math.random(), name}));
       }
-      vacationRecords = Object.assign({ officers: [], personnel: [], civil: [], draftees: [] }, vacationRecords || {});
+       vacationRecords = Object.assign({ officers: [], personnel: [], civil: [], draftees: [] }, vacationRecords || {});
+      duties = Array.isArray(duties) ? duties : [];
+      roster = roster || {};
+      archivedRoster = archivedRoster || {};
+      exceptions = Array.isArray(exceptions) ? exceptions : [];
+      officerLimits = officerLimits || {};
+      cleanupOfficerLimits();
       if(db){
          annualReviews = db.annualReviews || { officers: [], personnel: [], civil: [] };
         promotions = db.promotions || { officers: [], personnel: [], civil: [], draftees: [] };
@@ -890,17 +956,17 @@
         supportRequests = Array.isArray(db.supportRequests) ? db.supportRequests : [];
         SETTINGS = Object.assign(SETTINGS, db.settings || {});
       } else {
-        try { annualReviews = JSON.parse(localStorage.getItem('annualReviews')) || { officers: [], personnel: [], civil: [] }; } catch(_) { annualReviews = { officers: [], personnel: [], civil: [] }; }
-        try { promotions = JSON.parse(localStorage.getItem('promotions')) || { officers: [], personnel: [], civil: [], draftees: [] }; } catch(_) { promotions = { officers: [], personnel: [], civil: [], draftees: [] }; }
-        try { transferRecords = JSON.parse(localStorage.getItem('transferRecords')) || { officers: [], personnel: [], civil: [], draftees: [] }; } catch(_) { transferRecords = { officers: [], personnel: [], civil: [], draftees: [] }; }
-        try { disciplinaryRecords = JSON.parse(localStorage.getItem('disciplinaryRecords')) || { officers: [], personnel: [], civil: [], draftees: [] }; } catch(_) { disciplinaryRecords = { officers: [], personnel: [], civil: [], draftees: [] }; }
-        try { honorRecipients = JSON.parse(localStorage.getItem('honorRecipients')) || []; } catch(_) { honorRecipients = []; }
-        try { honorTypes = JSON.parse(localStorage.getItem('honorTypes')) || []; } catch(_) { honorTypes = []; }
-        try { activityLog = JSON.parse(localStorage.getItem('activityLog')) || []; } catch(_) { activityLog = []; }
-        try { ranks = JSON.parse(localStorage.getItem('ranks')) || defaultRanks.slice(); } catch(_) { ranks = defaultRanks.slice(); }
-        try { rankLadders = JSON.parse(localStorage.getItem('rankLadders')) || {}; } catch(_) { rankLadders = {}; }
-        try { SETTINGS = Object.assign(SETTINGS, JSON.parse(localStorage.getItem('settings')) || {}); } catch(_) {}
-        try { supportRequests = JSON.parse(localStorage.getItem('supportRequests')) || []; } catch(_) { supportRequests = []; }
+        annualReviews = safeLoadFromStorage('annualReviews', { officers: [], personnel: [], civil: [] });
+        promotions = safeLoadFromStorage('promotions', { officers: [], personnel: [], civil: [], draftees: [] });
+        transferRecords = safeLoadFromStorage('transferRecords', { officers: [], personnel: [], civil: [], draftees: [] });
+        disciplinaryRecords = safeLoadFromStorage('disciplinaryRecords', { officers: [], personnel: [], civil: [], draftees: [] });
+        honorRecipients = safeLoadFromStorage('honorRecipients', []);
+        honorTypes = safeLoadFromStorage('honorTypes', []);
+        activityLog = safeLoadFromStorage('activityLog', []);
+        ranks = safeLoadFromStorage('ranks', defaultRanks.slice());
+        rankLadders = safeLoadFromStorage('rankLadders', {});
+        SETTINGS = Object.assign(SETTINGS, safeLoadFromStorage('settings', {}));
+        supportRequests = safeLoadFromStorage('supportRequests', []);
       }
        annualReviews = Object.assign({ officers: [], personnel: [], civil: [] }, annualReviews || {});
       promotions = Object.assign({ officers: [], personnel: [], civil: [], draftees: [] }, promotions || {});
@@ -937,9 +1003,10 @@
       if(!SETTINGS.appFontFamily) SETTINGS.appFontFamily = defaultSettings.appFontFamily;
       if(!SETTINGS.formFontFamily) SETTINGS.formFontFamily = defaultSettings.formFontFamily;
       if(!SETTINGS.tabFontFamily) SETTINGS.tabFontFamily = defaultSettings.tabFontFamily;
-      if(!SETTINGS.reportFontFamily) SETTINGS.reportFontFamily = defaultSettings.reportFontFamily;
-      try { ACTIVE_SESSIONS = JSON.parse(sessionStorage.getItem('activeSessions')) || []; } catch(_) { ACTIVE_SESSIONS = []; }
-      try { CURRENT_USER = JSON.parse(sessionStorage.getItem('currentUser')) || null; if(CURRENT_USER && CURRENT_USER.officerId===undefined) CURRENT_USER.officerId=null; } catch(_) { CURRENT_USER = null; }
+       if(!SETTINGS.reportFontFamily) SETTINGS.reportFontFamily = defaultSettings.reportFontFamily;
+      ACTIVE_SESSIONS = safeLoadFromStorage('activeSessions', []);
+      CURRENT_USER = safeLoadFromStorage('currentUser', null);
+      if(CURRENT_USER && CURRENT_USER.officerId===undefined) CURRENT_USER.officerId=null;
       document.getElementById('appNameTitle').textContent = SETTINGS.appName;
       document.getElementById('appSubtitle').textContent = SETTINGS.appSubtitle || '';
       const footer = document.getElementById('appFooterText');
@@ -1008,6 +1075,13 @@
       resetIdleTimer();
     }
 
+     let lastSaveToastAt = 0;
+    function notifySave(message='تم حفظ التحديثات'){
+      const now = Date.now();
+      if(now - lastSaveToastAt < 1200) return;
+      lastSaveToastAt = now;
+      safeShowToast(message, 'success');
+    }
     function saveAll(){
       activityLog = activityLog.slice(-500);
       const snapshot = {
@@ -1028,33 +1102,46 @@
           disciplinaryRecords,
           honorRecipients,
           honorTypes,
+          duties,
+          roster,
+          archivedRoster,
+          exceptions,
+          officerLimits,
           supportRequests,
           activityLog,
           settings: SETTINGS
         }
       };
-      localStorage.setItem(HRMS_DB_KEY, JSON.stringify(snapshot));
-      localStorage.setItem('officers', JSON.stringify(officers));
-      localStorage.setItem('departments', JSON.stringify(departments));
-      localStorage.setItem('jobTitles', JSON.stringify(jobTitles));
-      localStorage.setItem('ranks', JSON.stringify(ranks));
-      localStorage.setItem('rankLadders', JSON.stringify(rankLadders));
-      localStorage.setItem('trainingCatalog', JSON.stringify(trainingCatalog));
-      localStorage.setItem('trainingCourses', JSON.stringify(trainingCourses));
-      localStorage.setItem('trainingInstitutes', JSON.stringify(trainingInstitutes));
-      localStorage.setItem('annualReviews', JSON.stringify(annualReviews));
-      localStorage.setItem('promotions', JSON.stringify(promotions));
-      localStorage.setItem('transferRecords', JSON.stringify(transferRecords));
-      localStorage.setItem('vacationRecords', JSON.stringify(vacationRecords));
-      localStorage.setItem('disciplinaryRecords', JSON.stringify(disciplinaryRecords));
-      localStorage.setItem('honorRecipients', JSON.stringify(honorRecipients));
-      localStorage.setItem('honorTypes', JSON.stringify(honorTypes));
-      localStorage.setItem('supportRequests', JSON.stringify(supportRequests));
-      localStorage.setItem('activityLog', JSON.stringify(activityLog));
-      localStorage.setItem('settings', JSON.stringify(SETTINGS));
-      localStorage.removeItem('activeSessions');
-      sessionStorage.setItem('activeSessions', JSON.stringify(ACTIVE_SESSIONS));
-      sessionStorage.setItem('currentUser', JSON.stringify(CURRENT_USER));
+      safeSetToStorage(HRMS_DB_KEY, JSON.stringify(snapshot));
+      safeSetToStorage('officers', JSON.stringify(officers));
+      safeSetToStorage('departments', JSON.stringify(departments));
+      safeSetToStorage('jobTitles', JSON.stringify(jobTitles));
+      safeSetToStorage('ranks', JSON.stringify(ranks));
+      safeSetToStorage('rankLadders', JSON.stringify(rankLadders));
+      safeSetToStorage('trainingCatalog', JSON.stringify(trainingCatalog));
+      safeSetToStorage('trainingCourses', JSON.stringify(trainingCourses));
+      safeSetToStorage('trainingInstitutes', JSON.stringify(trainingInstitutes));
+      safeSetToStorage('annualReviews', JSON.stringify(annualReviews));
+      safeSetToStorage('promotions', JSON.stringify(promotions));
+      safeSetToStorage('transferRecords', JSON.stringify(transferRecords));
+      safeSetToStorage('vacationRecords', JSON.stringify(vacationRecords));
+      safeSetToStorage('disciplinaryRecords', JSON.stringify(disciplinaryRecords));
+      safeSetToStorage('honorRecipients', JSON.stringify(honorRecipients));
+      safeSetToStorage('honorTypes', JSON.stringify(honorTypes));
+      safeSetToStorage('duties', JSON.stringify(duties));
+      safeSetToStorage('roster', JSON.stringify(roster));
+      safeSetToStorage('archivedRoster', JSON.stringify(archivedRoster));
+      safeSetToStorage('exceptions', JSON.stringify(exceptions));
+      safeSetToStorage('officerLimits', JSON.stringify(officerLimits));
+      safeSetToStorage('supportRequests', JSON.stringify(supportRequests));
+      safeSetToStorage('activityLog', JSON.stringify(activityLog));
+      safeSetToStorage('settings', JSON.stringify(SETTINGS));
+      safeRemoveFromStorage('activeSessions');
+      try { sessionStorage.setItem('activeSessions', JSON.stringify(ACTIVE_SESSIONS)); }
+      catch(_) { safeSetToStorage('activeSessions', JSON.stringify(ACTIVE_SESSIONS)); }
+      try { sessionStorage.setItem('currentUser', JSON.stringify(CURRENT_USER)); }
+      catch(_) { safeSetToStorage('currentUser', JSON.stringify(CURRENT_USER)); }
+      notifySave();
     }
 
 
@@ -1214,9 +1301,9 @@
         role: actorRole,
         ts: new Date().toISOString()
       };
-      activityLog.push(entry);
+       activityLog.push(entry);
       activityLog = activityLog.slice(-500);
-      try { localStorage.setItem('activityLog', JSON.stringify(activityLog)); } catch(_) {}
+      safeSetToStorage('activityLog', JSON.stringify(activityLog));
     }
     function passwordStrengthScore(pwd){
       let score = 0;
@@ -1377,6 +1464,19 @@
           </div>
         </div>`;
     }
+    const DATA_ENTRY_TABS = new Set(['employees','training','annual-review','promotions','transfers','vacations','disciplinary','honors','report','ranks','archive','departments','transfer-departments','jobtitles','admin','settings','account']);
+    function renderSavePanel(tab){
+      const disabled = SETTINGS.authEnabled && (!CURRENT_USER || isViewOnlyUser());
+      return `<div class="card mb-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div class="fw-bold">زر الحفظ للتأكد من تثبيت التحديثات داخل هذه الصفحة.</div>
+          <button class="btn btn-primary" onclick="manualSaveAll()" ${disabled ? 'disabled' : ''}>حفظ</button>
+        </div>
+      </div>`;
+    }
+    function manualSaveAll(){
+      saveAll();
+    }
     function renderTab(tab){
       if(shouldShowFirstRunPrompt()){
         clearActiveTab();
@@ -1395,7 +1495,7 @@
       if(btn) btn.classList.add('active');
       const c = document.getElementById('mainContent');
       applyNavPermissions();
-       switch(tab){
+      switch(tab){
         case 'landing':
           c.innerHTML = renderLandingTab();
           break;
@@ -1471,6 +1571,8 @@
           c.innerHTML = renderOfficersTab();
           break;
       }
+      if(DATA_ENTRY_TABS.has(tab)) c.insertAdjacentHTML('afterbegin', renderSavePanel(tab));
+      expandTabGroupFor(tab);
     }
 
     /* ========= Ranks Tab ========= */
@@ -1845,6 +1947,11 @@
       }
     }
     const TABS_COLLAPSE_KEY = 'tabsCollapsed';
+    const TAB_GROUPS = {
+      core: ['employees','training','annual-review','promotions','transfers','vacations','disciplinary','honors','report','archive'],
+      structure: ['ranks','departments','transfer-departments','jobtitles'],
+      system: ['settings','admin','account','about']
+    };
     function applyTabsCollapseState(){
       const collapsed = sessionStorage.getItem(TABS_COLLAPSE_KEY) === 'true';
       document.body.classList.toggle('tabs-collapsed', collapsed);
@@ -1855,6 +1962,19 @@
       const collapsed = !document.body.classList.contains('tabs-collapsed');
       sessionStorage.setItem(TABS_COLLAPSE_KEY, String(collapsed));
       applyTabsCollapseState();
+    }
+    function expandTabGroupFor(tabId){
+      const groupId = Object.keys(TAB_GROUPS).find(key => TAB_GROUPS[key].includes(tabId));
+      document.querySelectorAll('#mainTabs .nav-group').forEach(group => {
+        group.classList.toggle('open', group.dataset.group === groupId);
+      });
+    }
+    function toggleTabGroup(groupId){
+      const group = document.querySelector(`#mainTabs .nav-group[data-group="${groupId}"]`);
+      if(!group) return;
+      const shouldOpen = !group.classList.contains('open');
+      document.querySelectorAll('#mainTabs .nav-group').forEach(el => el.classList.remove('open'));
+      if(shouldOpen) group.classList.add('open');
     }
      function renderSessionChips(){ 
      if(!ACTIVE_SESSIONS.length) return '';
@@ -2700,7 +2820,7 @@
           <div class="border rounded p-3 h-100">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h6 class="mb-0">سجل النشاط</h6>
-              <div>
+              <div class="export-row">
                 <button class="btn btn-sm btn-outline-secondary me-2" onclick="exportActivityLog()">تصدير السجل</button>
                 <button class="btn btn-sm btn-outline-danger" onclick="clearActivityLog()">مسح السجل</button>
               </div>
@@ -3627,11 +3747,11 @@
           .report-header{position:relative;display:flex;justify-content:center;align-items:center;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:6px;margin-bottom:8px}
           .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#111;margin-bottom:6px;flex-wrap:wrap}
           .report-title{font-size:16px;font-weight:700;text-align:center;color:#111}
-          .report-logo{position:absolute;top:0;right:0;display:flex;align-items:center;justify-content:center}
+          .report-logo{position:absolute;top:0;left:0;right:auto;display:flex;align-items:flex-start;justify-content:flex-start}
           .report-logo img{max-height:32px;width:auto;height:auto}
-          .report-logo-block{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px}
+          .report-logo-block{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:6px}
           .report-logo-block img{max-height:40px;width:auto;height:auto}
-          .report-logo-subtitle{font-weight:700;color:#111;font-size:14px}
+          .report-logo-subtitle{font-weight:700;color:#111;font-size:12.5px}
           .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
           .report-signatures{display:flex;flex-direction:column;gap:12px;margin-top:10px;font-size:12px;line-height:1.5;width:100%;align-items:center;text-align:center}
           .report-signatures-row{display:flex;justify-content:space-between;gap:18px;width:100%}
@@ -4036,7 +4156,7 @@
           <div class="row mb-2 g-2">
             <div class="col-md-6"><input id="officerSearch" class="form-control" placeholder="ابحث بالاسم، الرتبة، الرقم، القسم، أو الحالة" value="${escapeHtml(filters.search)}" oninput="updateOfficerFilters()" onkeydown="guardSearchInput(event)"></div>
             <div class="col-md-2"><button class="btn btn-outline-secondary" onclick="resetOfficerFilters()">إعادة ضبط</button></div>
-            <div class="col-md-4 text-end">
+             <div class="col-md-4 text-end export-row">
               <button class="btn btn-outline-primary" onclick="printEmployeesReportFromEmployeesTab()">طباعة تقرير الموظفين</button>
               ${canManage?`<button class="btn btn-outline-secondary" onclick="exportOfficersCSV()">تصدير CSV</button>
               <button class="btn btn-outline-secondary ms-2" onclick="exportOfficersFullCSV()">تصدير CSV كامل</button>
@@ -6164,7 +6284,7 @@
       const externalTree = renderDepartmentGroupTree(null,0,'external', false, 'departments');
       return `<div class="card"><div class="card-header d-flex justify-content-between"><div>الأقسام (داخل ديوان الإدارة العامة وخارجها)</div><div class="d-flex gap-2"><button class="btn btn-success btn-sm" onclick="openDepartmentForm('add',null,null,'internal','internal','departments')">إضافة قسم</button><button class="btn btn-outline-primary btn-sm" onclick="openDepartmentForm('add',null,null,'external','external','departments')">إضافة قسم خارجي</button></div></div>
         <div class="card-body">
-           <div class="d-flex flex-wrap gap-2 mb-3">
+           <div class="export-row start mb-3">
             <button class="btn btn-outline-secondary btn-sm" onclick="downloadDepartmentsTemplateCSV()">تحميل قالب CSV للأقسام</button>
             <button class="btn btn-outline-secondary btn-sm" onclick="downloadDepartmentsTemplateCSVArabic()">تحميل قالب CSV عربي</button>
             <button class="btn btn-outline-secondary btn-sm" onclick="exportDepartmentsCSVArabic()">تصدير CSV عربي للأقسام</button>
@@ -6202,7 +6322,7 @@
       const transferTree = renderDepartmentGroupTree(null,0,'transfer', false, 'transfer-departments');
       return `<div class="card"><div class="card-header d-flex justify-content-between"><div>${escapeHtml(transferLabel)}</div><div class="d-flex gap-2"><button class="btn btn-success btn-sm" onclick="openDepartmentForm('add',null,null,'transfer','transfer','transfer-departments')">إضافة جهة نقل</button></div></div>
         <div class="card-body">
-          <div class="d-flex flex-wrap gap-2 mb-3">
+          <div class="export-row start mb-3">
             <button class="btn btn-outline-secondary btn-sm" onclick="downloadTransferDepartmentsTemplateCSV()">تحميل قالب CSV لجهات النقل</button>
             <button class="btn btn-outline-secondary btn-sm" onclick="downloadTransferDepartmentsTemplateCSVArabic()">تحميل قالب CSV عربي</button>
             <button class="btn btn-outline-secondary btn-sm" onclick="exportTransferDepartmentsCSVArabic()">تصدير CSV عربي لجهات النقل</button>
@@ -6898,7 +7018,7 @@
         <div class="card-body">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div class="text-muted">معاينة البيانات الأساسية للموظفين وطباعتها أو تصديرها.</div>
-            <div class="d-flex gap-2 flex-wrap">
+            <div class="export-row">
               <button class="btn btn-outline-primary" onclick="previewEmployeeReport()">معاينة التقرير</button>
               <button class="btn btn-outline-secondary" onclick="printEmployeeReport()">طباعة PDF</button>
               <select id="employee_report_export_format" class="form-select form-select-sm" style="min-width:160px;">
@@ -6930,7 +7050,7 @@
           ${emptyState}
           <div class="row g-2 align-items-end">
             <div class="col-md-6"><label class="form-label">الموظف</label><select id="status_report_employee" class="form-select"><option value="">— اختر موظف —</option>${employees}</select></div>
-            <div class="col-md-6 text-end">
+             <div class="col-md-6 text-end export-row">
               <button class="btn btn-outline-primary me-2" onclick="previewEmployeeStatusReport()">معاينة</button>
               <button class="btn btn-outline-secondary" onclick="printEmployeeStatusReport()">طباعة PDF</button>
             </div>
@@ -6945,7 +7065,7 @@
                 <option value="docx">DOCX</option>
               </select>
             </div>
-            <div class="col-md-8 text-end">
+            <div class="col-md-8 text-end export-row">
               <button class="btn btn-outline-primary" onclick="exportEmployeeStatusReportByFormat()">تصدير البيان</button>
             </div>
           </div>
