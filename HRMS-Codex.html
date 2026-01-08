@@ -7,7 +7,7 @@
 <style>
    :root { --brand: #1e40af; --brand-dark:#0f172a; --bg:#f0f9ff; --text:#111; --app-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --form-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --tab-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; }
     * { box-sizing: border-box; }
-    body { font-family: var(--app-font); background: linear-gradient(135deg,#f0f9ff,#e0e7ff); margin: 0; padding-bottom: 120px; color: var(--text); }
+    body { font-family: var(--app-font); background: linear-gradient(135deg,#f0f9ff,#e0e7ff); margin: 0; padding-bottom: 120px; color: var(--text); overflow-x:hidden; }
     a { color: inherit; text-decoration: none; }
     .navbar { background: linear-gradient(135deg,#0f172a,var(--brand)); color: #fff; padding: 10px 16px; position: sticky; top: 0; z-index: 1000; }
     .navbar .brand { font-weight: 700; color: #facc15; font-size: 22px; }
@@ -43,11 +43,11 @@
     .card-header { padding:12px 16px; background:#eef2ff; border-bottom:1px solid #e5e7eb; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
     .card-body { padding:16px; }
     .table { width:100%; border-collapse:collapse; }
-    .table th, .table td { border:1px solid #e5e7eb; padding:8px; text-align:center; font-size:14px; }
+    .table th, .table td { border:1px solid #e5e7eb; padding:8px; text-align:center; font-size:14px; white-space:normal; word-break:break-word; }
     .table thead { background: var(--brand); color:#fff; }
     .table-sm th, .table-sm td { padding:6px 8px; }
     .table-bordered { border:1px solid #e5e7eb; }
-    .table-responsive { overflow:auto; }
+    .table-responsive { overflow:auto; overflow-x:hidden; }
     .form-control, .form-select, textarea, input, select { width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; font-family: var(--form-font); transition:border-color .15s ease, box-shadow .15s ease; }
     .form-label { display:block; margin-bottom:4px; font-weight:700; }
     .form-control:disabled, .form-select:disabled { background:#f3f4f6; color:#6b7280; }
@@ -76,7 +76,7 @@
     .badge-stat { background:#fff; border:1px solid #ddd; padding:6px 10px; border-radius:8px; margin-right:6px; }
     .small-muted { font-size:12px; color:#666; }
     .blocked { background:#fff4f4; border-left:6px solid #dc2626; }
-    .print-preview { background:#fff; padding:18px; border-radius:8px; max-height:60vh; overflow:auto; border:1px solid #e5e7eb; }
+     .print-preview { background:#fff; padding:18px; border-radius:8px; max-height:60vh; overflow:auto; overflow-x:hidden; border:1px solid #e5e7eb; }
     .toast-container { position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:2000; }
     .toast-item { background:#111827; color:#fff; padding:10px 14px; margin-bottom:6px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,.15); min-width:220px; text-align:center; }
     .toast-item.success{background:#16a34a;} .toast-item.danger{background:#dc2626;} .toast-item.warning{background:#f59e0b;}
@@ -172,7 +172,7 @@
     .report-logo { position:absolute; top:0; right:0; display:flex; align-items:center; justify-content:center; }
     .report-logo img { max-height:36px; width:auto; height:auto; }
     .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:4px double #0f172a; }
-     .report-table th, .report-table td { border-top:1px solid #0f172a; border-bottom:1px solid #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:nowrap; }
+     .report-table th, .report-table td { border-top:1px solid #0f172a; border-bottom:1px solid #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:normal; word-break:break-word; }
     .report-table th { background:#d1d5db; color:#111; font-weight:700; border-top:4px double #0f172a; border-bottom:4px double #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; }
     .report-table th.col-index { border-left:4px double #0f172a; border-right:4px double #0f172a; }
     .report-table .col-index { background:#d1d5db; font-weight:700; border-left:4px double #0f172a; border-right:4px double #0f172a; }
@@ -202,7 +202,7 @@
     @keyframes splashPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
      @keyframes splashBounce { 0%, 80%, 100% { transform: translateY(0); opacity:.6; } 40% { transform: translateY(-8px); opacity:1; } }
      @keyframes splashAutoHide { to { opacity:0; visibility:hidden; pointer-events:none; } }
-    .app-shell { display:flex; flex-direction:row-reverse; gap:16px; align-items:flex-start; }
+    .app-shell { display:flex; flex-direction:row; gap:16px; align-items:flex-start; }
     .app-shell #mainContent { flex:1; min-width:0; }
     .side-tabs { width:260px; flex:0 0 260px; transition:width .2s ease; }
     .side-tabs .tabs-toggle { width:100%; margin-bottom:10px; }
@@ -356,7 +356,7 @@
       { id: 'civil_only', label: 'دورات المدنيين فقط', categories: ['civil'] },
       { id: 'personnel_civil', label: 'دورات الأفراد والمدنيين', categories: ['personnel','civil'] },
       { id: 'draftees_only', label: 'دورات المجندين فقط', categories: ['draftees'] },
-      { id: 'joint', label: 'دورات مشتركة (ضباط/أفراد/مجندين)', categories: ['officers','personnel','draftees'] }
+      { id: 'joint', label: 'تدريب مشترك (ضباط/أفراد/مجندين)', categories: ['officers','personnel','draftees'] }
     ];
     const EDITOR_SCOPES = [
       { id: 'training', label: 'التدريب' },
@@ -379,7 +379,8 @@
     let honorRecipients = [];
     let honorTypes = [];
     let activityLog = [];
-    let SELECTED_OFFICER_ID = null;
+     let SELECTED_OFFICER_ID = null;
+    let CURRENT_TAB = 'landing';
     let supportRequests = [];
     let NEW_OFFICER_PHOTO = '';
     const FIRST_RUN_KEY = 'hrmsFirstRunDone';
@@ -495,7 +496,18 @@
       return [name || '', rank || '', identity || ''].map(v=>String(v).trim().toLowerCase()).join('|');
     }
     function getOfficerIdentityValue(officer){
-      return officer.badge || officer.policeId || '';
+      if(!officer) return '';
+      if(officer.category === 'officers') return officer.badge || '';
+      if(officer.category === 'civil') return officer.nationalId || '';
+      return officer.policeId || '';
+    }
+    function getEmployeeIdentityLabel(categoryId){
+      if(categoryId === 'officers') return 'رقم الأقدمية';
+      if(categoryId === 'civil') return 'الرقم القومي';
+      return 'رقم الشرطة';
+    }
+    function getEmployeeIdentityValue(employee){
+      return getOfficerIdentityValue(employee);
     }
     function isDuplicateOfficer(name, rank, identityId, nationalId=null, ignoreId=null){
       const key = normalizeOfficerKey(name, rank, identityId, nationalId);
@@ -1370,6 +1382,7 @@
       }
       if(SETTINGS.authEnabled && isPasswordChangeRequired() && tab !== 'account') tab = 'account';
       if(SETTINGS.authEnabled && !tabAllowed(tab)) tab = 'employees';
+      CURRENT_TAB = tab;
       clearActiveTab();
       const btn = Array.from(document.querySelectorAll('#mainTabs .nav-link')).find(b=>b.dataset.tab===tab);
       if(btn) btn.classList.add('active');
@@ -1888,6 +1901,15 @@
     function clearSelectedOfficer(){
       SELECTED_OFFICER_ID = null;
       renderTab('employees');
+    }
+    function selectOfficerFromList(id){
+      SELECTED_OFFICER_ID = id;
+      sessionStorage.removeItem('officerSearch');
+      renderTab('employees');
+      setTimeout(()=>{
+        const detail = document.getElementById('officerDetail');
+        if(detail) detail.scrollIntoView({behavior:'smooth', block:'start'});
+      }, 0);
     }
     function renderLandingView(){
       const logoSize = 288;
@@ -3826,11 +3848,25 @@
     }
     function updateTabEmployeeSearch(tabId, value){
       sessionStorage.setItem(`tabSearch_${tabId}`, value || '');
+      if(tabId === 'report'){
+        refreshReportContent();
+        return;
+      }
       renderTab(tabId);
     }
     function resetTabEmployeeSearch(tabId){
       sessionStorage.removeItem(`tabSearch_${tabId}`);
+      if(tabId === 'report'){
+        refreshReportContent();
+        return;
+      }
       renderTab(tabId);
+    }
+    function splitSearchTerms(searchTerm){
+      const cleaned = (searchTerm || '').trim().toLowerCase();
+      if(!cleaned) return [];
+      const parts = cleaned.split(/[\n,;|]+/).map(part=>part.trim()).filter(Boolean);
+      return parts.length ? parts : [cleaned];
     }
     function employeeMatchesSearch(employee, q){
       if(!q) return true;
@@ -3844,11 +3880,11 @@
         || deptName.toLowerCase().includes(q)
         || statusLabel.toLowerCase().includes(q)
         || jobTitle.toLowerCase().includes(q);
-    }
+   }
     function filterEmployeesBySearch(list, searchTerm){
-      const q = (searchTerm || '').trim().toLowerCase();
-      if(!q) return [];
-      return list.filter(emp=>employeeMatchesSearch(emp, q));
+      const terms = splitSearchTerms(searchTerm);
+      if(!terms.length) return [];
+      return list.filter(emp=>terms.some(term=>employeeMatchesSearch(emp, term)));
     }
     function renderTabSearchBar(tabId, placeholder){
       const term = getTabEmployeeSearchTerm(tabId);
@@ -3858,7 +3894,7 @@
             <div class="col-md-8"><label class="form-label">بحث الموظفين</label><input class="form-control" value="${escapeHtml(term)}" placeholder="${escapeHtml(placeholder || 'اكتب بيانات الموظف للبحث')}" oninput="updateTabEmployeeSearch('${tabId}', this.value)" onkeydown="guardSearchInput(event)"></div>
             <div class="col-md-4 text-end"><button class="btn btn-outline-secondary" onclick="resetTabEmployeeSearch('${tabId}')">إخفاء النتائج</button></div>
           </div>
-          <div class="small-muted mt-2">لن تظهر أي بيانات للموظفين حتى يتم إدخال قيمة بحث.</div>
+          <div class="small-muted mt-2">لن تظهر أي بيانات للموظفين حتى يتم إدخال قيمة بحث. يمكنك إدخال عدة قيم مفصولة بفواصل أو أسطر.</div>
         </div>
       </div>`;
     }
@@ -3889,17 +3925,20 @@
       const categoryLabelSingular = getEmployeeLabel(activeCategory, 'singular');
       const filters = getOfficerFilterState();
       const hasSearch = !!(filters.search || '').trim();
+      const hasSelection = SELECTED_OFFICER_ID !== null;
+      const showResults = hasSearch || hasSelection;
       const subTabs = renderCategorySubTabs('employeeCategory', activeCategory, 'employees');
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>العاملين بالإدارة العامة للمساعدات الفنية</div>
         <div>${canManage?`<button class="btn btn-success btn-sm" onclick="addOfficerForm()">${`إضافة ${categoryLabelSingular}`}</button>`:''}</div></div>
         <div class="card-body">
-          ${hasSearch ? manpowerStats : '<div class="alert alert-info">أدخل قيمة البحث لعرض بيانات الموظفين.</div>'}
-          ${hasSearch ? renderRankStatsBar(activeCategory) : ''}
+          ${showResults ? manpowerStats : '<div class="alert alert-info">أدخل قيمة البحث لعرض بيانات الموظفين.</div>'}
+          ${showResults ? renderRankStatsBar(activeCategory) : ''}
           ${subTabs}
           <div class="row mb-2 g-2">
             <div class="col-md-6"><input id="officerSearch" class="form-control" placeholder="ابحث بالاسم، الرتبة، الرقم، القسم، أو الحالة" value="${escapeHtml(filters.search)}" oninput="updateOfficerFilters()" onkeydown="guardSearchInput(event)"></div>
             <div class="col-md-2"><button class="btn btn-outline-secondary" onclick="resetOfficerFilters()">إعادة ضبط</button></div>
             <div class="col-md-4 text-end">
+              <button class="btn btn-outline-primary" onclick="printEmployeesReportFromEmployeesTab()">طباعة تقرير الموظفين</button>
               ${canManage?`<button class="btn btn-outline-secondary" onclick="exportOfficersCSV()">تصدير CSV</button>
               <button class="btn btn-outline-secondary ms-2" onclick="exportOfficersFullCSV()">تصدير CSV كامل</button>
               <button class="btn btn-outline-secondary ms-2" onclick="exportOfficersCSVArabic()">تصدير CSV عربي</button>
@@ -3911,22 +3950,41 @@
             </div>
           </div>
           <div class="row">
-            <div class="col-md-8"><div id="officerList">${renderOfficersList(activeCategory)}</div></div>
-            <div class="col-md-4"><div id="officerDetail">${renderOfficerDetail(activeCategory)}</div></div>
+            <div class="col-md-12"><div id="officerList">${renderOfficersList(activeCategory)}</div></div>
+            <div class="col-md-12 mt-3"><div id="officerDetail">${renderOfficerDetail(activeCategory)}</div></div>
           </div>
         </div></div>
         <div id="officerEditorArea"></div>`;
    }
-     function renderOfficersList(categoryId){
+    function getEmployeesFromOfficerSearch(categoryId){
+      const term = (getOfficerFilterState().search || '').trim();
+      if(!term) return [];
+      const list = categoryId ? officers.filter(o=>o.category===categoryId) : officers;
+      return filterEmployeesBySearch(list, term);
+    }
+    function printEmployeesReportFromEmployeesTab(){
+      const activeCategory = getActiveCategory('employeeCategory', 'officers');
+      const results = getEmployeesFromOfficerSearch(activeCategory);
+      if(!results.length) return showToast('أدخل قيمة البحث لطباعة التقرير', 'warning');
+      const title = `تقرير بيانات ${getEmployeeLabel(activeCategory, 'plural')}`;
+      printPdfFromHtml(buildEmployeeReportHtmlForList(results, title), 'تقرير_الموظفين.pdf');
+    }
+    function renderOfficersList(categoryId){
       const filters = getOfficerFilterState();
       const q = (filters.search || '').trim().toLowerCase();
-      if(!q) return `<p class="text-center text-muted py-3">أدخل قيمة البحث لعرض الموظفين ضمن الفئة المحددة.</p>`;
-      const list = officers.filter(o=>{
-        if(categoryId && o.category !== categoryId) return false;
-        return employeeMatchesSearch(o, q);
-      });
+      let list = [];
+      if(!q){
+        const selected = officers.find(o=>o.id===SELECTED_OFFICER_ID && (!categoryId || o.category === categoryId));
+        if(!selected) return `<p class="text-center text-muted py-3">أدخل قيمة البحث لعرض الموظفين ضمن الفئة المحددة.</p>`;
+        list = [selected];
+      } else {
+        list = officers.filter(o=>{
+          if(categoryId && o.category !== categoryId) return false;
+          return employeeMatchesSearch(o, q);
+        });
+      }
       if(!list.length) return `<p class="text-center text-muted py-3">لا توجد نتائج مطابقة.</p>`;
-      const rows = list.map(o=>`<tr onclick="SELECTED_OFFICER_ID=${o.id};renderTab('employees');" style="cursor:pointer;${SELECTED_OFFICER_ID===o.id?'background:#eef2ff;':''}">
+      const rows = list.map(o=>`<tr onclick="selectOfficerFromList(${o.id})" style="cursor:pointer;${SELECTED_OFFICER_ID===o.id?'background:#eef2ff;':''}">
         <td>${escapeHtml(o.name)}</td>
         <td>${escapeHtml(o.rank)}</td>
         <td>${escapeHtml((departments.find(d=>d.id===o.deptId)||{name:''}).name)}</td>
@@ -3941,9 +3999,9 @@
     }
     function renderOfficerDetail(categoryId){
       const q = (getOfficerFilterState().search || '').trim();
-      if(!q) return `<div class="text-muted">أدخل قيمة البحث أولاً لعرض تفاصيل الموظف.</div>`;
       const list = categoryId ? officers.filter(o=>o.category===categoryId) : officers;
       const o = list.find(x=>x.id===SELECTED_OFFICER_ID);
+      if(!q && !o) return `<div class="text-muted">أدخل قيمة البحث أولاً لعرض تفاصيل الموظف.</div>`;
       if(!o) return `<div class="text-muted">اختر ${getEmployeeLabel(categoryId, 'singular')} لعرض التفاصيل</div>`;
       const canManage = canEditCategory(o.category);
       const disabledAttr = canManage ? '' : 'disabled';
@@ -4127,6 +4185,15 @@
           </div>
         </div>
       </div></div>`;
+    }
+    function refreshEmployeeDetailIfOpen(employeeId){
+      if(CURRENT_TAB !== 'employees') return;
+      if(SELECTED_OFFICER_ID !== employeeId) return;
+      const detail = document.getElementById('officerDetail');
+      if(detail){
+        const activeCategory = getActiveCategory('employeeCategory', 'officers');
+        detail.innerHTML = renderOfficerDetail(activeCategory);
+      }
     }
    function setOfficerStatus(id,status, options = {}){
       const o = officers.find(x=>x.id===id);
@@ -4861,6 +4928,7 @@
       });
       saveAll();
       showToast('تم إسناد الدورة التدريبية', 'success');
+      refreshEmployeeDetailIfOpen(employeeId);
       renderTab('training');
     }
     function addTrainingCourse(){
@@ -5148,6 +5216,7 @@
       }
       saveAll();
       showToast('تمت إضافة الترقية', 'success');
+      refreshEmployeeDetailIfOpen(employeeId);
       renderTab('promotions');
     }
 
@@ -5412,6 +5481,7 @@
       vacationRecords[categoryId].push({id: Date.now(), employeeId, type, startDate, endDate: type === 'إذن' ? '' : endDate, permissionDuration, notes});
       saveAll();
       showToast('تمت إضافة الإجازة', 'success');
+      refreshEmployeeDetailIfOpen(employeeId);
       renderTab('vacations');
     }
     function toggleVacationFields(){
@@ -5538,6 +5608,7 @@
       disciplinaryRecords[categoryId].push(Object.assign({id: Date.now(), employeeId, caseCategory, caseCategoryLabel: caseCategory === 'criminal' ? 'جنائي' : 'إداري', caseDate}, payload));
       saveAll();
       showToast('تمت إضافة الحالة', 'success');
+      refreshEmployeeDetailIfOpen(employeeId);
       renderTab('disciplinary');
     }
     function toggleDisciplinaryFields(){
@@ -5582,6 +5653,7 @@
       if(!employeeId || !typeId || !date) return showToast('أدخل الموظف ونوع التكريم والتاريخ', 'warning');
       honorRecipients.push({id: Date.now(), employeeId, typeId, date, notes});
       saveAll();
+      refreshEmployeeDetailIfOpen(employeeId);
       renderTab('honors');
     }
     function deleteHonorRecipient(id){
@@ -6372,12 +6444,23 @@
               <div class="mt-3 text-end"><button class="btn btn-outline-primary" onclick="saveReportSettingsFromTab()">حفظ إعدادات التقرير</button></div>
             </div>
           </div>
-          ${renderEmployeeReportCard()}
-          ${renderEmployeeStatusReportCard()}
-          ${renderTransferReportCard()}
-          ${renderSubjectReportCard()}
+          <div id="reportContentArea">
+            ${renderReportContent()}
+          </div>
         </div>
       </div>`;
+    }
+    function renderReportContent(){
+      return `
+        ${renderEmployeeReportCard()}
+        ${renderEmployeeStatusReportCard()}
+        ${renderTransferReportCard()}
+        ${renderSubjectReportCard()}
+      `;
+    }
+    function refreshReportContent(){
+      const area = document.getElementById('reportContentArea');
+      if(area) area.innerHTML = renderReportContent();
     }
     function getReportEmployees(){
       const searchTerm = (getTabEmployeeSearchTerm('report') || '').trim();
@@ -6644,6 +6727,19 @@
       const meta = `<div class="report-meta"><div>إجمالي النتائج: ${reportEmployees.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
       return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">تقرير بيانات الموظفين</div></div>${meta}${table}</div></div>`;
     }
+    function buildEmployeeReportHtmlForList(list, title){
+      const reportEmployees = Array.isArray(list) ? list : [];
+      if(!reportEmployees.length) return '<div class="alert alert-info">لا توجد بيانات لعرضها.</div>';
+      const header = buildHeaderHtml();
+      const watermark = buildReportWatermarkHtml();
+      const fontSize = getReportPrintFontSize();
+      const fontFamily = getReportFontFamily();
+      const table = `<table class="report-table"><thead><tr><th class="col-index">م</th><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>المسمى</th><th>الحالة</th><th>الهاتف</th><th>تاريخ التعيين</th></tr></thead><tbody>${buildEmployeeReportTable(reportEmployees)}</tbody></table>`;
+      const printMeta = buildReportPrintMetaHtml();
+      const meta = `<div class="report-meta"><div>إجمالي النتائج: ${reportEmployees.length}</div><div>${new Date().toLocaleDateString('ar-EG')}</div>${printMeta}</div>`;
+      const reportTitle = title || 'تقرير بيانات الموظفين';
+      return `<div class="report-page report-preview-paper">${watermark}<div class="report-content" style="font-size:${fontSize}px;font-family:${fontFamily},'Arial','Noto Sans Arabic','Tahoma',sans-serif;">${header ? `<div style="margin-bottom:6px;">${header}</div>` : ''}<div class="report-header"><div class="report-title">${escapeHtml(reportTitle)}</div></div>${meta}${table}</div></div>`;
+    }
     function buildEmployeeStatusReportHtml(employeeId){
       const o = getEmployeeById(employeeId);
       if(!o) return '<div class="alert alert-warning">لا توجد بيانات لهذا الموظف.</div>';
@@ -6667,6 +6763,17 @@
       const fallback = (val)=> val ? val : '—';
       const transferFromName = o.transferFromDeptId ? (departments.find(d=>d.id===o.transferFromDeptId)?.name || '') : '';
       const transferToName = o.transferToDeptId ? (departments.find(d=>d.id===o.transferToDeptId)?.name || '') : '';
+      const identityLabel = getEmployeeIdentityLabel(o.category);
+      const identityValue = getEmployeeIdentityValue(o);
+      const drafteeBlock = o.category === 'draftees' ? `
+        <div class="report-block">
+          <h5>بيانات المجند</h5>
+          <div>نوع العمل: ${escapeHtml(fallback(o.drafteeWorkType))}</div>
+          <div>الموطن: ${escapeHtml(fallback(o.hometown))}</div>
+          <div>المؤهل الدراسي: ${escapeHtml(fallback(o.educationDegree))}</div>
+          <div>بداية التجنيد: ${escapeHtml(fallback(o.draftStart))}</div>
+          <div>نهاية التجنيد: ${escapeHtml(fallback(o.draftEnd))}</div>
+        </div>` : '';
       const infoList = `
         <div class="report-block">
           <h5>البيانات الأساسية</h5>
@@ -6676,10 +6783,10 @@
           <div>المسمى: ${escapeHtml(fallback(jobTitle))}</div>
           <div>القسم: ${escapeHtml(fallback(deptName))}</div>
           <div>الحالة: ${escapeHtml(fallback(statusLabel))}</div>
-        </div>
+         </div>
         <div class="report-block">
           <h5>الهوية والتواصل</h5>
-          <div>رقم الأقدمية/الهوية: ${escapeHtml(fallback(getOfficerIdentityValue(o)))}</div>
+          <div>${escapeHtml(identityLabel)}: ${escapeHtml(fallback(identityValue))}</div>
           <div>الهاتف: ${escapeHtml(fallback(o.phone))}</div>
           <div>العنوان: ${escapeHtml(fallback(o.address))}</div>
           <div>الجنس: ${escapeHtml(fallback(o.gender))}</div>
@@ -6698,18 +6805,11 @@
           <div>جهة النقل إلى: ${escapeHtml(fallback(transferToName))}</div>
           <div>تاريخ النقل للخارج: ${escapeHtml(fallback(o.transferToDate))}</div>
         </div>
-        <div class="report-block">
+         <div class="report-block">
           <h5>الإجازات السنوية</h5>
           ${annualAllowance != null ? `<div>الرصيد السنوي: ${annualAllowance} يوم</div><div>المستخدم خلال العام: ${annualUsed} يوم</div><div>المتبقي: ${annualRemaining} يوم</div><div>عام الإجازات: ${vacationRange.start.toLocaleDateString('ar-EG')} → ${vacationRange.end.toLocaleDateString('ar-EG')}</div>` : '<div class="text-muted">لم يتم تحديد رصيد سنوي لهذا الموظف.</div>'}
         </div>
-        <div class="report-block">
-          <h5>بيانات المجند</h5>
-          <div>نوع العمل: ${escapeHtml(fallback(o.drafteeWorkType))}</div>
-          <div>الموطن: ${escapeHtml(fallback(o.hometown))}</div>
-          <div>المؤهل الدراسي: ${escapeHtml(fallback(o.educationDegree))}</div>
-          <div>بداية التجنيد: ${escapeHtml(fallback(o.draftStart))}</div>
-          <div>نهاية التجنيد: ${escapeHtml(fallback(o.draftEnd))}</div>
-        </div>
+        ${drafteeBlock}
         <div class="report-block">
           <h5>الدرجات العلمية</h5>
           ${degrees.length ? `<ul>${degrees.map(d=>`<li>${escapeHtml(d.type || '')} ${escapeHtml(d.name || '')} ${d.date ? `— ${escapeHtml(d.date)}` : ''}</li>`).join('')}</ul>` : '<div class="text-muted">لم يتم إضافة درجات علمية.</div>'}
