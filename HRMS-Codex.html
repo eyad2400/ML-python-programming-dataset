@@ -1046,7 +1046,7 @@
         }
       }
           officers = officers.map(o=>{
-          const normalized = Object.assign({status:'active',category:'officers',trainings:[],transferNote:'',phone:'',gender:'',birth:'',address:'',emgName:'',emgPhone:'',admissionType:'fresh',hiringDate:'',workStartYear:'',graduationYear:'',educationDegrees:[],annualVacationDays:null,transferFromDeptId:null,transferToDeptId:null,transferDate:'',transferToDate:'',secondaryDeptId:null,secondaryDeptRole:'', archivedAt:null, badge:'', policeId:'', nationalId:'', drafteeWorkType:'', photo:'', hometown:'', educationDegree:'', draftStart:'', draftEnd:''}, o);
+          const normalized = Object.assign({status:'active',category:'officers',trainings:[],transferNote:'',phone:'',gender:'',birth:'',address:'',emgName:'',emgPhone:'',admissionType:'fresh',hiringDate:'',workStartYear:'',graduationYear:'',educationDegrees:[],annualVacationDays:null,transferFromDeptId:null,transferToDeptId:null,transferDate:'',transferToDate:'',secondaryDeptId:null,secondaryDeptRole:'', archivedAt:null, badge:'', policeId:'', nationalId:'', drafteeWorkType:'', photo:'', hometown:'', educationDegree:'', draftStart:'', draftEnd:'', maritalStatus:'', religion:'', residenceAddress:'', homePhone:'', mobilePhone:'', incentiveAllowances:[], rewards:[], healthCases:[], workHistory:[]}, o);
         if(!normalized.transferDate && normalized.transferFromDate) normalized.transferDate = normalized.transferFromDate;
         if(normalized.category === 'draftees'){
           normalized.deptId = null;
@@ -1066,6 +1066,11 @@
           normalized.badge = '';
         }
         normalized.trainings = (normalized.trainings || []).map(t=>Object.assign({institute: t.institute || t.center || t.location || ''}, t));
+        normalized.incentiveAllowances = Array.isArray(normalized.incentiveAllowances) ? normalized.incentiveAllowances : [];
+        normalized.rewards = Array.isArray(normalized.rewards) ? normalized.rewards : [];
+        normalized.healthCases = Array.isArray(normalized.healthCases) ? normalized.healthCases : [];
+        normalized.workHistory = Array.isArray(normalized.workHistory) ? normalized.workHistory : [];
+        if(!normalized.mobilePhone && normalized.phone) normalized.mobilePhone = normalized.phone;
         normalized.educationDegrees = Array.isArray(normalized.educationDegrees) ? normalized.educationDegrees.map(d=>Object.assign({type:'', name:'', date:''}, d)) : [];
         return normalized;
       });
@@ -4361,6 +4366,56 @@
             <div class="col-md-1 align-self-end"><button class="btn btn-success w-100" onclick="addEducationDegree(${o.id})">إضافة</button></div>
           </div>`
         : '';
+      const incentiveAllowances = Array.isArray(o.incentiveAllowances) ? o.incentiveAllowances : [];
+      const allowancesMarkup = incentiveAllowances.length
+        ? incentiveAllowances.map((a, idx)=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(a.rank || o.rank || '')}</span><span class="relation-tag">${escapeHtml(a.date || '')}</span></div>${canManage ? `<button class="btn btn-sm btn-outline-danger" onclick="removeIncentiveAllowance(${o.id},${idx})">حذف</button>` : ''}</li>`).join('')
+        : '<li class="list-group-item text-muted">لا توجد علاوات تشجيعية مسجلة</li>';
+      const allowanceForm = canManage
+        ? `<div class="row g-2 mt-2">
+            <div class="col-md-5"><input id="allowance_rank_${o.id}" class="form-control" placeholder="الرتبة عند العلاوة"></div>
+            <div class="col-md-5"><input id="allowance_date_${o.id}" type="date" class="form-control" placeholder="تاريخ العلاوة"></div>
+            <div class="col-md-2 align-self-end"><button class="btn btn-success w-100" onclick="addIncentiveAllowance(${o.id})">إضافة</button></div>
+          </div>`
+        : '';
+      const rewardRecords = Array.isArray(o.rewards) ? o.rewards : [];
+      const rewardsMarkup = rewardRecords.length
+        ? rewardRecords.map((r, idx)=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(r.type || '')}</span><span class="relation-tag">${escapeHtml(r.date || '')}${r.amount ? ` • ${escapeHtml(r.amount)}` : ''}</span><div class="small-muted">${escapeHtml(r.reason || '')}</div></div>${canManage ? `<button class="btn btn-sm btn-outline-danger" onclick="removeRewardRecord(${o.id},${idx})">حذف</button>` : ''}</li>`).join('')
+        : '<li class="list-group-item text-muted">لا توجد مكافآت أو أوسمة مسجلة</li>';
+      const rewardForm = canManage
+        ? `<div class="row g-2 mt-2">
+            <div class="col-md-3"><input id="reward_type_${o.id}" class="form-control" placeholder="نوع المكافأة/الوسام"></div>
+            <div class="col-md-2"><input id="reward_date_${o.id}" type="date" class="form-control" placeholder="التاريخ"></div>
+            <div class="col-md-2"><input id="reward_amount_${o.id}" class="form-control" placeholder="القيمة"></div>
+            <div class="col-md-3"><input id="reward_reason_${o.id}" class="form-control" placeholder="السبب"></div>
+            <div class="col-md-2 align-self-end"><button class="btn btn-success w-100" onclick="addRewardRecord(${o.id})">إضافة</button></div>
+          </div>`
+        : '';
+      const healthCases = Array.isArray(o.healthCases) ? o.healthCases : [];
+      const healthMarkup = healthCases.length
+        ? healthCases.map((h, idx)=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(h.type || '')}</span><span class="relation-tag">${escapeHtml(h.leaveStart || '')} → ${escapeHtml(h.leaveEnd || '')}</span><div class="small-muted">${escapeHtml(h.reason || '')}${h.disabilityPercent ? ` • ${escapeHtml(h.disabilityPercent)}%` : ''} ${escapeHtml(h.description || '')}</div></div>${canManage ? `<button class="btn btn-sm btn-outline-danger" onclick="removeHealthCase(${o.id},${idx})">حذف</button>` : ''}</li>`).join('')
+        : '<li class="list-group-item text-muted">لا توجد حالات صحية مسجلة</li>';
+      const healthForm = canManage
+        ? `<div class="row g-2 mt-2">
+            <div class="col-md-3"><input id="health_type_${o.id}" class="form-control" placeholder="نوع الإصابة"></div>
+            <div class="col-md-3"><input id="health_reason_${o.id}" class="form-control" placeholder="سبب الإصابة"></div>
+            <div class="col-md-2"><input id="health_start_${o.id}" type="date" class="form-control" placeholder="بداية الإجازة"></div>
+            <div class="col-md-2"><input id="health_end_${o.id}" type="date" class="form-control" placeholder="نهاية الإجازة"></div>
+            <div class="col-md-2"><input id="health_disability_${o.id}" class="form-control" placeholder="العجز %"></div>
+            <div class="col-md-10"><input id="health_desc_${o.id}" class="form-control" placeholder="وصف الحالة الصحية"></div>
+            <div class="col-md-2 align-self-end"><button class="btn btn-success w-100" onclick="addHealthCase(${o.id})">إضافة</button></div>
+          </div>`
+        : '';
+      const workHistory = Array.isArray(o.workHistory) ? o.workHistory : [];
+      const workHistoryMarkup = workHistory.length
+        ? workHistory.map((w, idx)=>`<li class="list-group-item d-flex justify-content-between align-items-start flex-wrap gap-2"><div><span>${escapeHtml(w.name || '')}</span><span class="relation-tag">${escapeHtml(w.startDate || '')}</span></div>${canManage ? `<button class="btn btn-sm btn-outline-danger" onclick="removeWorkHistoryEntry(${o.id},${idx})">حذف</button>` : ''}</li>`).join('')
+        : '<li class="list-group-item text-muted">لا توجد جهات عمل مسجلة</li>';
+      const workHistoryForm = canManage
+        ? `<div class="row g-2 mt-2">
+            <div class="col-md-8"><input id="work_name_${o.id}" class="form-control" placeholder="اسم الجهة"></div>
+            <div class="col-md-2"><input id="work_start_${o.id}" type="date" class="form-control" placeholder="تاريخ الالتحاق"></div>
+            <div class="col-md-2 align-self-end"><button class="btn btn-success w-100" onclick="addWorkHistoryEntry(${o.id})">إضافة</button></div>
+          </div>`
+        : '';
       const reviewCutoff = new Date();
       reviewCutoff.setFullYear(reviewCutoff.getFullYear() - 5);
       const recentReviews = (annualReviews[o.category] || []).filter(r=>r.employeeId === o.id).filter(r=>r.reportDate && new Date(r.reportDate) >= reviewCutoff);
@@ -4432,7 +4487,6 @@
         : '';
       const drafteeDetails = o.category === 'draftees'
         ? `<div class="row g-2">
-             <div class="col-md-3"><label class="form-label">الموطن</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.hometown||'')}" oninput="updateOfficer(${o.id},'hometown',this.value)"></div>
              <div class="col-md-3"><label class="form-label">المؤهل الدراسي</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.educationDegree||'')}" oninput="updateOfficer(${o.id},'educationDegree',this.value)"></div>
              <div class="col-md-3"><label class="form-label">تاريخ التجنيد</label><input type="date" class="form-control" ${disabledAttr} value="${o.draftStart||''}" oninput="updateOfficer(${o.id},'draftStart',this.value)"></div>
              <div class="col-md-3"><label class="form-label">نهاية التجنيد</label><input type="date" class="form-control" ${disabledAttr} value="${o.draftEnd||''}" oninput="updateOfficer(${o.id},'draftEnd',this.value)"></div>
@@ -4464,8 +4518,17 @@
           ${badgeField}
         </div>
         <div class="row g-2">
-          <div class="col-md-6"><label class="form-label">هاتف</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.phone||'')}" oninput="updateOfficer(${o.id},'phone',this.value)"></div>
+          <div class="col-md-6"><label class="form-label">تليفون محمول</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.mobilePhone || o.phone || '')}" oninput="updateOfficer(${o.id},'mobilePhone',this.value)"></div>
           <div class="col-md-6"><label class="form-label">الجنس</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'gender',this.value)"><option value="">—</option><option ${o.gender==='ذكر'?'selected':''}>ذكر</option><option ${o.gender==='أنثى'?'selected':''}>أنثى</option></select></div>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-4"><label class="form-label">تليفون المنزل</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.homePhone||'')}" oninput="updateOfficer(${o.id},'homePhone',this.value)"></div>
+          <div class="col-md-4"><label class="form-label">الحالة الاجتماعية</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'maritalStatus',this.value)"><option value="">—</option><option ${o.maritalStatus==='أعزب'?'selected':''}>أعزب</option><option ${o.maritalStatus==='متزوج'?'selected':''}>متزوج</option><option ${o.maritalStatus==='مطلق'?'selected':''}>مطلق</option><option ${o.maritalStatus==='أرمل'?'selected':''}>أرمل</option></select></div>
+          <div class="col-md-4"><label class="form-label">الديانة</label><select class="form-select" ${disabledAttr} onchange="updateOfficer(${o.id},'religion',this.value)"><option value="">—</option><option ${o.religion==='مسلم'?'selected':''}>مسلم</option><option ${o.religion==='مسيحي'?'selected':''}>مسيحي</option></select></div>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-4"><label class="form-label">الموطن</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.hometown||'')}" oninput="updateOfficer(${o.id},'hometown',this.value)"></div>
+          <div class="col-md-8"><label class="form-label">عنوان الإقامة</label><input class="form-control" ${disabledAttr} value="${escapeHtml(o.residenceAddress||'')}" oninput="updateOfficer(${o.id},'residenceAddress',this.value)"></div>
         </div>
         ${o.category === 'officers' ? `
         <div class="row g-2">
@@ -4528,12 +4591,32 @@
             <ul class="list-group">${trainingsMarkup}</ul>
           </div>
           <div class="employee-section-card">
+            <h6>العلاوات التشجيعية</h6>
+            <ul class="list-group">${allowancesMarkup}</ul>
+            ${allowanceForm}
+          </div>
+          <div class="employee-section-card">
+            <h6>المكافآت والأوسمة</h6>
+            <ul class="list-group">${rewardsMarkup}</ul>
+            ${rewardForm}
+          </div>
+          <div class="employee-section-card">
             <h6>التقارير السنوية (آخر 5 سنوات)</h6>
             <ul class="list-group">${reviewMarkup}</ul>
           </div>
           <div class="employee-section-card">
             <h6>سفريات خارج البلاد والغرض</h6>
             <ul class="list-group">${travelMarkup}</ul>
+          </div>
+          <div class="employee-section-card">
+            <h6>الحالات الصحية</h6>
+            <ul class="list-group">${healthMarkup}</ul>
+            ${healthForm}
+          </div>
+          <div class="employee-section-card">
+            <h6>جهات العمل السابقة والحالية</h6>
+            <ul class="list-group">${workHistoryMarkup}</ul>
+            ${workHistoryForm}
           </div>
           <div class="employee-section-card">
             <h6>سجل النقل والندب (داخلي/خارجي)</h6>
@@ -4628,12 +4711,16 @@
           <div class="col-md-2" id="new_off_secondary_role_wrap"><input id="new_off_secondary_role" class="form-control" placeholder="دور بالقسم الإضافي"></div>
           <div class="col-md-2" id="new_off_job_wrap"><select id="new_off_job" class="form-select"></select></div>
           <div class="col-md-2" id="new_off_work_type_wrap" style="display:none;"></div>
-          <div class="col-md-2"><input id="new_off_phone" class="form-control" placeholder="هاتف"></div>
+          <div class="col-md-2"><input id="new_off_phone" class="form-control" placeholder="تليفون محمول"></div>
+          <div class="col-md-2"><input id="new_off_home_phone" class="form-control" placeholder="تليفون المنزل"></div>
           <div class="col-md-2"><select id="new_off_gender" class="form-select"><option value="">الجنس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
           <div class="col-md-2"><input id="new_off_birth" type="date" class="form-control" placeholder="ميلاد"></div>
           <div class="col-md-2"><input id="new_off_work_year" class="form-control" placeholder="سنة مباشرة العمل"></div>
           <div class="col-md-2"><input id="new_off_vacation_days" type="number" class="form-control" placeholder="رصيد الإجازة السنوية"></div>
           <div class="col-md-4"><input id="new_off_address" class="form-control" placeholder="العنوان"></div>
+          <div class="col-md-4"><input id="new_off_residence" class="form-control" placeholder="عنوان الإقامة"></div>
+          <div class="col-md-2"><select id="new_off_marital_status" class="form-select"><option value="">الحالة الاجتماعية</option><option value="أعزب">أعزب</option><option value="متزوج">متزوج</option><option value="مطلق">مطلق</option><option value="أرمل">أرمل</option></select></div>
+          <div class="col-md-2"><select id="new_off_religion" class="form-select"><option value="">الديانة</option><option value="مسلم">مسلم</option><option value="مسيحي">مسيحي</option></select></div>
           <div class="col-md-3"><input id="new_off_emgName" class="form-control" placeholder="طوارئ: الاسم"></div>
           <div class="col-md-3"><input id="new_off_emgPhone" class="form-control" placeholder="طوارئ: الهاتف"></div>
           <div class="col-md-3"><select id="new_off_admission" class="form-select" onchange="toggleTransferFields('new')"><option value="fresh">خريج جديد</option><option value="transferred">منقول من جهة أخرى</option></select></div>
@@ -4654,6 +4741,7 @@
               <div class="col-md-2"><input id="new_off_draft_end" type="date" class="form-control" placeholder="نهاية التجنيد"></div>
             </div>
           </div>
+          <div class="col-md-4"><input id="new_off_hometown_general" class="form-control" placeholder="الموطن"></div>
           <div class="col-md-6">
             <label class="form-label">صورة الموظف</label>
             <input id="new_off_photo" type="file" class="form-control" accept="image/*" onchange="handleNewOfficerPhoto(this)">
@@ -4786,7 +4874,12 @@
       const workType = category === 'draftees' ? (document.getElementById('new_off_work_type')?.value || '') : '';
       const secondaryDeptId = category === 'draftees' ? null : (+document.getElementById('new_off_secondary_dept')?.value || null);
       const secondaryDeptRole = category === 'draftees' ? '' : (document.getElementById('new_off_secondary_role')?.value || '');
-      const hometown = document.getElementById('new_off_hometown')?.value || '';
+      const hometown = document.getElementById('new_off_hometown_general')?.value || document.getElementById('new_off_hometown')?.value || '';
+      const maritalStatus = document.getElementById('new_off_marital_status')?.value || '';
+      const religion = document.getElementById('new_off_religion')?.value || '';
+      const residenceAddress = document.getElementById('new_off_residence')?.value || '';
+      const homePhone = document.getElementById('new_off_home_phone')?.value || '';
+      const mobilePhone = document.getElementById('new_off_phone')?.value || '';
       const educationDegree = document.getElementById('new_off_education')?.value || '';
       const draftStart = document.getElementById('new_off_draft_start')?.value || '';
       const draftEnd = document.getElementById('new_off_draft_end')?.value || '';
@@ -4797,7 +4890,7 @@
       const annualVacationDays = annualVacationDaysRaw === '' ? null : Number(annualVacationDaysRaw);
       const computedDefault = getAnnualVacationDefault(category, document.getElementById('new_off_birth')?.value || '');
       const resolvedVacationDays = (annualVacationDays === null || Number.isNaN(annualVacationDays)) ? computedDefault : annualVacationDays;
-      officers.push({id, name, category, rank, badge: badgeValue, policeId, nationalId, deptId: category === 'draftees' ? null : (+document.getElementById('new_off_dept').value || null), secondaryDeptId, secondaryDeptRole, jobTitleId: category === 'draftees' ? null : (+document.getElementById('new_off_job').value || null), drafteeWorkType: workType, subs: [], status:'active', trainings: [], transferNote:'', phone:document.getElementById('new_off_phone').value, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, hometown, educationDegree, draftStart, draftEnd, admissionType, hiringDate, workStartYear, graduationYear, educationDegrees: [], annualVacationDays: resolvedVacationDays, transferFromDeptId, transferToDeptId, transferDate, transferToDate, archivedAt: null, photo: NEW_OFFICER_PHOTO || ''});
+      officers.push({id, name, category, rank, badge: badgeValue, policeId, nationalId, deptId: category === 'draftees' ? null : (+document.getElementById('new_off_dept').value || null), secondaryDeptId, secondaryDeptRole, jobTitleId: category === 'draftees' ? null : (+document.getElementById('new_off_job').value || null), drafteeWorkType: workType, subs: [], status:'active', trainings: [], transferNote:'', phone: mobilePhone, mobilePhone, homePhone, gender:document.getElementById('new_off_gender').value, birth:document.getElementById('new_off_birth').value, address:document.getElementById('new_off_address').value, residenceAddress, maritalStatus, religion, emgName:document.getElementById('new_off_emgName').value, emgPhone:document.getElementById('new_off_emgPhone').value, hometown, educationDegree, draftStart, draftEnd, admissionType, hiringDate, workStartYear, graduationYear, educationDegrees: [], annualVacationDays: resolvedVacationDays, transferFromDeptId, transferToDeptId, transferDate, transferToDate, incentiveAllowances: [], rewards: [], healthCases: [], workHistory: [], archivedAt: null, photo: NEW_OFFICER_PHOTO || ''});
       saveAll();
       NEW_OFFICER_PHOTO = '';
       document.getElementById('officerEditorArea').innerHTML='';
@@ -4828,6 +4921,12 @@
         if(jt && ((jt.categoryId || 'officers') !== o.category || (o.category !== 'officers' && jt.isUpper))){
           return showToast('المسمى غير متاح لهذه الفئة','warning');
         }
+      }
+      if(key === 'mobilePhone'){
+        o.mobilePhone = val;
+        o.phone = val;
+        saveAll();
+        return;
       }
       if(key === 'annualVacationDays'){
         const parsed = val === '' ? null : Number(val);
@@ -4926,6 +5025,102 @@
       if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
       requestConfirmation('حذف الدرجة العلمية؟', ()=>{
         o.educationDegrees = (o.educationDegrees || []).filter((_, i)=>i!==idx);
+        saveAll();
+        renderTab('employees');
+      }, {type:'warning'});
+    }
+    function addIncentiveAllowance(id){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      const rank = document.getElementById(`allowance_rank_${id}`)?.value || '';
+      const date = document.getElementById(`allowance_date_${id}`)?.value || '';
+      if(!rank.trim() && !date.trim()) return showToast('أدخل بيانات العلاوة التشجيعية','warning');
+      o.incentiveAllowances = Array.isArray(o.incentiveAllowances) ? o.incentiveAllowances : [];
+      o.incentiveAllowances.push({rank: rank.trim(), date});
+      saveAll();
+      renderTab('employees');
+    }
+    function removeIncentiveAllowance(id, idx){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      requestConfirmation('حذف العلاوة التشجيعية؟', ()=>{
+        o.incentiveAllowances = (o.incentiveAllowances || []).filter((_, i)=>i!==idx);
+        saveAll();
+        renderTab('employees');
+      }, {type:'warning'});
+    }
+    function addRewardRecord(id){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      const type = document.getElementById(`reward_type_${id}`)?.value || '';
+      const date = document.getElementById(`reward_date_${id}`)?.value || '';
+      const amount = document.getElementById(`reward_amount_${id}`)?.value || '';
+      const reason = document.getElementById(`reward_reason_${id}`)?.value || '';
+      if(!type.trim() && !date.trim() && !amount.trim() && !reason.trim()) return showToast('أدخل بيانات المكافأة أو الوسام','warning');
+      o.rewards = Array.isArray(o.rewards) ? o.rewards : [];
+      o.rewards.push({type: type.trim(), date, amount: amount.trim(), reason: reason.trim()});
+      saveAll();
+      renderTab('employees');
+    }
+    function removeRewardRecord(id, idx){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      requestConfirmation('حذف المكافأة/الوسام؟', ()=>{
+        o.rewards = (o.rewards || []).filter((_, i)=>i!==idx);
+        saveAll();
+        renderTab('employees');
+      }, {type:'warning'});
+    }
+    function addHealthCase(id){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      const type = document.getElementById(`health_type_${id}`)?.value || '';
+      const reason = document.getElementById(`health_reason_${id}`)?.value || '';
+      const leaveStart = document.getElementById(`health_start_${id}`)?.value || '';
+      const leaveEnd = document.getElementById(`health_end_${id}`)?.value || '';
+      const disabilityPercent = document.getElementById(`health_disability_${id}`)?.value || '';
+      const description = document.getElementById(`health_desc_${id}`)?.value || '';
+      if(!type.trim() && !reason.trim() && !leaveStart && !leaveEnd && !disabilityPercent.trim() && !description.trim()){
+        return showToast('أدخل بيانات الحالة الصحية','warning');
+      }
+      o.healthCases = Array.isArray(o.healthCases) ? o.healthCases : [];
+      o.healthCases.push({type: type.trim(), reason: reason.trim(), leaveStart, leaveEnd, disabilityPercent: disabilityPercent.trim(), description: description.trim()});
+      saveAll();
+      renderTab('employees');
+    }
+    function removeHealthCase(id, idx){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      requestConfirmation('حذف الحالة الصحية؟', ()=>{
+        o.healthCases = (o.healthCases || []).filter((_, i)=>i!==idx);
+        saveAll();
+        renderTab('employees');
+      }, {type:'warning'});
+    }
+    function addWorkHistoryEntry(id){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      const name = document.getElementById(`work_name_${id}`)?.value || '';
+      const startDate = document.getElementById(`work_start_${id}`)?.value || '';
+      if(!name.trim() && !startDate) return showToast('أدخل بيانات جهة العمل','warning');
+      o.workHistory = Array.isArray(o.workHistory) ? o.workHistory : [];
+      o.workHistory.push({name: name.trim(), startDate});
+      saveAll();
+      renderTab('employees');
+    }
+    function removeWorkHistoryEntry(id, idx){
+      const o = officers.find(x=>x.id===id);
+      if(!o) return;
+      if(!canEditCategory(o.category)) return showToast('لا تملك صلاحية تعديل هذا السجل','warning');
+      requestConfirmation('حذف جهة العمل؟', ()=>{
+        o.workHistory = (o.workHistory || []).filter((_, i)=>i!==idx);
         saveAll();
         renderTab('employees');
       }, {type:'warning'});
@@ -7616,6 +7811,14 @@
       }).join('');
       return `<div class="report-grid">${cells}</div>`;
     }
+    function buildReportTable(headers, rows, emptyLabel){
+      const safeHeaders = headers || [];
+      const headerMarkup = safeHeaders.map(h=>`<th>${escapeHtml(h)}</th>`).join('');
+      const bodyRows = (rows || []).length
+        ? rows.map(row=>`<tr>${row.map(cell=>`<td>${escapeHtml(cell ?? '')}</td>`).join('')}</tr>`).join('')
+        : `<tr><td colspan="${safeHeaders.length}" class="text-center text-muted">${escapeHtml(emptyLabel || 'لا توجد بيانات')}</td></tr>`;
+      return `<table class="report-table"><thead><tr>${headerMarkup}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+    }
     function buildEmployeeStatusReportHtml(employeeId){
       const o = getEmployeeById(employeeId);
       if(!o) return '<div class="alert alert-warning">لا توجد بيانات لهذا الموظف.</div>';
@@ -7630,6 +7833,18 @@
       const degrees = Array.isArray(o.educationDegrees) ? o.educationDegrees : [];
       const trainings = Array.isArray(o.trainings) ? o.trainings : [];
       const travels = (transferRecords[o.category] || []).filter(r=>r.employeeId === o.id && r.type === 'سفر للخارج');
+      const incentiveAllowances = Array.isArray(o.incentiveAllowances) ? o.incentiveAllowances : [];
+      const rewardEntries = [
+        ...(Array.isArray(o.rewards) ? o.rewards : []),
+        ...honorRecipients.filter(r=>r.employeeId === o.id).map(r=>({
+          type: getHonorTypeLabel(r.typeId),
+          date: r.date || '',
+          amount: '',
+          reason: r.notes || ''
+        }))
+      ];
+      const healthCases = Array.isArray(o.healthCases) ? o.healthCases : [];
+      const workHistory = Array.isArray(o.workHistory) ? o.workHistory : [];
       const transferHistory = getEmployeeTransferHistory(o);
       const vacationRange = getVacationYearRange(o.category);
       const annualAllowance = getAnnualVacationAllowance(o);
@@ -7644,6 +7859,61 @@
       const secondaryDeptSummary = secondaryDeptName || o.secondaryDeptRole ? `${secondaryDeptName || '—'}${o.secondaryDeptRole ? ` — ${o.secondaryDeptRole}` : ''}` : '';
       const identityLabel = getEmployeeIdentityLabel(o.category);
       const identityValue = getEmployeeIdentityValue(o);
+      const yearFromDate = (dateValue)=>{
+        if(!dateValue) return '';
+        return String(dateValue).slice(0,4);
+      };
+      const trainingRows = trainings.map(t=>[
+        t.name || '',
+        t.year || yearFromDate(t.endDate || t.startDate),
+        t.startDate || '',
+        t.endDate || '',
+        t.grade || t.rating || t.score || '',
+        t.courseNumber || ''
+      ]);
+      const degreeRows = degrees.map(d=>[
+        d.date ? yearFromDate(d.date) : (d.year || ''),
+        d.type || '',
+        d.name || d.specialization || '',
+        d.grade || ''
+      ]);
+      const promotionRows = (promotions[o.category] || []).filter(r=>r.employeeId === o.id).map(r=>[
+        r.effectiveDate || '',
+        r.fromRank ? 'ترقية' : 'تعيين',
+        r.toRank || r.fromRank || ''
+      ]);
+      const allowanceRows = incentiveAllowances.map(a=>[
+        a.rank || o.rank || '',
+        a.date || ''
+      ]);
+      const rewardRows = rewardEntries.map(r=>[
+        r.type || '',
+        r.date || '',
+        r.amount || '',
+        r.reason || ''
+      ]);
+      const travelRows = travels.map(t=>[
+        t.type || 'سفر للخارج',
+        t.travelReason || '',
+        t.travelCountry || '',
+        t.startDate || '',
+        t.endDate || ''
+      ]);
+      const healthRows = healthCases.map(h=>[
+        h.type || '',
+        h.reason || '',
+        h.leaveStart || '',
+        h.leaveEnd || '',
+        h.disabilityPercent || '',
+        h.description || ''
+      ]);
+      const workHistoryRows = [
+        ...(deptName ? [{name: deptName, startDate: o.hiringDate || startDate || ''}] : []),
+        ...workHistory
+      ].map(w=>[
+        w.name || '',
+        w.startDate || ''
+      ]);
       const drafteeBlock = o.category === 'draftees' ? `
         <div class="report-block">
           <h5>بيانات المجند</h5>
@@ -7655,7 +7925,7 @@
             {label:'نهاية التجنيد', value: fallback(o.draftEnd)}
           ])}
         </div>` : '';
-      const basicItems = [
+     const basicItems = [
         {label:'الاسم', value: fallback(o.name)},
         {label:'الرتبة', value: fallback(o.rank)},
         {label:'المسمى', value: fallback(jobTitle)},
@@ -7669,10 +7939,25 @@
           ${buildReportGrid(basicItems)}
         </div>
         <div class="report-block">
+          <h5>بيانات الضابط</h5>
+          ${buildReportGrid([
+            {label:'الرتبة', value: fallback(o.rank)},
+            {label:'الاسم', value: fallback(o.name)},
+            {label:'رقم الأقدمية', value: fallback(o.badge || identityValue)},
+            {label:'الموطن', value: fallback(o.hometown)},
+            {label:'الحالة الاجتماعية', value: fallback(o.maritalStatus)},
+            {label:'العنوان', value: fallback(o.address)},
+            {label:'الديانة', value: fallback(o.religion)},
+            {label:'عنوان الإقامة', value: fallback(o.residenceAddress)},
+            {label:'تليفون المنزل', value: fallback(o.homePhone)},
+            {label:'تليفون محمول', value: fallback(o.mobilePhone || o.phone)}
+          ])}
+        </div>
+        <div class="report-block">
           <h5>الهوية والتواصل</h5>
           ${buildReportGrid([
             {label: identityLabel, value: fallback(identityValue)},
-            {label:'الهاتف', value: fallback(o.phone)},
+            {label:'الهاتف', value: fallback(o.mobilePhone || o.phone)},
             {label:'العنوان', value: fallback(o.address)},
             {label:'الجنس', value: fallback(o.gender)},
             {label:'تاريخ الميلاد', value: fallback(o.birth)},
@@ -7703,16 +7988,36 @@
         </div>
         ${drafteeBlock}
         <div class="report-block">
-          <h5>الدرجات العلمية</h5>
-          ${degrees.length ? `<ul>${degrees.map(d=>`<li>${escapeHtml(d.type || '')} ${escapeHtml(d.name || '')} ${d.date ? `— ${escapeHtml(d.date)}` : ''}</li>`).join('')}</ul>` : '<div class="text-muted">لم يتم إضافة درجات علمية.</div>'}
+          <h5>الفرق التدريبية</h5>
+          ${buildReportTable(['الفرقة','السنة','بداية الفرقة','نهاية الفرقة','التقدير','رقم الدورة'], trainingRows, 'لا توجد فرق تدريبية مسجلة')}
         </div>
         <div class="report-block">
-          <h5>الدورات التدريبية</h5>
-          ${trainings.length ? `<ul>${trainings.map(t=>`<li>${escapeHtml(t.name || '')} — ${escapeHtml(t.courseNumber || '')} (${escapeHtml(t.startDate || '')} → ${escapeHtml(t.endDate || '')}) — ${escapeHtml(t.institute || '')}</li>`).join('')}</ul>` : '<div class="text-muted">لا توجد دورات مسندة.</div>'}
+          <h5>المؤهلات العلمية</h5>
+          ${buildReportTable(['سنة المؤهل','المؤهل','التخصص','التقدير'], degreeRows, 'لا توجد مؤهلات علمية مسجلة')}
         </div>
         <div class="report-block">
-          <h5>السفر خارج البلاد</h5>
-          ${travels.length ? `<ul>${travels.map(t=>`<li>${escapeHtml(t.startDate || '')} → ${escapeHtml(t.endDate || '')} — ${escapeHtml(t.travelReason || '—')}${t.travelCountry ? ` • ${escapeHtml(t.travelCountry)}` : ''}</li>`).join('')}</ul>` : '<div class="text-muted">لا توجد سفريات خارج البلاد مسجلة.</div>'}
+          <h5>الترقيات</h5>
+          ${buildReportTable(['تاريخ الترقية','نوعها','الرتبة'], promotionRows, 'لا توجد ترقيات مسجلة')}
+        </div>
+        <div class="report-block">
+          <h5>العلاوات التشجيعية</h5>
+          ${buildReportTable(['الرتبة عند العلاوة','تاريخ العلاوة'], allowanceRows, 'لا توجد علاوات تشجيعية مسجلة')}
+        </div>
+        <div class="report-block">
+          <h5>المكافآت والأوسمة</h5>
+          ${buildReportTable(['نوع المكافأة','تاريخ المكافأة','قيمة المكافأة','السبب'], rewardRows, 'لا توجد مكافآت أو أوسمة مسجلة')}
+        </div>
+        <div class="report-block">
+          <h5>السفريات والمأموريات</h5>
+          ${buildReportTable(['نوع الإجازة','سبب السفر','البلد','تاريخ السفر','تاريخ العودة'], travelRows, 'لا توجد سفريات مسجلة')}
+        </div>
+        <div class="report-block">
+          <h5>الحالات الصحية</h5>
+          ${buildReportTable(['نوع الإصابة','سبب الإصابة','بداية الإجازة','نهاية الإجازة','العجز %','وصف الحالة الصحية'], healthRows, 'لا توجد حالات صحية مسجلة')}
+        </div>
+        <div class="report-block">
+          <h5>جهات العمل السابقة والحالية</h5>
+          ${buildReportTable(['اسم الجهة','تاريخ الإلتحاق بالجهة'], workHistoryRows, 'لا توجد جهات عمل مسجلة')}
         </div>`;
       const transferHistoryBlock = `
         <div class="report-block">
