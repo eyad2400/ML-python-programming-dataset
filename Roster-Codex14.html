@@ -3693,14 +3693,19 @@
         if(officerLimitFilters.hiddenRanks.includes(o.rank)) return false;
         return true;
       });
+      const dutyLimitTotals = duties.map(()=>0);
+      let totalLimitCount = 0;
       const rows = filteredOfficers.map(o=>{
-        const dutyInputs = duties.map(d=>{
+        const dutyInputs = duties.map((d, idx)=>{
           const v = getOfficerDutyLimit(o.id, d.id);
+          if(v!=null) dutyLimitTotals[idx] += 1;
           return `<td><input type="number" min="0" class="form-control form-control-sm" value="${v==null?'':v}" onchange="setOfficerDutyLimit(${o.id},${d.id},this.value)"></td>`;
         }).join('');
         const totalVal = getOfficerTotalLimit(o.id);
+        if(totalVal!=null) totalLimitCount += 1;
         return `<tr><td>${escapeHtml(o.rank)}</td><td>${escapeHtml(o.name)}</td>${dutyInputs}<td><input type="number" min="0" class="form-control form-control-sm" value="${totalVal==null?'':totalVal}" onchange="setOfficerTotalLimit(${o.id},this.value)"></td></tr>`;
       }).join('');
+      const totalsRow = `<tr class="table-light fw-bold"><td colspan="2">إجمالي الحدود</td>${dutyLimitTotals.map(count=>`<td class="text-center">${count}</td>`).join('')}<td class="text-center">${totalLimitCount}</td></tr>`;
       const rankToggles = ranks.map(r=>`<label class="form-check me-2"><input type="checkbox" ${officerLimitFilters.hiddenRanks.includes(r)?'checked':''} onchange="toggleLimitRankFilter('${r}', this.checked)"> إخفاء ${escapeHtml(r)}</label>`).join('');
       const visibleRanks = ranks.filter(r=>!officerLimitFilters.hiddenRanks.includes(r));
       const rankLimitTargets = `<option value="total">الإجمالي الشهري</option>` + duties.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
@@ -3723,7 +3728,7 @@
               <div class="small-muted mt-1">لن يتم تطبيق الحد على الرتب المخفية أو الضباط المستثنين.</div>
              </div>`+
              `<p class="small-muted">اترك الخانة فارغة لعدم وجود حد. خانة الإجمالي تضبط إجمالي الخدمات لكل الضابط في الشهر.</p>`+
-             `<div class="table-responsive"><table class="table table-bordered table-sm"><thead class="table-dark"><tr><th>الرتبة</th><th>الاسم</th>${dutyHeaders}<th>الإجمالي الشهري</th></tr></thead><tbody>${rows || '<tr><td colspan="${duties.length+2}" class="text-center text-muted">لا يوجد ضباط بعد تطبيق عوامل الإخفاء</td></tr>'}</tbody></table></div></div></div>`;
+             `<div class="table-responsive"><table class="table table-bordered table-sm"><thead class="table-dark"><tr><th>الرتبة</th><th>الاسم</th>${dutyHeaders}<th>الإجمالي الشهري</th></tr></thead><tbody>${rows || '<tr><td colspan="${duties.length+3}" class="text-center text-muted">لا يوجد ضباط بعد تطبيق عوامل الإخفاء</td></tr>'}</tbody><tfoot>${filteredOfficers.length ? totalsRow : ''}</tfoot></table></div></div></div>`;
     }
 
     function toggleLimitRankFilter(rank, hidden){
