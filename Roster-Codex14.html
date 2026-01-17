@@ -68,7 +68,8 @@
     .me-1{margin-right:4px;} .me-2{margin-right:8px;}
     .ms-2{margin-inline-start:8px;}
     .text-center{text-align:center;} .text-end{text-align:end;} .text-white{color:#fff;} .text-muted{color:#6b7280;} .text-warning{color:#facc15;}
-     .badge { display:inline-block; padding:4px 8px; border-radius:999px; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:999px; }
+    .badge-count { background:#e0f2fe; color:#0f172a; border:1px solid #bae6fd; font-size:12px; padding:3px 8px; }
     .badge-stat { background:#fff; border:1px solid #ddd; padding:6px 10px; border-radius:8px; margin-right:6px; }
     .small-muted { font-size:12px; color:#666; }
     .blocked { background:#fff4f4; border-left:6px solid #dc2626; }
@@ -165,9 +166,12 @@
     .report-signature .signature-name-block { display:inline-flex; flex-direction:column; align-items:center; align-self:center; width:max-content; }
     .report-signature .signature-line { border-top:2px solid #0f172a; margin:12px 0 6px; width:100%; }
     .report-signature .signature-place { text-align:right; width:100%; align-self:flex-end; }
-   .report-signature .signature-name { text-align:center; width:100%; }
-     .report-signature .signature-title { text-align:center; width:100%; }
+    .report-signature .signature-name { text-align:center; width:100%; }
+    .report-signature .signature-title { text-align:center; width:100%; }
     .report-signature.edge .signature-line { margin-inline:0; }
+    .section-card { border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff; box-shadow:0 4px 12px rgba(15,23,42,.06); margin-bottom:16px; }
+    .section-card h5 { margin:0 0 12px 0; color:#1e3a8a; }
+    .stats-filters { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
     .sub-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
     .sub-tab-btn { border:1px solid #c7d2fe; background:#fff; color:#1f2937; padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:all .15s ease; }
     .sub-tab-btn.active { background:#1e40af; color:#fff; border-color:#1e40af; box-shadow:0 6px 16px rgba(30,64,175,.2); }
@@ -1268,6 +1272,7 @@
       [rowA.notes, rowB.notes] = [rowB.notes, rowA.notes];
       saveAll();
       safeShowToast('تم التبديل السريع بين اليومين','success');
+      refreshStatsIfVisible();
       renderTab('roster');
     }
     function swapDutyAssignments(dutyId, dayA, dayB){
@@ -1282,10 +1287,11 @@
       };
       const rowA = ensureRow(dayA);
       const rowB = ensureRow(dayB);
-      [rowA.officerId, rowB.officerId] = [rowB.officerId, rowA.officerId];
+       [rowA.officerId, rowB.officerId] = [rowB.officerId, rowA.officerId];
       [rowA.notes, rowB.notes] = [rowB.notes, rowA.notes];
       saveAll();
       safeShowToast('تم تبديل الضباط بين اليومين بالسحب والإفلات','success');
+      refreshStatsIfVisible();
       renderTab('roster');
     }
     function handleDutyDragStart(event, dutyId, day){
@@ -1377,8 +1383,12 @@
             ? `draggable="true" ondragstart="handleDutyDragStart(event, ${duty.id}, ${day})" ondragover="allowDutyDrop(event)" ondragleave="clearDutyDragOver(event)" ondrop="handleDutyDrop(event, ${duty.id}, ${day})"`
             : '';
 
+          const assignedTotal = off ? (monthlyCounts[off.id]?.total || 0) : 0;
           return `<tr class="${cls}" ${ttl} ${dragAttrs}><td class="text-center">${day}</td><td class="text-center">${weekdays[date.getDay()]}</td><td class="text-center">${date.toLocaleDateString('ar-EG')}</td>
-            <td><select class="form-select form-select-sm" ${disabledAttr} onchange="assignOfficerWithValidation('${month}', ${duty.id}, ${day}, this.value)">${officerOptions}</select></td>
+            <td>
+              <select class="form-select form-select-sm" ${disabledAttr} onchange="assignOfficerWithValidation('${month}', ${duty.id}, ${day}, this.value)">${officerOptions}</select>
+            </td>
+            <td class="text-center">${off ? `<span class="badge-count">${assignedTotal}</span>` : '<span class="text-muted">—</span>'}</td>
             <td><input class="form-control form-control-sm" ${disabledAttr} value="${escapeHtml(r.notes)}" onchange="updateNote('${month}', ${duty.id}, ${day}, this.value)"></td></tr>`;
         }).join('');
 
@@ -1393,7 +1403,7 @@
 
         const tableHead = isViewerUser()
           ? '<tr><th>اليوم</th><th>الأسبوع</th><th>التاريخ</th><th>الرتبة</th><th>الضابط</th><th>ملاحظات</th></tr>'
-          : '<tr><th>اليوم</th><th>الأسبوع</th><th>التاريخ</th><th>الضابط</th><th>ملاحظات</th></tr>';
+          : '<tr><th>اليوم</th><th>الأسبوع</th><th>التاريخ</th><th>الضابط</th><th>عدد الخدمات</th><th>ملاحظات</th></tr>';
 
         return `<div class="card mb-3"><div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-2">
@@ -1407,7 +1417,7 @@
           </div>
           ${rlSummary ? `<div class="mb-2 small-muted">${escapeHtml(rlSummary)}</div>` : ''}
           ${swapControls}
-          ${collapsed ? '<div class="text-muted">القسم مطوي</div>' : `${isViewerUser() && !viewerOfficerId ? '<div class="alert alert-warning">لم يتم ربط حسابك بضابط لعرض الأيام المسندة.</div>' : ''}${isViewerUser() && viewerOfficerId && !rowsHtml ? '<div class="alert alert-info">لا توجد أيام مسندة لك في هذا النوع خلال الشهر.</div>' : `<div class="table-responsive"><table class="table table-bordered table-sm"><thead class="table-dark">${tableHead}</thead><tbody>${rowsHtml || `<tr><td colspan=\"${isViewerUser() ? 6 : 5}\" class=\"text-center text-muted\">لا توجد أيام لعرضها</td></tr>`}</tbody></table></div>`}`}
+          ${collapsed ? '<div class="text-muted">القسم مطوي</div>' : `${isViewerUser() && !viewerOfficerId ? '<div class="alert alert-warning">لم يتم ربط حسابك بضابط لعرض الأيام المسندة.</div>' : ''}${isViewerUser() && viewerOfficerId && !rowsHtml ? '<div class="alert alert-info">لا توجد أيام مسندة لك في هذا النوع خلال الشهر.</div>' : `<div class="table-responsive"><table class="table table-bordered table-sm"><thead class="table-dark">${tableHead}</thead><tbody>${rowsHtml || `<tr><td colspan=\"${isViewerUser() ? 6 : 6}\" class=\"text-center text-muted\">لا توجد أيام لعرضها</td></tr>`}</tbody></table></div>`}`}
         </div></div>`;
       } catch (err) {
         console.error('renderDutySection error', err);
@@ -1443,9 +1453,10 @@
       const totalAssigned = Object.values(monthRoster).reduce((acc, rows)=> acc + (rows||[]).filter(r=>r.officerId===officer.id).length, 0);
       const dutyLimit = getOfficerDutyLimit(officer.id, duty.id);
       const totalLimit = getOfficerTotalLimit(officer.id);
+      const isAdminOverride = currentRole && currentRole() === 'admin';
 
-      if (!forced && dutyLimit != null && assignedCount >= dutyLimit && officer.id !== currentSelectedId) return false;
-      if (!forced && totalLimit != null && totalAssigned >= totalLimit && officer.id !== currentSelectedId) return false;
+      if (!forced && !isAdminOverride && dutyLimit != null && assignedCount >= dutyLimit && officer.id !== currentSelectedId) return false;
+      if (!forced && !isAdminOverride && totalLimit != null && totalAssigned >= totalLimit && officer.id !== currentSelectedId) return false;
 
       if (!forced && lastInfo && lastInfo.restDays>0) {
         const gap = day - lastInfo.day;
@@ -1537,12 +1548,13 @@
         if (!duty || !officer) { safeShowToast('خطأ في التعيين', 'danger'); return; }
         const dateObj = new Date(+monthStr.split('-')[0], +monthStr.split('-')[1] - 1, day);
         const monthRoster = roster[monthStr] || {};
-        if (!isOfficerEligibleForDropdown(officer, duty, dateObj, monthStr, officerId)) {
+        const isAdminOverride = currentRole && currentRole() === 'admin';
+        if (!isAdminOverride && !isOfficerEligibleForDropdown(officer, duty, dateObj, monthStr, officerId)) {
           safeShowToast('الضابط غير مؤهل لهذا التاريخ/النوع حسب القواعد', 'danger');
           renderTab('roster');
           return;
         }
-        if (hasDeptConsecutiveConflict(officer, duty.id, day, monthRoster)) {
+        if (!isAdminOverride && hasDeptConsecutiveConflict(officer, duty.id, day, monthRoster)) {
           safeShowToast('لا يمكن تعيين ضابطين من نفس القسم ليومين متتاليين في نفس الخدمة', 'danger');
           renderTab('roster');
           return;
@@ -1571,6 +1583,7 @@
         target: officerObj ? officerObj.name : 'بدون'
       });
       saveAll();
+      refreshStatsIfVisible();
     }
     function updateNote(m, d, y, n){
       if (!roster[m]) roster[m] = {};
@@ -1591,6 +1604,18 @@
       const dutyObj = duties.find(dt=>dt.id===d);
       logActivity('تحديث ملاحظة', {month: m, dutyName: dutyObj ? dutyObj.name : d, day: y, note: n});
       saveAll();
+    }
+
+    function refreshStatsIfVisible(){
+      try{
+        const statsResult = document.getElementById('statsResult');
+        const statsMonth = document.getElementById('statsMonth');
+        if(statsResult && statsMonth){
+          renderStatsForSelectedMonth();
+        }
+      }catch(err){
+        console.error('refreshStatsIfVisible error', err);
+      }
     }
 
     /* ========= Statistics ========= */
@@ -1616,7 +1641,78 @@
         stats[groupKey].total += 1;
         if(o.rank) stats[groupKey].ranks[o.rank] += 1;
       });
-      return stats;
+     return stats;
+    }
+    function getStatsFilterState(){
+      let dutyIds = [];
+      const stored = sessionStorage.getItem('statsDutyIds');
+      try { dutyIds = stored ? JSON.parse(stored) : []; } catch(_) { dutyIds = []; }
+      if(!Array.isArray(dutyIds)){
+        dutyIds = duties.map(d=>d.id);
+      } else if(!dutyIds.length && !stored){
+        dutyIds = duties.map(d=>d.id);
+      }
+      return {
+        name: sessionStorage.getItem('statsFilterName') || '',
+        rank: sessionStorage.getItem('statsFilterRank') || '',
+        dutyIds
+      };
+    }
+    function updateStatsFilters(){
+      const name = document.getElementById('statsFilterName')?.value || '';
+      const rank = document.getElementById('statsFilterRank')?.value || '';
+      sessionStorage.setItem('statsFilterName', name);
+      sessionStorage.setItem('statsFilterRank', rank);
+      renderStatsForSelectedMonth();
+    }
+    function toggleStatsDutyFilter(dutyId, checked){
+      const state = getStatsFilterState();
+      const set = new Set(state.dutyIds || []);
+      if(checked) set.add(dutyId); else set.delete(dutyId);
+      const ids = Array.from(set);
+      sessionStorage.setItem('statsDutyIds', JSON.stringify(ids));
+      renderStatsForSelectedMonth();
+    }
+    function buildStatsTableHtml(month){
+      const filters = getStatsFilterState();
+      const counts = buildOfficerDutyCountsForMonth(month);
+      const dutyNames = duties.filter(d=>filters.dutyIds.includes(d.id)).map(d=>({id:d.id, name:d.printLabel || d.name}));
+      const nameFilter = (filters.name || '').trim().toLowerCase();
+      const rankFilter = filters.rank || '';
+      const filteredOfficers = officers.filter(o=>{
+        if(rankFilter && o.rank !== rankFilter) return false;
+        if(nameFilter && !o.name?.toLowerCase().includes(nameFilter)) return false;
+        return true;
+      });
+      const headCols = `<th>الضابط</th><th>الرتبة</th><th>القسم</th><th>الإجمالي</th>${dutyNames.map(d=>`<th>${escapeHtml(d.name)}</th>`).join('')}`;
+      const rows = filteredOfficers.map(o=>{
+        const c = counts[o.id] || { total:0, byDuty: {} };
+        const dutyCells = dutyNames.map(d => `<td>${c.byDuty[d.id] || 0}</td>`).join('');
+        const deptName = o.deptId ? escapeHtml((departments.find(dd=>dd.id===o.deptId)||{name:''}).name) : '';
+        return `<tr><td>${escapeHtml(o.name)}</td><td>${escapeHtml(o.rank)}</td><td>${deptName}</td><td>${c.total}</td>${dutyCells}</tr>`;
+      });
+      const table = `<div class="table-responsive"><table class="table table-sm table-bordered"><thead class="table-dark"><tr>${headCols}</tr></thead><tbody>${rows.join('') || `<tr><td colspan="${dutyNames.length + 4}" class="text-center text-muted">لا توجد نتائج مطابقة</td></tr>`}</tbody></table></div>`;
+      return { dutyNames, filteredOfficers, table };
+    }
+    function printStatsReport(){
+      const month = document.getElementById('statsMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
+      const filters = getStatsFilterState();
+      if(!filters.dutyIds.length) return showToast('اختر نوع خدمة واحداً على الأقل للطباعة', 'warning');
+      const { table } = buildStatsTableHtml(month);
+      const fontFamily = getReportFontFamily();
+      const fontSize = getReportPrintFontSize();
+      const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>إحصاء ${month}</title>
+        <style>
+          ${buildReportStyles({fontFamily, fontSize, includeBackground: true})}
+          .table{width:100%;border-collapse:collapse}
+          .table th,.table td{border:1px solid #0f172a;padding:4px;text-align:center}
+          body{background:#fff;padding:12mm}
+          .stats-title{font-size:18px;font-weight:700;margin-bottom:10px;text-align:center}
+        </style></head><body>
+        <div class="stats-title">إحصاء الواجبات لشهر ${month}</div>
+        ${table}
+      </body></html>`;
+      triggerIframePrint(html);
     }
     function renderDeptGroupStatsTable(){
       const stats = computeDeptGroupStats();
@@ -1688,45 +1784,56 @@
         }).join('');
       return `<div class="table-responsive"><table class="table table-sm table-bordered align-middle"><thead class="table-dark"><tr><th>الاسم</th><th>الرتبة</th><th>رقم الأقدمية</th><th>الأوسط</th><th>القسم السابق</th><th>الحالة</th><th>تاريخ الأرشفة</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
-    function renderStatsArchiveTab(){
+     function renderStatsArchiveTab(){
       if(SETTINGS.authEnabled && !CURRENT_USER) return signInInlineFormMarkup() + '<div class="alert alert-warning">سجل الدخول للوصول للإحصاءات.</div>';
       const savedMonth = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
       const monthsAvailable = Object.keys(roster).sort().reverse();
       const monthOptions = [`<option value="${savedMonth}">Current: ${savedMonth}</option>`].concat(monthsAvailable.map(m=>`<option value="${m}">${m}</option>`)).join('');
+      const filters = getStatsFilterState();
+      const dutyFilters = duties.map(d=>`<label class="form-check"><input class="form-check-input" type="checkbox" ${filters.dutyIds.includes(d.id)?'checked':''} onchange="toggleStatsDutyFilter(${d.id}, this.checked)"> ${escapeHtml(d.printLabel || d.name)}</label>`).join('');
+      const rankOptions = ['<option value="">كل الرتب</option>'].concat(ranks.map(r=>`<option value="${escapeHtml(r)}" ${filters.rank===r?'selected':''}>${escapeHtml(r)}</option>`)).join('');
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>الإحصاءات والأرشيف</div><div><button class="btn btn-sm btn-outline-primary" onclick="renderTab('roster')">عودة</button></div></div>
         <div class="card-body">
-          <h5>إحصاء مجموعات الأقسام</h5>
-          <div id="deptGroupStats">${renderDeptGroupStatsTable()}</div>
-          <hr/>
-          <h5>جدول الواجبات — احصاء شهري</h5>
-          <div class="row g-2 mb-2">
-            <div class="col-md-3"><label class="form-label">شهر</label><select id="statsMonth" class="form-select">${monthOptions}</select></div>
-            <div class="col-md-9 text-end align-self-end">
-              <button class="btn btn-success me-2" onclick="renderStatsForSelectedMonth()">عرض الإحصاء</button>
-              <button class="btn btn-outline-secondary" onclick="loadAndPreviewPreviousMonth(document.getElementById('statsMonth').value)">معاينة/طباعة الشهر السابق</button>
-            </div>
+          <div class="section-card">
+            <h5>إحصاء مجموعات الأقسام</h5>
+            <div id="deptGroupStats">${renderDeptGroupStatsTable()}</div>
           </div>
-          <div id="statsResult"><div class="text-muted">اضغط "عرض الإحصاء" لعرض عدد الواجبات لكل ضابط في الشهر المحدد</div></div>
-          <div id="archivePreview" class="mt-3"></div>
-          <hr/>
-          <h5>أرشيف الضباط (متقاعد/منقول)</h5>
-          <div id="officerArchiveTable">${renderOfficersArchiveTable()}</div>
+          <div class="section-card">
+            <h5>جدول الواجبات — احصاء شهري</h5>
+            <div class="row g-2 mb-2">
+              <div class="col-md-3"><label class="form-label">شهر</label><select id="statsMonth" class="form-select">${monthOptions}</select></div>
+              <div class="col-md-9 text-end align-self-end">
+                <button class="btn btn-success me-2" onclick="renderStatsForSelectedMonth()">عرض الإحصاء</button>
+                <button class="btn btn-outline-primary me-2" onclick="printStatsReport()">طباعة الإحصاء</button>
+                <button class="btn btn-outline-secondary" onclick="loadAndPreviewPreviousMonth(document.getElementById('statsMonth').value)">معاينة/طباعة الشهر السابق</button>
+              </div>
+            </div>
+            <div class="stats-filters mb-3">
+              <div style="min-width:200px"><label class="form-label">بحث بالاسم</label><input id="statsFilterName" class="form-control" value="${escapeHtml(filters.name)}" oninput="updateStatsFilters()" onkeydown="guardSearchInput(event)"></div>
+              <div style="min-width:180px"><label class="form-label">تصفية بالرتبة</label><select id="statsFilterRank" class="form-select" onchange="updateStatsFilters()">${rankOptions}</select></div>
+              <div class="flex-grow-1">
+                <label class="form-label">أنواع الخدمات الظاهرة/للطباعة</label>
+                <div class="compact-checks">${dutyFilters || '<span class="text-muted">لا توجد خدمات</span>'}</div>
+              </div>
+            </div>
+            <div id="statsResult"><div class="text-muted">اضغط "عرض الإحصاء" لعرض عدد الواجبات لكل ضابط في الشهر المحدد</div></div>
+            <div id="archivePreview" class="mt-3"></div>
+          </div>
+          <div class="section-card">
+            <h5>أرشيف الضباط (متقاعد/منقول)</h5>
+            <div id="officerArchiveTable">${renderOfficersArchiveTable()}</div>
+          </div>
         </div></div>`;
     }
     function renderStatsForSelectedMonth(){
       const month = document.getElementById('statsMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
-      const counts = buildOfficerDutyCountsForMonth(month);
-      const header = `<div class="mb-2"><strong>إحصاء لشهر ${month}</strong></div>`;
-      const rows = [];
-      const dutyNames = duties.map(d=>({id:d.id, name:d.printLabel || d.name}));
-      const headCols = `<th>الضابط</th><th>الرتبة</th><th>القسم</th><th>الإجمالي</th>${dutyNames.map(d=>`<th>${escapeHtml(d.name)}</th>`).join('')}`;
-      for(const o of officers){
-        const c = counts[o.id] || { total:0, byDuty: {} };
-        const dutyCells = dutyNames.map(d => `<td>${c.byDuty[d.id] || 0}</td>`).join('');
-        const deptName = o.deptId ? escapeHtml((departments.find(dd=>dd.id===o.deptId)||{name:''}).name) : '';
-        rows.push(`<tr><td>${escapeHtml(o.name)}</td><td>${escapeHtml(o.rank)}</td><td>${deptName}</td><td>${c.total}</td>${dutyCells}</tr>`);
+      const filters = getStatsFilterState();
+      if(!filters.dutyIds.length){
+        document.getElementById('statsResult').innerHTML = `<div class="alert alert-warning">اختر نوع خدمة واحداً على الأقل لعرض الإحصاء.</div>`;
+        return;
       }
-      const table = `<div class="table-responsive"><table class="table table-sm table-bordered"><thead class="table-dark"><tr>${headCols}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+      const { table } = buildStatsTableHtml(month);
+      const header = `<div class="mb-2"><strong>إحصاء لشهر ${month}</strong></div>`;
       document.getElementById('statsResult').innerHTML = header + table;
     }
     function loadAndPreviewPreviousMonth(currentMonth){
@@ -2814,6 +2921,17 @@
       };
       iframe.srcdoc = html;
     }
+    function isSmallDevice(){
+      return window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+    }
+    function getPdfCanvasOptions(){
+      const deviceScale = window.devicePixelRatio || 1;
+      const scale = Math.min(2, Math.max(1, deviceScale));
+      return { scale, useCORS: true, backgroundColor: '#ffffff', logging: false };
+    }
+    function wrapHtmlDocument(html){
+      return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"></head><body>${html}</body></html>`;
+    }
     async function ensureHtml2CanvasReady(){
       if(typeof html2canvas === 'function') return true;
       return new Promise((resolve, reject)=>{
@@ -2832,15 +2950,22 @@
       return `<style>${styles}</style>${bodyContent}`;
     }
     async function printPdfFromHtml(html, filename){
+      if(isSmallDevice()){
+        triggerIframePrint(wrapHtmlDocument(html));
+        return;
+      }
       const container = document.createElement('div');
       container.style.width = '210mm';
       container.style.padding = '6mm';
       container.style.direction = 'rtl';
+      container.style.background = '#fff';
+      container.style.color = '#111';
+      container.style.boxSizing = 'border-box';
       container.innerHTML = html;
       document.body.appendChild(container);
       try{
         await ensureHtml2CanvasReady();
-        const canvas = await html2canvas(container, {scale:2, useCORS:true});
+        const canvas = await html2canvas(container, getPdfCanvasOptions());
         const blob = buildPdfBlobFromCanvas(canvas);
         const url = URL.createObjectURL(blob);
         const win = window.open(url, '_blank');
@@ -2873,9 +2998,11 @@
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
       const html = buildDutyInnerHtml(dutyId, month);
       const container = document.createElement('div');
-      container.style.width = '210mm'; container.style.padding = '6mm'; container.style.direction = 'rtl'; container.innerHTML = html;
+      container.style.width = '210mm'; container.style.padding = '6mm'; container.style.direction = 'rtl';
+      container.style.background = '#fff'; container.style.color = '#111'; container.style.boxSizing = 'border-box';
+      container.innerHTML = html;
       document.body.appendChild(container);
-      html2canvas(container, {scale:2, useCORS:true}).then(canvas => canvasToPdf(canvas, `${duties.find(d=>d.id===dutyId).name}_${month}.pdf`).then(()=>{ safeShowToast('تم تنزيل PDF','success'); container.remove(); })).catch(e=>{ safeShowToast('فشل إنشاء PDF','danger'); console.error(e); container.remove(); });
+      html2canvas(container, getPdfCanvasOptions()).then(canvas => canvasToPdf(canvas, `${duties.find(d=>d.id===dutyId).name}_${month}.pdf`).then(()=>{ safeShowToast('تم تنزيل PDF','success'); container.remove(); })).catch(e=>{ safeShowToast('فشل إنشاء PDF','danger'); console.error(e); container.remove(); });
     }
 
     function saveRosterAndExport(){
@@ -2921,24 +3048,26 @@
       if(!ids.length) return showToast('اختر نوعاً واحداً أو أكثر للحفظ كـ PDF','danger');
       const container = document.createElement('div');
       container.style.width = '210mm'; container.style.padding = '6mm'; container.style.direction = 'rtl';
+      container.style.background = '#fff'; container.style.color = '#111'; container.style.boxSizing = 'border-box';
       container.innerHTML = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
       document.body.appendChild(container);
       try{
-        const canvas = await html2canvas(container, {scale:2, useCORS:true});
+        const canvas = await html2canvas(container, getPdfCanvasOptions());
         await canvasToPdf(canvas, `Roster_${month}.pdf`);
         showToast('تم إنشاء PDF وتنزيله','success');
       }catch(e){ console.error(e); showToast('فشل إنشاء PDF','danger'); }
       finally{ container.remove(); }
     }
-    async function saveAllDutiesPDF(){
+     async function saveAllDutiesPDF(){
       const month = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth');
       const ids = duties.map(d=>d.id);
       const container = document.createElement('div');
       container.style.width = '210mm'; container.style.padding = '6mm'; container.style.direction = 'rtl';
+      container.style.background = '#fff'; container.style.color = '#111'; container.style.boxSizing = 'border-box';
       container.innerHTML = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
       document.body.appendChild(container);
       try{
-        const canvas = await html2canvas(container, {scale:2, useCORS:true});
+        const canvas = await html2canvas(container, getPdfCanvasOptions());
         await canvasToPdf(canvas, `Roster_All_${month}.pdf`);
         showToast('تم إنشاء PDF وتنزيله','success');
       }catch(e){ console.error(e); showToast('فشل إنشاء PDF','danger'); }
@@ -3686,6 +3815,9 @@
       if(!officers.length) return '<div class="alert alert-info">أضف ضباطاً أولاً لضبط الحدود.</div>';
       if(!duties.length) return '<div class="alert alert-info">أضف أنواع الخدمات أولاً لضبط الحدود.</div>';
       const dutyHeaders = duties.map(d=>`<th>${escapeHtml(d.name)}</th>`).join('');
+      const deptGroups = SETTINGS.deptGroups || [{key:'internal', name:'الأقسام الداخلية'},{key:'external', name:'الأقسام الخارجية'}];
+      const internalLabel = deptGroups.find(g=>g.key==='internal')?.name || 'الأقسام الداخلية';
+      const externalLabel = deptGroups.find(g=>g.key==='external')?.name || 'الأقسام الخارجية';
       const filteredOfficers = officers.filter(o=>{
         const deptGroup = (departments.find(d=>d.id===o.deptId)?.groupKey) || 'internal';
         if(officerLimitFilters.hideInternal && deptGroup==='internal') return false;
@@ -3713,10 +3845,18 @@
       const rankLimitExcluded = officerLimitFilters.rankLimitExcluded || [];
       const rankLimitExcludedOptions = officers.map(o=>`<option value="${o.id}" ${rankLimitExcluded.includes(o.id)?'selected':''}>${escapeHtml(o.rank)} ${escapeHtml(o.name)}</option>`).join('');
       const deptFilters = `
-        <label class="form-check me-3"><input type="checkbox" ${officerLimitFilters.hideInternal?'checked':''} onchange="setLimitDeptVisibility('internal', this.checked)"> إخفاء أقسام داخلية</label>
-        <label class="form-check"><input type="checkbox" ${officerLimitFilters.hideExternal?'checked':''} onchange="setLimitDeptVisibility('external', this.checked)"> إخفاء أقسام خارجية</label>`;
+        <label class="form-check me-3"><input type="checkbox" ${officerLimitFilters.hideInternal?'checked':''} onchange="setLimitDeptVisibility('internal', this.checked)"> إخفاء ${escapeHtml(internalLabel)}</label>
+        <label class="form-check"><input type="checkbox" ${officerLimitFilters.hideExternal?'checked':''} onchange="setLimitDeptVisibility('external', this.checked)"> إخفاء ${escapeHtml(externalLabel)}</label>`;
+      const autoMonth = document.getElementById('rosterMonth')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
       return `<div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div>حدود الخدمات لكل ضابط</div><div class="small-muted">تُطبق أثناء التوزيع الآلي والقوائم المنسدلة</div></div><div class="card-body">`+
              `<div class="alert alert-info"><div class="fw-bold mb-1">خيارات إخفاء من القائمة</div><div class="d-flex flex-wrap gap-2 align-items-center">${rankToggles || '<span class="text-muted">لا توجد رتب</span>'} ${deptFilters}</div></div>`+
+             `<div class="alert alert-secondary"><div class="fw-bold mb-2">توزيع الحدود تلقائياً</div>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-3"><label class="form-label">شهر الحساب</label><input id="limit_auto_month" type="month" class="form-control" value="${autoMonth}"></div>
+                <div class="col-md-7 small-muted">يتم توزيع الحد الإجمالي وحدود كل خدمة حسب عدد الأيام والضباط المؤهلين، ثم حفظها للاستخدام القادم.</div>
+                <div class="col-md-2 text-end"><button class="btn btn-outline-primary" onclick="autoDeployLimits()">توزيع تلقائي</button></div>
+              </div>
+             </div>`+
              `<div class="alert alert-warning"><div class="fw-bold mb-2">تطبيق حد لرتبة</div>
               <div class="row g-2 align-items-end">
                 <div class="col-md-3"><label class="form-label">الرتبة</label><select id="rank_limit_rank" class="form-select">${rankLimitOptions || '<option value="">لا توجد رتب متاحة</option>'}</select></div>
@@ -3782,6 +3922,36 @@
       } else {
         showToast('لا يوجد ضباط مطابقون للتطبيق', 'warning');
       }
+    }
+
+    function autoDeployLimits(){
+      const month = document.getElementById('limit_auto_month')?.value || sessionStorage.getItem('activeRosterMonth') || new Date().toISOString().slice(0,7);
+      if(!month) return showToast('اختر الشهر أولاً', 'warning');
+      if(!duties.length) return showToast('أضف أنواع خدمات أولاً', 'warning');
+      if(!officers.length) return showToast('أضف ضباطاً أولاً', 'warning');
+      if(!confirm('سيتم توزيع الحدود تلقائياً واستبدال القيم الحالية. متابعة؟')) return;
+      const [yy, mm] = month.split('-').map(Number);
+      const days = new Date(yy, mm, 0).getDate();
+      const activeOfficers = officers.filter(o=> (o.status || 'active') === 'active');
+      if(!activeOfficers.length) return showToast('لا يوجد ضباط نشطون للتوزيع', 'warning');
+      const totalSlots = days * duties.length;
+      const totalLimit = Math.ceil(totalSlots / activeOfficers.length);
+      activeOfficers.forEach(o=>{
+        ensureOfficerLimit(o.id);
+        officerLimits[o.id].total = totalLimit;
+      });
+      duties.forEach(d=>{
+        const eligible = activeOfficers.filter(o=> !d.allowedRanks?.length || d.allowedRanks.includes(o.rank));
+        if(!eligible.length) return;
+        const perDutyLimit = Math.ceil(days / eligible.length);
+        eligible.forEach(o=>{
+          ensureOfficerLimit(o.id);
+          officerLimits[o.id].duties[d.id] = perDutyLimit;
+        });
+      });
+      saveAll();
+      renderTab('limits');
+      showToast('تم توزيع الحدود تلقائياً وحفظها', 'success');
     }
 
     /* ========= Duties ========= */
@@ -4180,11 +4350,14 @@
         container.style.width = '210mm';
         container.style.padding = '6mm';
         container.style.direction = 'rtl';
+        container.style.background = '#fff';
+        container.style.color = '#111';
+        container.style.boxSizing = 'border-box';
         container.innerHTML = ids.map(id=> buildDutyInnerHtml(id, month)).join('<div style="page-break-after:always;"></div>');
         document.body.appendChild(container);
         try{
           await ensureHtml2CanvasReady();
-          const canvas = await html2canvas(container, {scale:2, useCORS:true});
+          const canvas = await html2canvas(container, getPdfCanvasOptions());
           const mime = format === 'png' ? 'image/png' : 'image/jpeg';
           const dataUrl = canvas.toDataURL(mime, 0.95);
           const link = document.createElement('a');
