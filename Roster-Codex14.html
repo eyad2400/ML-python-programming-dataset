@@ -78,6 +78,9 @@
     .toast-item { background:#111827; color:#fff; padding:10px 14px; margin-bottom:6px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,.15); min-width:220px; text-align:center; }
     .toast-item.success{background:#16a34a;} .toast-item.danger{background:#dc2626;} .toast-item.warning{background:#f59e0b;}
     .toast-item.info{background:#0ea5e9;} .toast-item.request{background:#312e81;}
+    .toast-actions{display:flex;justify-content:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+    .toast-actions .btn{font-size:12px;padding:4px 10px;}
+    .toast-item.info{background:#0ea5e9;} .toast-item.request{background:#312e81;}
     .badge-status { border-radius:8px; padding:2px 8px; font-size:12px; }
     .status-retired { background:#fce7f3; color:#9d174d; }
     .status-transferred { background:#ecfeff; color:#0ea5e9; }
@@ -145,7 +148,7 @@
      .report-header { position:relative; display:flex; justify-content:center; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px; gap:12px; }
     .report-title { font-size:18px; font-weight:700; text-align:center; color:#111; }
     .report-logo { position:absolute; top:0; right:0; display:flex; align-items:center; justify-content:center; }
-    .report-logo img { max-height:36px; width:auto; height:auto; }
+    .report-logo img { max-height:61px; width:auto; height:auto; }
     .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:4px double #0f172a; }
      .report-table th, .report-table td { border-top:1px solid #0f172a; border-bottom:1px solid #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:nowrap; }
     .report-table th { background:#d1d5db; color:#111; font-weight:700; border-top:4px double #0f172a; border-bottom:4px double #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; }
@@ -1141,8 +1144,7 @@
       document.addEventListener(ev, ()=> resetIdleTimer());
     });
 
-   /* ========= Toast ========= */
-    function showToast(msg,type='info'){
+   function showToast(msg,type='info'){
       const c=document.querySelector('.toast-container');
       const el=document.createElement('div');
       const allowed = ['danger','success','warning','info','request'];
@@ -1151,6 +1153,35 @@
       el.textContent = msg;
       c.appendChild(el);
       setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(), 400); }, 3600);
+    }
+    function showActionToast({message, type='request', confirmText='متابعة', cancelText='إلغاء', onConfirm=null, onCancel=null}){
+      const c = document.querySelector('.toast-container');
+      if(!c) return;
+      c.querySelectorAll('.toast-item.request').forEach(el=>el.remove());
+      const el = document.createElement('div');
+      const allowed = ['danger','success','warning','info','request'];
+      const cls = allowed.includes(type) ? type : 'request';
+      el.className = `toast-item ${cls}`;
+      const msg = document.createElement('div');
+      msg.textContent = message;
+      const actions = document.createElement('div');
+      actions.className = 'toast-actions';
+      const confirmBtn = document.createElement('button');
+      confirmBtn.type = 'button';
+      confirmBtn.className = 'btn btn-light btn-sm';
+      confirmBtn.textContent = confirmText;
+      const cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'btn btn-outline-light btn-sm';
+      cancelBtn.textContent = cancelText;
+      actions.appendChild(confirmBtn);
+      actions.appendChild(cancelBtn);
+      el.appendChild(msg);
+      el.appendChild(actions);
+      c.appendChild(el);
+      const cleanup = () => { el.remove(); };
+      confirmBtn.addEventListener('click', () => { cleanup(); if(typeof onConfirm === 'function') onConfirm(); });
+      cancelBtn.addEventListener('click', () => { cleanup(); if(typeof onCancel === 'function') onCancel(); });
     }
     function safeShowToast(msg,type='info'){ try{ showToast(msg,type); } catch(_) { console.log(msg); } }
     function guardSearchInput(event){
@@ -1532,6 +1563,58 @@
       return checkDay(day-1) || checkDay(day+1);
     }
 
+    function getOfficerManualConflicts(monthStr, officerId, dutyId, day){
+      const monthRoster = roster[monthStr] || {};
+      const conflicts = [];
+      const seen = new Set();
+      Object.keys(monthRoster).forEach(dId=>{
+        const rows = monthRoster[dId] || [];
+        rows.forEach((r, idx)=>{
+          const rDay = r.day || idx + 1;
+          if(r.officerId !== officerId) return;
+          if(+dId === dutyId && rDay === day) return;
+          const dutyObj = duties.find(dd=>dd.id==dId);
+          const dutyName = dutyObj?.name || dId;
+          if(rDay === day){
+            const key = `same-${dId}-${rDay}`;
+            if(!seen.has(key)){
+              conflicts.push({ type: 'same-day', day: rDay, dutyName });
+              seen.add(key);
+            }
+            return;
+          }
+          if(Math.abs(rDay - day) === 1){
+            const key = `adjacent-${dId}-${rDay}`;
+            if(!seen.has(key)){
+              conflicts.push({ type: 'adjacent', day: rDay, dutyName });
+              seen.add(key);
+            }
+          }
+          if(rDay < day){
+            const restDays = Math.ceil(((dutyObj?.restHours)||0)/24);
+            if(restDays > 0 && (day - rDay) <= restDays){
+              const key = `rest-${dId}-${rDay}`;
+              if(!seen.has(key)){
+                conflicts.push({ type: 'rest', day: rDay, dutyName, restDays });
+                seen.add(key);
+              }
+            }
+          }
+        });
+      });
+      return conflicts;
+    }
+
+    function formatManualConflictSummary(conflicts){
+      return conflicts.map(c=>{
+        const base = `يوم ${c.day} (${c.dutyName})`;
+        if(c.type === 'same-day') return `نفس اليوم: ${base}`;
+        if(c.type === 'adjacent') return `يوم مجاور: ${base}`;
+        if(c.type === 'rest') return `فترة الراحة بعد ${base}`;
+        return base;
+      }).join('، ');
+    }
+
     function isOfficerBannedFromDuty(officer, duty, dateObj){
       if(!officer || !duty) return false;
       const decision = evaluateExceptionFor(officer, duty, dateObj);
@@ -1558,6 +1641,25 @@
           safeShowToast('لا يمكن تعيين ضابطين من نفس القسم ليومين متتاليين في نفس الخدمة', 'danger');
           renderTab('roster');
           return;
+        }
+        if (isAdminOverride) {
+          const conflicts = getOfficerManualConflicts(monthStr, officerId, dutyId, day);
+          if (conflicts.length) {
+            const summary = formatManualConflictSummary(conflicts);
+            showActionToast({
+              message: `تنبيه قبل التغيير: الضابط لديه تعيينات أخرى قد تتعارض. ${summary}. هل تريد المتابعة؟`,
+              type: 'warning',
+              confirmText: 'متابعة التغيير',
+              cancelText: 'إلغاء',
+              onConfirm: () => {
+                assignOfficer(monthStr, dutyId, day, officerId);
+                safeShowToast('تم تعيين الضابط', 'success');
+                renderTab('roster');
+              },
+              onCancel: () => renderTab('roster')
+            });
+            return;
+          }
         }
         assignOfficer(monthStr, dutyId, day, officerId);
         safeShowToast('تم تعيين الضابط', 'success');
