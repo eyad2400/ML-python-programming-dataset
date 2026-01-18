@@ -143,12 +143,12 @@
     .compact-checks { display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; }
     .compact-checks .form-check { margin:0; padding:0 4px; display:flex; align-items:center; gap:4px; }
     .compact-checks .form-check-input { margin:0; }
-   .report-preview-paper { background:#fff; border:1px solid #0f172a; border-radius:8px; padding:16px; box-shadow:0 4px 12px rgba(15,23,42,.08); }
+   .report-preview-paper { background:#fff; border:1px solid #0f172a; border-radius:8px; padding:16px; box-shadow:0 4px 12px rgba(15,23,42,.08); margin:0 auto; }
     .report-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:12px; color:#111; margin-bottom:6px; }
      .report-header { position:relative; display:flex; justify-content:center; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px; gap:12px; }
     .report-title { font-size:18px; font-weight:700; text-align:center; color:#111; }
     .report-logo { position:absolute; top:0; right:0; display:flex; align-items:center; justify-content:center; }
-    .report-logo img { max-height:61px; width:auto; height:auto; }
+    .report-logo img { max-height:92px; width:auto; height:auto; }
     .report-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:inherit; border:4px double #0f172a; }
      .report-table th, .report-table td { border-top:1px solid #0f172a; border-bottom:1px solid #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; padding:4px 3px; text-align:center; white-space:nowrap; }
     .report-table th { background:#d1d5db; color:#111; font-weight:700; border-top:4px double #0f172a; border-bottom:4px double #0f172a; border-left:2px solid #0f172a; border-right:2px solid #0f172a; }
@@ -2881,13 +2881,13 @@
       return Math.min(requested, REPORT_MAX_FONT_SIZE);
     }
     function buildReportStyles({fontFamily, fontSize, includeBackground = true}){
-      const backgroundStyle = includeBackground ? 'background:#fff;' : '';
+      const backgroundStyle = includeBackground ? 'background:#fff !important;' : '';
       return `
           @page{size:A4 portrait;margin:6mm}
           html,body{${backgroundStyle}color:#111;}
           body{font-family:${fontFamily},"Fanan","Sultan bold","PT Bold Heading","Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:4mm;${backgroundStyle}}
-          .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid;width:100%;background:#fff;box-sizing:border-box;}
-          .report-preview-paper{background:#fff;width:100%;min-width:100%;box-sizing:border-box;padding:0;border:none;}
+          .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid;width:100%;background:#fff;box-sizing:border-box;margin:0 auto;}
+          .report-preview-paper{background:#fff;width:100%;min-width:100%;box-sizing:border-box;padding:0;border:none;margin:0 auto;}
           .duty-content{width:100%;box-sizing:border-box;}
              .report-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:${fontSize}px;border:4px double #0f172a;margin:0}
            .report-table th,.report-table td{border-top:1px solid #0f172a;border-bottom:1px solid #0f172a;border-left:2px solid #0f172a;border-right:2px solid #0f172a;padding:4px 3px;text-align:center;white-space:nowrap}
@@ -2901,7 +2901,7 @@
           .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#111;margin-bottom:6px}
           .report-title{font-size:16px;font-weight:700;text-align:center;color:#111}
           .report-logo{position:absolute;top:0;right:0;display:flex;align-items:center;justify-content:center}
-          .report-logo img{max-height:32px;width:auto;height:auto}
+          .report-logo img{max-height:48px;width:auto;height:auto}
           .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:52px;color:#0f172a;opacity:0.08;white-space:pre-wrap;text-align:center;width:160%;pointer-events:none}
           .report-signatures{display:flex;flex-direction:column;gap:12px;margin-top:10px;font-size:12px;line-height:1.5;width:100%;align-items:center;text-align:center}
           .report-signatures-row{display:flex;justify-content:space-between;gap:18px;width:100%}
@@ -4405,7 +4405,7 @@
       return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Roster ${month}</title>
         <style>
           ${buildReportStyles({fontFamily, fontSize, includeBackground: true})}
-          .report-preview-paper{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.08)}
+          .report-preview-paper{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.08);margin:0 auto}
           .report-header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:10px}
           .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#334155;margin-bottom:8px}
           .report-title{font-size:18px;font-weight:800;text-align:center;color:#1e40af}
@@ -4421,7 +4421,7 @@
         <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom></w:WordDocument></xml><![endif]-->
         <style>
           ${buildReportStyles({fontFamily, fontSize, includeBackground: false})}
-          .report-preview-paper{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px}
+          .report-preview-paper{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin:0 auto}
           .report-header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:10px}
           .report-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#334155;margin-bottom:8px}
           .report-title{font-size:18px;font-weight:800;text-align:center;color:#1e40af}
