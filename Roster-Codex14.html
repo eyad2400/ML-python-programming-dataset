@@ -2822,8 +2822,9 @@
         const scale = Math.min(pageWidthPt / img.width, pageHeightPt / img.height);
         const drawW = (img.width * scale).toFixed(2);
         const drawH = (img.height * scale).toFixed(2);
-        const yPos = (pageHeightPt - img.height * scale).toFixed(2);
-        const contentStream = `q\n${drawW} 0 0 ${drawH} 0 ${yPos} cm\n/Im${idx} Do\nQ\n`;
+        const xPos = ((pageWidthPt - (img.width * scale)) / 2).toFixed(2);
+        const yPos = ((pageHeightPt - (img.height * scale)) / 2).toFixed(2);
+        const contentStream = `q\n1 1 1 rg 0 0 ${pageWidthPt.toFixed(2)} ${pageHeightPt.toFixed(2)} re f\n${drawW} 0 0 ${drawH} ${xPos} ${yPos} cm\n/Im${idx} Do\nQ\n`;
         const contentId = addObject(textToUint8(`<< /Length ${contentStream.length} >>\nstream\n${contentStream}endstream`));
 
         const pageObj = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidthPt.toFixed(2)} ${pageHeightPt.toFixed(2)}] /Resources << /ProcSet [/PDF /ImageC] /XObject << /Im${idx} ${imgId} 0 R >> >> /Contents ${contentId} 0 R >>`;
@@ -2880,11 +2881,15 @@
       return Math.min(requested, REPORT_MAX_FONT_SIZE);
     }
     function buildReportStyles({fontFamily, fontSize, includeBackground = true}){
+      const backgroundStyle = includeBackground ? 'background:#fff;' : '';
       return `
-          @page{size:A4 portrait;margin:8mm}
-          body{font-family:${fontFamily},"Fanan","Sultan bold","PT Bold Heading","Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:6mm;${includeBackground ? 'background:#fff;' : ''}}
-          .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid}
-             .report-table{width:100%;border-collapse:collapse;table-layout:auto;font-size:${fontSize}px;border:4px double #0f172a}
+          @page{size:A4 portrait;margin:6mm}
+          html,body{${backgroundStyle}color:#111;}
+          body{font-family:${fontFamily},"Fanan","Sultan bold","PT Bold Heading","Arial","Noto Sans Arabic","Tahoma",sans-serif;margin:0;padding:4mm;${backgroundStyle}}
+          .one-duty-page{position:relative;min-height:277mm;page-break-inside:avoid;width:100%;background:#fff;box-sizing:border-box;}
+          .report-preview-paper{background:#fff;width:100%;min-width:100%;box-sizing:border-box;padding:0;border:none;}
+          .duty-content{width:100%;box-sizing:border-box;}
+             .report-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:${fontSize}px;border:4px double #0f172a;margin:0}
            .report-table th,.report-table td{border-top:1px solid #0f172a;border-bottom:1px solid #0f172a;border-left:2px solid #0f172a;border-right:2px solid #0f172a;padding:4px 3px;text-align:center;white-space:nowrap}
           .report-table th{background:#d1d5db;color:#111;font-weight:700;border-top:4px double #0f172a;border-bottom:4px double #0f172a;border-left:2px solid #0f172a;border-right:2px solid #0f172a}
           .report-table th.col-index{border-left:4px double #0f172a;border-right:4px double #0f172a}
@@ -3032,7 +3037,7 @@
       return { scale, useCORS: true, backgroundColor: '#ffffff', logging: false };
     }
     function wrapHtmlDocument(html){
-      return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"></head><body>${html}</body></html>`;
+      return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>html,body{background:#fff;color:#111;margin:0;padding:0;}@media print{html,body{background:#fff !important;color:#111 !important;}}</style></head><body>${html}</body></html>`;
     }
     async function ensureHtml2CanvasReady(){
       if(typeof html2canvas === 'function') return true;
