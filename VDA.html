@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>إدارة مستودع المركبات</title>
+  <style>
+    :root {
+      --brand: #1e40af;
+      --brand-dark: #0f172a;
+      --bg: #f0f9ff;
+      --text: #111827;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, #f0f9ff, #e0e7ff);
+    }
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+    }
+    .brand { font-weight: 800; color: #facc15; font-size: 22px; }
+    .subtitle { display: block; font-size: 12px; color: #dbeafe; }
+    .btn {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      color: #111827;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .btn-success { background: var(--success); border-color: var(--success); color: #fff; }
+    .btn-warning { background: var(--warning); border-color: var(--warning); color: #fff; }
+    .btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+    .btn:focus-visible,
+    input:focus-visible,
+    select:focus-visible { outline: 3px solid rgba(250, 204, 21, .9); outline-offset: 2px; }
+
+    .container { width: min(1200px, 96%); margin: 18px auto 90px; }
+    .grid { display: grid; gap: 14px; }
+    .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .two-col { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, .08);
+      overflow: hidden;
+    }
+    .card-header {
+      background: #eef2ff;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      font-weight: 800;
+    }
+    .card-body { padding: 16px; }
+
+    .kpi-number { font-size: 30px; font-weight: 900; margin-top: 8px; color: var(--brand-dark); }
+    .muted { color: #6b7280; font-size: 13px; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: center; }
+    thead { background: var(--brand); color: #fff; }
+
+    .row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    label { font-weight: 700; margin-bottom: 4px; display: block; }
+    input, select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    .status {
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .ok { background: var(--success); }
+    .warn { background: var(--warning); }
+    .bad { background: var(--danger); }
+
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .72);
+      display: grid;
+      place-items: center;
+      z-index: 1000;
+    }
+    .login-box {
+      width: min(430px, 92%);
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #dbeafe;
+      box-shadow: 0 24px 40px rgba(15, 23, 42, .3);
+      overflow: hidden;
+    }
+    .login-head {
+      background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+      color: #fff;
+      padding: 14px 18px;
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .login-body { padding: 16px; }
+    .error { color: #dc2626; font-size: 13px; min-height: 20px; margin: 8px 0 0; }
+
+    .footer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--brand-dark);
+      color: #dbeafe;
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="loginOverlay" class="login-overlay" aria-modal="true" role="dialog">
+    <div class="login-box">
+      <div class="login-head">تسجيل دخول آمن - إدارة مستودع المركبات</div>
+      <form class="login-body" id="loginForm" autocomplete="off">
+        <label for="username">اسم المستخدم</label>
+        <input id="username" type="text" required />
+        <label for="password" style="margin-top:10px;">كلمة المرور</label>
+        <input id="password" type="password" required />
+        <button class="btn btn-primary" style="margin-top:14px; width:100%;" type="submit">دخول</button>
+        <p class="error" id="loginError"></p>
+        <p class="muted">بيانات الدخول الافتراضية: admin / Depot@2026</p>
+      </form>
+    </div>
+  </div>
+
+  <header class="navbar">
+    <div>
+      <div class="brand">🚚 Vehicle Depot</div>
+      <span class="subtitle">لوحة متابعة المركبات والسائقين والصيانة</span>
+    </div>
+    <button id="logoutBtn" class="btn btn-danger">تسجيل خروج</button>
+  </header>
+
+  <main class="container" id="app" style="filter: blur(3px); pointer-events:none; user-select:none;">
+    <section class="grid kpi-grid">
+      <article class="card"><div class="card-body"><div>إجمالي المركبات</div><div class="kpi-number" id="kpiVehicles">28</div><div class="muted">12 شاحنة - 10 فان - 6 مركبات خدمة</div></div></article>
+      <article class="card"><div class="card-body"><div>المركبات النشطة</div><div class="kpi-number" id="kpiActive">24</div><div class="muted">اليوم الحالي</div></div></article>
+      <article class="card"><div class="card-body"><div>صيانة مستحقة</div><div class="kpi-number" id="kpiMaintenance">4</div><div class="muted">خلال 7 أيام</div></div></article>
+      <article class="card"><div class="card-body"><div>رحلات اليوم</div><div class="kpi-number" id="kpiTrips">15</div><div class="muted">داخلي + خارجي</div></div></article>
+    </section>
+
+    <section class="grid two-col" style="margin-top:14px;">
+      <article class="card">
+        <div class="card-header">جدول المركبات</div>
+        <div class="card-body table-wrap">
+          <table>
+            <thead><tr><th>الرمز</th><th>النوع</th><th>السائق</th><th>الحالة</th><th>الصيانة القادمة</th></tr></thead>
+            <tbody id="vehiclesTable">
+              <tr><td>VH-101</td><td>شاحنة</td><td>أحمد سالم</td><td><span class="status ok">نشطة</span></td><td>2026-03-04</td></tr>
+              <tr><td>VH-087</td><td>فان تبريد</td><td>مروان جاد</td><td><span class="status warn">فحص</span></td><td>2026-02-27</td></tr>
+              <tr><td>VH-056</td><td>مركبة خدمة</td><td>سعيد كرم</td><td><span class="status bad">متوقفة</span></td><td>2026-02-26</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">إضافة رحلة تشغيل</div>
+        <div class="card-body">
+          <form id="tripForm">
+            <div class="row">
+              <div><label>رقم المركبة</label><select id="tripVehicle"><option>VH-101</option><option>VH-087</option><option>VH-056</option></select></div>
+              <div><label>اسم السائق</label><input id="tripDriver" value="أحمد سالم" required /></div>
+              <div><label>الوجهة</label><input id="tripDestination" placeholder="ميناء - مخزن - فرع" required /></div>
+              <div><label>المسافة (كم)</label><input id="tripDistance" type="number" min="1" required /></div>
+            </div>
+            <button type="submit" class="btn btn-success" style="margin-top:12px;">حفظ الرحلة</button>
+          </form>
+          <p class="muted" id="tripMessage" style="margin-top:10px;"></p>
+        </div>
+      </article>
+    </section>
+
+    <section class="card" style="margin-top:14px;">
+      <div class="card-header">سجل الرحلات</div>
+      <div class="card-body table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>المركبة</th><th>السائق</th><th>الوجهة</th><th>المسافة</th><th>الوقت</th></tr></thead>
+          <tbody id="tripsTableBody">
+            <tr><td>1</td><td>VH-101</td><td>أحمد سالم</td><td>الميناء</td><td>42 كم</td><td>08:25</td></tr>
+            <tr><td>2</td><td>VH-087</td><td>مروان جاد</td><td>فرع الشمال</td><td>28 كم</td><td>10:15</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer">Vehicle Depot Management • نسخة تشغيلية بواجهة مرئية فقط مع بوابة دخول آمنة</div>
+
+  <script>
+    const LOGIN_USER = "admin";
+    const LOGIN_PASS = "Depot@2026";
+
+    const loginForm = document.getElementById("loginForm");
+    const loginOverlay = document.getElementById("loginOverlay");
+    const loginError = document.getElementById("loginError");
+    const app = document.getElementById("app");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const tripForm = document.getElementById("tripForm");
+    const tripsTableBody = document.getElementById("tripsTableBody");
+    const tripMessage = document.getElementById("tripMessage");
+    const kpiTrips = document.getElementById("kpiTrips");
+
+    function lockApp(locked) {
+      app.style.filter = locked ? "blur(3px)" : "none";
+      app.style.pointerEvents = locked ? "none" : "auto";
+      app.style.userSelect = locked ? "none" : "auto";
+      loginOverlay.style.display = locked ? "grid" : "none";
+    }
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      if (username === LOGIN_USER && password === LOGIN_PASS) {
+        sessionStorage.setItem("depotAuth", "1");
+        loginError.textContent = "";
+        lockApp(false);
+      } else {
+        loginError.textContent = "بيانات الدخول غير صحيحة.";
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      sessionStorage.removeItem("depotAuth");
+      loginForm.reset();
+      lockApp(true);
+    });
+
+    tripForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const vehicle = document.getElementById("tripVehicle").value;
+      const driver = document.getElementById("tripDriver").value.trim();
+      const destination = document.getElementById("tripDestination").value.trim();
+      const distance = document.getElementById("tripDistance").value;
+      if (!driver || !destination || !distance) return;
+
+      const rowCount = tripsTableBody.querySelectorAll("tr").length + 1;
+      const now = new Date();
+      const time = now.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${rowCount}</td><td>${vehicle}</td><td>${driver}</td><td>${destination}</td><td>${distance} كم</td><td>${time}</td>`;
+      tripsTableBody.prepend(tr);
+
+      kpiTrips.textContent = Number(kpiTrips.textContent) + 1;
+      tripMessage.textContent = `تم حفظ رحلة المركبة ${vehicle} بنجاح.`;
+      tripForm.reset();
+    });
+
+    const isAuthed = sessionStorage.getItem("depotAuth") === "1";
+    lockApp(!isAuthed);
+  </script>
+</body>
+</html>
