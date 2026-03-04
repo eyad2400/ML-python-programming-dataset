@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>نظام خدمات الضباط - إدارة المركبات</title>
+  <title>نظام إدارة مستودع المركبات - VDA</title>
   <style>
     :root {
       --brand: #1e40af;
@@ -15,247 +15,84 @@
       --danger: #dc2626;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif;
-      background: linear-gradient(135deg, #f0f9ff, #e0e7ff);
-      color: var(--text);
-      padding-bottom: 80px;
-    }
-    a { color: inherit; text-decoration: none; }
-
-    .navbar {
-      background: linear-gradient(135deg, #0f172a, var(--brand));
-      color: #fff;
-      padding: 10px 16px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, .2);
-    }
-    .container-fluid {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
+    body { margin: 0; font-family: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif; background: linear-gradient(135deg, #f0f9ff, #e0e7ff); color: var(--text); padding-bottom: 80px; }
+    .hidden { display: none !important; }
+    .navbar { background: linear-gradient(135deg, #0f172a, var(--brand)); color: #fff; padding: 10px 16px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 6px 16px rgba(0, 0, 0, .2); }
+    .container-fluid { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     .brand-wrap { display: flex; align-items: center; gap: 10px; }
     .brand { font-weight: 700; color: #facc15; font-size: 22px; }
     .subtitle { display: block; color: #fff; font-size: 12px; }
-
-    .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, .65);
-      box-shadow: 0 0 0 4px rgba(255, 255, 255, .12);
-      object-fit: cover;
-      background: #fff;
-    }
+    .logo { width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .65); box-shadow: 0 0 0 4px rgba(255, 255, 255, .12); object-fit: cover; background: #fff; }
     .logo-anim { animation: floatLogo 2.6s ease-in-out infinite; }
-
-    .btn {
-      border: 1px solid #ccc;
-      padding: 6px 12px;
-      border-radius: 8px;
-      background: #fff;
-      cursor: pointer;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all .15s ease;
-    }
+    .btn { border: 1px solid #ccc; padding: 6px 12px; border-radius: 8px; background: #fff; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all .15s ease; }
     .btn::before { content: "🔹"; font-size: 14px; line-height: 1; }
     .btn:hover { filter: brightness(.97); }
     .btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
     .btn-success { background: var(--success); color: #fff; border-color: var(--success); }
     .btn-warning { background: var(--warning); color: #fff; border-color: var(--warning); }
     .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .btn-outline { background: #fff; color: #1f2937; border-color: #94a3b8; }
 
-    .main-wrap { width: min(1300px, 96%); margin: 16px auto; }
-    .nav-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      border-bottom: 1px solid #ddd;
-      padding: 4px 0 10px;
-      margin: 0 0 12px;
-      list-style: none;
-      position: sticky;
-      top: 72px;
-      z-index: 950;
-      background: rgba(240, 249, 255, .98);
-    }
-    .nav-link {
-      padding: 12px 16px;
-      border: 1px solid #c7d2fe;
-      border-radius: 12px 12px 0 0;
-      background: linear-gradient(180deg, #fff, #eef2ff);
-      font-weight: 700;
-      color: #111;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, .08);
-      transform: translateY(4px);
-      transition: all .15s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-    .nav-link.active {
-      background: #fff;
-      border-color: #a5b4fc;
-      border-bottom-color: #fff;
-      color: var(--brand);
-      transform: translateY(0);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, .12);
-    }
+    .main-wrap { width: min(1360px, 96%); margin: 16px auto; }
+    .nav-tabs { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #ddd; padding: 4px 0 10px; margin: 0 0 12px; list-style: none; position: sticky; top: 72px; z-index: 950; background: rgba(240, 249, 255, .98); }
+    .nav-link { padding: 12px 14px; border: 1px solid #c7d2fe; border-radius: 12px 12px 0 0; background: linear-gradient(180deg, #fff, #eef2ff); font-weight: 700; box-shadow: 0 4px 10px rgba(0, 0, 0, .08); transform: translateY(4px); transition: all .15s ease; cursor: pointer; }
+    .nav-link.active { background: #fff; border-color: #a5b4fc; border-bottom-color: #fff; color: var(--brand); transform: translateY(0); box-shadow: 0 8px 16px rgba(0, 0, 0, .12); }
 
     .grid { display: grid; gap: 12px; }
-    .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
-    .card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
-      margin-bottom: 14px;
-      overflow: hidden;
-    }
-    .card-header {
-      padding: 12px 16px;
-      background: #eef2ff;
-      border-bottom: 1px solid #e5e7eb;
-      font-weight: 700;
-    }
+    .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); }
+    .row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .row-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, .06); margin-bottom: 14px; overflow: hidden; }
+    .card-header { padding: 12px 16px; background: #eef2ff; border-bottom: 1px solid #e5e7eb; font-weight: 800; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .card-body { padding: 16px; }
     .kpi-number { font-size: 30px; font-weight: 900; margin-top: 8px; color: var(--brand-dark); }
-    .muted { color: #6b7280; font-size: 13px; }
+    .muted { color: #64748b; font-size: 12px; }
+    .helper { margin: 8px 0 0; font-size: 12px; color: #475569; }
+    .error { color: var(--danger); font-size: 13px; min-height: 20px; margin: 8px 0 0; }
 
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: center; font-size: 14px; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: center; font-size: 13px; }
     thead { background: var(--brand); color: #fff; }
-
-    .row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
     label { display: block; font-weight: 700; margin-bottom: 4px; }
-    input, select {
-      width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 14px;
-      font-family: inherit;
-    }
-    input:focus-visible, select:focus-visible, .btn:focus-visible {
-      outline: 2px solid rgba(250, 204, 21, .95);
-      outline-offset: 2px;
-    }
+    input, select, textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: inherit; }
+    textarea { min-height: 70px; resize: vertical; }
 
-    .helper { margin: 8px 0 0; font-size: 12px; color: #475569; }
-    .error { color: #dc2626; font-size: 13px; min-height: 20px; margin: 8px 0 0; }
-    .status {
-      border-radius: 999px;
-      padding: 4px 10px;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 700;
-      display: inline-block;
-    }
+    .status { border-radius: 999px; padding: 4px 10px; color: #fff; font-size: 12px; font-weight: 700; display: inline-block; }
     .ok { background: var(--success); }
     .warn { background: var(--warning); }
     .bad { background: var(--danger); }
-    .hidden { display: none !important; }
 
-    .login-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, .72);
-      display: grid;
-      place-items: center;
-      z-index: 1400;
-    }
-    .login-box {
-      width: min(430px, 92%);
-      background: #fff;
-      border-radius: 16px;
-      border: 1px solid #dbeafe;
-      box-shadow: 0 24px 40px rgba(15, 23, 42, .3);
-      overflow: hidden;
-    }
-    .login-head {
-      background: linear-gradient(135deg, #0f172a, var(--brand));
-      color: #fff;
-      padding: 14px 18px;
-      font-weight: 900;
-      font-size: 18px;
-    }
+    .login-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, .72); display: grid; place-items: center; z-index: 1400; }
+    .login-box { width: min(430px, 92%); background: #fff; border-radius: 16px; border: 1px solid #dbeafe; box-shadow: 0 24px 40px rgba(15, 23, 42, .3); overflow: hidden; }
+    .login-head { background: linear-gradient(135deg, #0f172a, var(--brand)); color: #fff; padding: 14px 18px; font-weight: 900; font-size: 18px; }
     .login-body { padding: 16px; }
 
-    .splash-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 1500;
-      display: grid;
-      place-items: center;
-      background: radial-gradient(circle at top, #dbeafe, #0f172a 70%);
-      color: #fff;
-      animation: splashAutoHide .25s linear 1.3s forwards;
-    }
+    .splash-screen { position: fixed; inset: 0; z-index: 1500; display: grid; place-items: center; background: radial-gradient(circle at top, #dbeafe, #0f172a 70%); color: #fff; animation: splashAutoHide .25s linear 1.3s forwards; }
     .splash-box { text-align: center; }
-    .splash-logo {
-      width: 84px;
-      height: 84px;
-      border-radius: 50%;
-      border: 3px solid rgba(255, 255, 255, .6);
-      box-shadow: 0 0 0 8px rgba(255, 255, 255, .12);
-      margin: 0 auto 10px;
-      overflow: hidden;
-    }
+    .splash-logo { width: 84px; height: 84px; border-radius: 50%; border: 3px solid rgba(255, 255, 255, .6); box-shadow: 0 0 0 8px rgba(255, 255, 255, .12); margin: 0 auto 10px; overflow: hidden; }
     .splash-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .footer { position: fixed; left: 0; right: 0; bottom: 0; background: #0f172a; color: #dbeafe; text-align: center; padding: 8px; font-size: 12px; }
 
-    .footer {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #0f172a;
-      color: #dbeafe;
-      text-align: center;
-      padding: 8px;
-      font-size: 12px;
-    }
-
-    @keyframes floatLogo {
-      0% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-      100% { transform: translateY(0); }
-    }
-    @keyframes splashAutoHide {
-      to { opacity: 0; visibility: hidden; pointer-events: none; }
-    }
+    @keyframes floatLogo { 0% { transform: translateY(0); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0); } }
+    @keyframes splashAutoHide { to { opacity: 0; visibility: hidden; pointer-events: none; } }
   </style>
 </head>
 <body>
   <div id="splashScreen" class="splash-screen">
     <div class="splash-box">
-      <div class="splash-logo">
-        <img id="splashLogoImg" alt="logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
-      </div>
-      <div style="font-weight:800; font-size:20px;">مرحباً بك في نظام الإدارة العامة للمساعدات الفنية</div>
-      <div style="font-size:13px; margin-top:6px; opacity:.9;">جاري تجهيز منصة إدارة المركبات...</div>
+      <div class="splash-logo"><img id="splashLogoImg" alt="logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="></div>
+      <div style="font-weight:800; font-size:20px;">مرحباً بك في نظام إدارة مستودع المركبات</div>
+      <div style="font-size:13px; margin-top:6px; opacity:.9;">جاري تجهيز منظومة المتابعة الشرطية...</div>
     </div>
   </div>
 
   <div id="loginOverlay" class="login-overlay" aria-modal="true" role="dialog">
     <div class="login-box">
-      <div class="login-head">تسجيل دخول آمن - نظام خدمات الضباط</div>
+      <div class="login-head">تسجيل دخول آمن - VDA</div>
       <form class="login-body" id="loginForm" autocomplete="off">
-        <label for="username">اسم المستخدم</label>
-        <input id="username" type="text" required />
-        <label for="password" style="margin-top:10px;">كلمة المرور</label>
-        <input id="password" type="password" required />
+        <label for="username">اسم المستخدم</label><input id="username" type="text" required />
+        <label for="password" style="margin-top:10px;">كلمة المرور</label><input id="password" type="password" required />
         <button class="btn btn-primary" style="margin-top:14px; width:100%;" type="submit">دخول</button>
         <p class="error" id="loginError"></p>
         <p class="muted">بيانات الدخول الافتراضية: admin / Depot@2026</p>
@@ -266,10 +103,10 @@
   <nav class="navbar">
     <div class="container-fluid">
       <div class="brand-wrap">
-        <img id="appLogoImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" class="logo logo-anim" alt="logo">
+        <img id="appLogoImg" class="logo logo-anim" alt="logo">
         <div>
-          <div class="brand" id="appNameTitle">نظام خدمات الضباط</div>
-          <small id="appSubtitle" class="subtitle">الإدارة العامة للمساعدات الفنية • وحدة إدارة مستودع المركبات</small>
+          <div class="brand" id="appNameTitle">نظام إدارة المركبات الشرطية</div>
+          <small id="appSubtitle" class="subtitle">الإدارة العامة للمساعدات الفنية • Vehicle Depot Administration</small>
         </div>
       </div>
       <button id="logoutBtn" class="btn btn-danger">تسجيل خروج</button>
@@ -279,180 +116,198 @@
   <main class="main-wrap" id="app" style="filter: blur(3px); pointer-events:none; user-select:none;">
     <ul class="nav-tabs">
       <li><button class="nav-link active" data-tab="dashboard">📊 لوحة المتابعة</button></li>
-      <li><button class="nav-link" data-tab="vehicles">🚗 إضافة المركبات</button></li>
-      <li><button class="nav-link" data-tab="maintenance">🛠️ الصيانة</button></li>
-      <li><button class="nav-link" data-tab="parts">🔩 قطع الغيار</button></li>
+      <li><button class="nav-link" data-tab="fleet">🚓 قوة المركبات</button></li>
+      <li><button class="nav-link" data-tab="licenses">📄 التراخيص</button></li>
+      <li><button class="nav-link" data-tab="maintenance">🛠️ الأعطال والإصلاحات</button></li>
+      <li><button class="nav-link" data-tab="fluids">⛽ السوائل</button></li>
+      <li><button class="nav-link" data-tab="scrap">♻️ التخريد</button></li>
+      <li><button class="nav-link" data-tab="accidents">🚨 الحوادث</button></li>
+      <li><button class="nav-link" data-tab="admin">🧭 لوحة المشرف</button></li>
+      <li><button class="nav-link" data-tab="settings">⚙️ الإعدادات</button></li>
     </ul>
 
     <section id="tab-dashboard" class="tab-panel">
+      <section class="grid kpi-grid" id="dashboardKpis"></section>
       <section class="card">
-        <div class="card-header">محتويات تطبيق إدارة المركبات</div>
-        <div class="card-body">
-          <ul style="margin:0; padding-inline-start:22px; line-height:1.9; font-weight:600;">
-            <li>قوة المركبات (العدد)</li>
-            <li>التراخيص الخاصة بالمركبة وتجديد الترخيص</li>
-            <li>الأعطال والإصلاحات</li>
-            <li>السوائل (وقود - زيوت)</li>
-            <li>التخريد</li>
-            <li>الحوادث</li>
-          </ul>
-        </div>
-      </section>
-      <section class="grid kpi-grid">
-        <article class="card"><div class="card-body"><div>إجمالي المركبات</div><div class="kpi-number" id="kpiVehicles">4</div></div></article>
-        <article class="card"><div class="card-body"><div>نشطة</div><div class="kpi-number" id="kpiActive">3</div></div></article>
-        <article class="card"><div class="card-body"><div>صيانة مستحقة</div><div class="kpi-number" id="kpiMaintenance">2</div><div class="muted">مجدولة + طوارئ</div></div></article>
-        <article class="card"><div class="card-body"><div>قطع غيار تحتاج تغيير</div><div class="kpi-number" id="kpiParts">1</div></div></article>
-      </section>
-      <section class="card" style="margin-top:14px;">
-        <div class="card-header">سجل المركبات</div>
+        <div class="card-header">مؤشرات الاستعداد التشغيلي</div>
         <div class="card-body table-wrap">
           <table>
-            <thead><tr><th>الكود</th><th>النوع</th><th>لوحة الشرطة</th><th>لوحة التمويه (مطابقة مصرية)</th><th>الحالة</th></tr></thead>
-            <tbody id="vehiclesTable"></tbody>
+            <thead><tr><th>البند</th><th>القيمة</th><th>مستوى الجاهزية</th></tr></thead>
+            <tbody id="readinessTable"></tbody>
           </table>
         </div>
       </section>
     </section>
 
-    <section id="tab-vehicles" class="tab-panel hidden">
+    <section id="tab-fleet" class="tab-panel hidden">
       <article class="card">
-        <div class="card-header">إضافة مركبة جديدة (Sedan / Pickup / 4x4 / Motor Bike)</div>
+        <div class="card-header">إضافة مركبة جديدة لقوة المركبات</div>
         <div class="card-body">
-          <form id="vehicleForm">
+          <form id="fleetForm">
             <div class="row">
-              <div><label for="vehicleType">نوع المركبة</label><select id="vehicleType" required><option value="">اختر</option><option value="sedan">Sedan</option><option value="pickup">Pickup</option><option value="4x4">4x4</option><option value="motorbike">Motor Bike</option></select></div>
-              <div><label for="vehicleStatus">الحالة</label><select id="vehicleStatus" required><option value="active">نشطة</option><option value="inspection">فحص</option><option value="stopped">متوقفة</option></select></div>
-              <div><label for="policePlate">رقم لوحة الشرطة</label><input id="policePlate" placeholder="POL-3521" required /></div>
-              <div><label for="undercoverPlate">رقم اللوحة التمويهية</label><input id="undercoverPlate" placeholder="س ب ج 1234" required /></div>
-              <div><label for="plateCategory">فئة اللوحة المصرية</label><select id="plateCategory" required><option value="private">ملاكي</option><option value="transport">نقل</option><option value="motorcycle">دراجة</option><option value="taxi">أجرة</option></select></div>
+              <div><label for="fleetType">نوع المركبة</label><select id="fleetType" required><option value="">اختر</option><option value="sedan">Sedan</option><option value="pickup">Pickup</option><option value="4x4">4x4</option><option value="motorbike">Motor Bike</option></select></div>
+              <div><label for="fleetStatus">الحالة</label><select id="fleetStatus" required><option value="active">نشطة</option><option value="inspection">فحص</option><option value="stopped">متوقفة</option></select></div>
+              <div><label for="fleetUnit">الوحدة</label><input id="fleetUnit" placeholder="الدوريات - القطاع A" required></div>
+              <div><label for="fleetPolicePlate">لوحة الشرطة</label><input id="fleetPolicePlate" placeholder="POL-2201" required></div>
+              <div><label for="fleetUndercoverPlate">اللوحة التمويهية</label><input id="fleetUndercoverPlate" placeholder="س ب ج 1234" required></div>
+              <div><label for="fleetCategory">فئة اللوحة</label><select id="fleetCategory" required><option value="private">ملاكي</option><option value="transport">نقل</option><option value="motorcycle">دراجة</option><option value="taxi">أجرة</option></select></div>
             </div>
-            <p class="helper">اللوحة التمويهية يجب أن تتبع صيغة اللوحات المصرية، مع توافق فئة اللوحة مع نوع المركبة.</p>
-            <button class="btn btn-success" type="submit" style="margin-top:12px;">إضافة المركبة</button>
-            <p class="error" id="vehicleMsg"></p>
+            <button class="btn btn-success" style="margin-top:10px;" type="submit">إضافة</button>
+            <p class="error" id="fleetMsg"></p>
           </form>
         </div>
       </article>
+      <section class="card"><div class="card-header">قوة المركبات (العدد: <span id="fleetCount">0</span>)</div><div class="card-body table-wrap"><table><thead><tr><th>الكود</th><th>النوع</th><th>الوحدة</th><th>لوحة الشرطة</th><th>التمويه</th><th>الحالة</th></tr></thead><tbody id="fleetTable"></tbody></table></div></section>
+    </section>
+
+    <section id="tab-licenses" class="tab-panel hidden">
+      <article class="card"><div class="card-header">إضافة / تجديد ترخيص</div><div class="card-body"><form id="licenseForm"><div class="row"><div><label>المركبة</label><select id="licenseVehicle" required></select></div><div><label>رقم الترخيص</label><input id="licenseNo" required></div><div><label>تاريخ الإصدار</label><input id="licenseIssue" type="date" required></div><div><label>تاريخ الانتهاء</label><input id="licenseExpiry" type="date" required></div><div><label>الحالة</label><select id="licenseStatus"><option value="valid">ساري</option><option value="renewal">تجديد قريب</option><option value="expired">منتهي</option></select></div></div><button class="btn btn-primary" style="margin-top:10px;" type="submit">حفظ الترخيص</button></form></div></article>
+      <section class="card"><div class="card-header">التراخيص الخاصة بالمركبة وتجديد الترخيص</div><div class="card-body table-wrap"><table><thead><tr><th>#</th><th>المركبة</th><th>رقم الترخيص</th><th>الإصدار</th><th>الانتهاء</th><th>الحالة</th></tr></thead><tbody id="licensesTable"></tbody></table></div></section>
     </section>
 
     <section id="tab-maintenance" class="tab-panel hidden">
-      <article class="card">
-        <div class="card-header">إدخال أعمال الصيانة (Scheduled / Emergency)</div>
-        <div class="card-body">
-          <form id="maintenanceForm">
-            <div class="row">
-              <div><label for="maintVehicle">المركبة</label><select id="maintVehicle" required></select></div>
-              <div><label for="maintType">نوع الصيانة</label><select id="maintType" required><option value="scheduled">Scheduled Maintenance</option><option value="emergency">Emergency Maintenance</option></select></div>
-              <div><label for="maintDate">التاريخ</label><input id="maintDate" type="date" required /></div>
-              <div><label for="maintNotes">الوصف</label><input id="maintNotes" placeholder="تغيير زيت / عطل مفاجئ" required /></div>
-            </div>
-            <button class="btn btn-warning" type="submit" style="margin-top:12px;">إضافة سجل صيانة</button>
-          </form>
-        </div>
-      </article>
-      <article class="card">
-        <div class="card-header">سجل الصيانة</div>
-        <div class="card-body table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>المركبة</th><th>النوع</th><th>التاريخ</th><th>الوصف</th></tr></thead>
-            <tbody id="maintenanceTable"></tbody>
-          </table>
-        </div>
-      </article>
+      <article class="card"><div class="card-header">تسجيل أعطال وإصلاحات</div><div class="card-body"><form id="maintenanceForm"><div class="row"><div><label>المركبة</label><select id="maintVehicle" required></select></div><div><label>نوع البلاغ</label><select id="maintType"><option value="scheduled">دورية</option><option value="emergency">طارئة</option></select></div><div><label>التاريخ</label><input id="maintDate" type="date" required></div><div><label>الحالة</label><select id="maintStatus"><option value="open">مفتوح</option><option value="done">مغلق</option></select></div></div><label style="margin-top:8px;">الوصف الفني</label><textarea id="maintNotes" required></textarea><button class="btn btn-warning" type="submit" style="margin-top:10px;">تسجيل</button></form></div></article>
+      <section class="card"><div class="card-header">سجل الأعطال والإصلاحات</div><div class="card-body table-wrap"><table><thead><tr><th>#</th><th>المركبة</th><th>النوع</th><th>التاريخ</th><th>الحالة</th><th>الوصف</th></tr></thead><tbody id="maintenanceTable"></tbody></table></div></section>
     </section>
 
-    <section id="tab-parts" class="tab-panel hidden">
-      <article class="card">
-        <div class="card-header">إدارة قطع الغيار بناءً على الاستخدام</div>
-        <div class="card-body">
-          <form id="partsForm">
-            <div class="row">
-              <div><label for="partsVehicle">المركبة</label><select id="partsVehicle" required></select></div>
-              <div><label for="partName">قطعة الغيار</label><select id="partName" required><option value="فلتر زيت">فلتر زيت</option><option value="تيل فرامل">تيل فرامل</option><option value="إطارات">إطارات</option><option value="بطارية">بطارية</option><option value="سلسلة دراجة">سلسلة دراجة (Motor Bike)</option></select></div>
-              <div><label for="lastChangeKm">عداد آخر تغيير (كم)</label><input id="lastChangeKm" type="number" min="0" required /></div>
-              <div><label for="currentKm">العداد الحالي (كم)</label><input id="currentKm" type="number" min="0" required /></div>
-              <div><label for="changeInterval">المسافة الدورية للتغيير (كم)</label><input id="changeInterval" type="number" min="1" required /></div>
-            </div>
-            <button class="btn btn-primary" type="submit" style="margin-top:12px;">تقييم صلاحية القطعة</button>
-          </form>
-        </div>
-      </article>
-      <article class="card">
-        <div class="card-header">سجل صلاحية قطع الغيار</div>
-        <div class="card-body table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>المركبة</th><th>القطعة</th><th>الاستخدام</th><th>الحالة</th><th>متى تُغير؟</th></tr></thead>
-            <tbody id="partsTable"></tbody>
-          </table>
-        </div>
-      </article>
+    <section id="tab-fluids" class="tab-panel hidden">
+      <article class="card"><div class="card-header">تسجيل السوائل (وقود - زيوت)</div><div class="card-body"><form id="fluidsForm"><div class="row"><div><label>المركبة</label><select id="fluidVehicle" required></select></div><div><label>النوع</label><select id="fluidType"><option value="fuel">وقود</option><option value="oil">زيت</option></select></div><div><label>الكمية</label><input id="fluidQty" type="number" min="1" required></div><div><label>التكلفة (جنيه)</label><input id="fluidCost" type="number" min="0" required></div><div><label>التاريخ</label><input id="fluidDate" type="date" required></div></div><button class="btn btn-success" type="submit" style="margin-top:10px;">إضافة</button></form></div></article>
+      <section class="card"><div class="card-header">سجل السوائل</div><div class="card-body table-wrap"><table><thead><tr><th>#</th><th>المركبة</th><th>النوع</th><th>الكمية</th><th>التكلفة</th><th>التاريخ</th></tr></thead><tbody id="fluidsTable"></tbody></table></div></section>
+    </section>
+
+    <section id="tab-scrap" class="tab-panel hidden">
+      <article class="card"><div class="card-header">إجراءات التخريد</div><div class="card-body"><form id="scrapForm"><div class="row"><div><label>المركبة</label><select id="scrapVehicle" required></select></div><div><label>سبب التخريد</label><input id="scrapReason" required></div><div><label>تاريخ القرار</label><input id="scrapDate" type="date" required></div><div><label>اعتماد اللجنة</label><select id="scrapApproval"><option value="pending">قيد المراجعة</option><option value="approved">معتمد</option></select></div></div><button class="btn btn-danger" style="margin-top:10px;" type="submit">تسجيل عملية</button></form></div></article>
+      <section class="card"><div class="card-header">سجل التخريد</div><div class="card-body table-wrap"><table><thead><tr><th>#</th><th>المركبة</th><th>السبب</th><th>التاريخ</th><th>الاعتماد</th></tr></thead><tbody id="scrapTable"></tbody></table></div></section>
+    </section>
+
+    <section id="tab-accidents" class="tab-panel hidden">
+      <article class="card"><div class="card-header">تسجيل حادث مركبة</div><div class="card-body"><form id="accidentForm"><div class="row"><div><label>المركبة</label><select id="accidentVehicle" required></select></div><div><label>الخطورة</label><select id="accidentSeverity"><option value="minor">بسيط</option><option value="major">جسيم</option></select></div><div><label>التاريخ</label><input id="accidentDate" type="date" required></div><div><label>حالة الملف</label><select id="accidentStatus"><option value="investigation">تحقيق</option><option value="closed">مغلق</option></select></div></div><label style="margin-top:8px;">ملخص الحادث</label><textarea id="accidentNotes" required></textarea><button class="btn btn-warning" style="margin-top:10px;" type="submit">تسجيل الحادث</button></form></div></article>
+      <section class="card"><div class="card-header">سجل الحوادث</div><div class="card-body table-wrap"><table><thead><tr><th>#</th><th>المركبة</th><th>الخطورة</th><th>التاريخ</th><th>الحالة</th><th>الملخص</th></tr></thead><tbody id="accidentsTable"></tbody></table></div></section>
+    </section>
+
+    <section id="tab-admin" class="tab-panel hidden">
+      <section class="grid row-2">
+        <article class="card"><div class="card-header">لوحة المشرف - المستخدمون</div><div class="card-body"><form id="adminUserForm"><div class="row"><div><label>اسم المستخدم</label><input id="adminUserName" required></div><div><label>الدور</label><select id="adminUserRole"><option>ضابط حركة</option><option>فني صيانة</option><option>مشرف وردية</option></select></div><div><label>الحالة</label><select id="adminUserStatus"><option value="active">نشط</option><option value="suspended">موقوف</option></select></div></div><button class="btn btn-primary" style="margin-top:10px;" type="submit">إضافة مستخدم</button></form><div class="table-wrap" style="margin-top:10px;"><table><thead><tr><th>#</th><th>المستخدم</th><th>الدور</th><th>الحالة</th></tr></thead><tbody id="adminUsersTable"></tbody></table></div></div></article>
+        <article class="card"><div class="card-header">سجل النشاط الإداري</div><div class="card-body table-wrap"><table><thead><tr><th>الوقت</th><th>النشاط</th></tr></thead><tbody id="adminLogTable"></tbody></table></div></article>
+      </section>
+    </section>
+
+    <section id="tab-settings" class="tab-panel hidden">
+      <article class="card"><div class="card-header">الإعدادات العامة</div><div class="card-body"><form id="settingsForm"><div class="row"><div><label>اسم التطبيق</label><input id="setAppName"></div><div><label>العنوان الفرعي</label><input id="setSubtitle"></div><div><label>لون الهوية</label><input id="setBrand" type="color" value="#1e40af"></div><div><label>أيام تنبيه الترخيص</label><input id="setAlertDays" type="number" min="1" value="30"></div></div><button class="btn btn-success" style="margin-top:10px;" type="submit">حفظ الإعدادات</button><button class="btn btn-outline" id="resetDataBtn" type="button" style="margin-top:10px;">إعادة ضبط البيانات</button><p class="helper">تُحفظ الإعدادات والبيانات محلياً داخل المتصفح لهذا الجهاز.</p></form></div></article>
     </section>
   </main>
 
-  <div class="footer">نظام خدمات الضباط • الإدارة العامة للمساعدات الفنية • إدارة مستودع المركبات</div>
+  <footer class="footer">© 2026 VDA - الإدارة العامة للمساعدات الفنية | نموذج إدارة احترافي لمستودع المركبات الشرطية</footer>
 
   <script>
     const LOGIN_USER = "admin";
     const LOGIN_PASS = "Depot@2026";
+    const STORAGE_KEY = "vdaDataStore";
+    const SETTINGS_KEY = "vdaSettings";
     const BRAND_LOGO_DATA = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeDI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZTRkN2JhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U0ZDdiYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz4KICA8cG9seWxpbmUgcG9pbnRzPSIxNTAsMTIwIDE5MCw0MjAgMjIwLDEyMCAyNjAsNDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iMTgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjI2MCwxMDAgMzcwLDIyMCAzMTAsMjMwIDQxMCw0MjAgMjkwLDMyMCAyNTAsNDIwIDI0MCwyMzAgMTgwLDIyMCIgZmlsbD0iIzI3MzI2YiIgLz4KICA8dGV4dCB4PSIyNTYiIHk9IjU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjI4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtix2KfZhNi52KjZiNin2Kog2YPYqNio2YrYp9mGPC90ZXh0PgogIDx0ZXh0IHg9IjI1NiIgeT0iNDc1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtmF2YTZitmHINin2YTYo9iz2LnZiNmKINmF2YbYp9mI2Lkg2KjYp9mG2Ycg2KfZhNmF2YrYp9mE2YrZg9ipPC90ZXh0Pgo8L3N2Zz4=";
 
-    const vehicles = [
-      { code: "VH-101", type: "sedan", policePlate: "POL-1201", undercoverPlate: "س ب ج 1234", category: "private", status: "active" },
-      { code: "VH-203", type: "pickup", policePlate: "POL-4201", undercoverPlate: "ن ق 5678", category: "transport", status: "active" },
-      { code: "VH-309", type: "4x4", policePlate: "POL-7770", undercoverPlate: "ع ر ك 8899", category: "private", status: "inspection" },
-      { code: "VH-412", type: "motorbike", policePlate: "POL-9881", undercoverPlate: "د ر 4321", category: "motorcycle", status: "stopped" }
-    ];
-    const maintenanceRecords = [
-      { vehicle: "VH-203", type: "scheduled", date: "2026-03-03", notes: "تغيير زيت وفلتر" },
-      { vehicle: "VH-412", type: "emergency", date: "2026-02-25", notes: "عطل مفاجئ في السلسلة" }
-    ];
-    const partRecords = [{ vehicle: "VH-101", part: "تيل فرامل", used: 26000, interval: 25000 }];
+    const seedData = {
+      fleet: [
+        { code: "VH-101", type: "sedan", unit: "الدوريات - قطاع A", policePlate: "POL-1201", undercoverPlate: "س ب ج 1234", category: "private", status: "active" },
+        { code: "VH-203", type: "pickup", unit: "الدعم اللوجستي", policePlate: "POL-4201", undercoverPlate: "ن ق 5678", category: "transport", status: "active" },
+        { code: "VH-309", type: "4x4", unit: "الأمن المركزي", policePlate: "POL-7770", undercoverPlate: "ع ر ك 8899", category: "private", status: "inspection" }
+      ],
+      licenses: [{ vehicle: "VH-101", no: "LIC-20455", issue: "2026-01-10", expiry: "2026-12-31", status: "valid" }],
+      maintenance: [{ vehicle: "VH-203", type: "scheduled", date: "2026-03-03", status: "done", notes: "تغيير زيت وفلتر شامل" }],
+      fluids: [{ vehicle: "VH-101", type: "fuel", qty: 60, cost: 1200, date: "2026-03-04" }],
+      scrap: [{ vehicle: "VH-077", reason: "عدم الجدوى الفنية", date: "2026-01-15", approval: "approved" }],
+      accidents: [{ vehicle: "VH-309", severity: "minor", date: "2026-02-12", status: "investigation", notes: "اصطدام جانبي بسيط" }],
+      adminUsers: [{ name: "محمود سامي", role: "مشرف وردية", status: "active" }],
+      adminLogs: [{ time: new Date().toLocaleString("ar-EG"), action: "تشغيل النظام بنجاح" }]
+    };
+
+    const defaultSettings = { appName: "نظام إدارة المركبات الشرطية", subtitle: "الإدارة العامة للمساعدات الفنية • Vehicle Depot Administration", brand: "#1e40af", alertDays: 30 };
 
     const loginForm = document.getElementById("loginForm");
     const loginOverlay = document.getElementById("loginOverlay");
-    const loginError = document.getElementById("loginError");
     const app = document.getElementById("app");
-    const logoutBtn = document.getElementById("logoutBtn");
+    const loginError = document.getElementById("loginError");
 
-    const usernameInput = document.getElementById("username");
-    const passwordInput = document.getElementById("password");
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || structuredClone(seedData);
+    const settings = { ...defaultSettings, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null") || {}) };
 
-    const vehicleForm = document.getElementById("vehicleForm");
-    const vehicleMsg = document.getElementById("vehicleMsg");
-    const vehicleType = document.getElementById("vehicleType");
-    const vehicleStatus = document.getElementById("vehicleStatus");
-    const policePlateInput = document.getElementById("policePlate");
-    const undercoverPlateInput = document.getElementById("undercoverPlate");
-    const plateCategory = document.getElementById("plateCategory");
+    function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+    function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+    function addAdminLog(action) { data.adminLogs.unshift({ time: new Date().toLocaleString("ar-EG"), action }); data.adminLogs = data.adminLogs.slice(0, 40); }
 
-    const maintenanceForm = document.getElementById("maintenanceForm");
-    const maintVehicle = document.getElementById("maintVehicle");
-    const maintType = document.getElementById("maintType");
-    const maintDate = document.getElementById("maintDate");
-    const maintNotes = document.getElementById("maintNotes");
+    function statusPill(status) {
+      const map = {
+        active: ["نشطة", "ok"], inspection: ["فحص", "warn"], stopped: ["متوقفة", "bad"],
+        valid: ["ساري", "ok"], renewal: ["تجديد قريب", "warn"], expired: ["منتهي", "bad"],
+        open: ["مفتوح", "warn"], done: ["مغلق", "ok"], pending: ["قيد المراجعة", "warn"], approved: ["معتمد", "ok"],
+        investigation: ["تحقيق", "warn"], closed: ["مغلق", "ok"], minor: ["بسيط", "ok"], major: ["جسيم", "bad"],
+        fuel: ["وقود", "ok"], oil: ["زيت", "warn"], suspended: ["موقوف", "bad"]
+      };
+      const [label, cls] = map[status] || [status, "warn"];
+      return `<span class="status ${cls}">${label}</span>`;
+    }
+    function typeLabel(type) { return ({ sedan: "Sedan", pickup: "Pickup", "4x4": "4x4", motorbike: "Motor Bike" })[type] || type; }
 
-    const partsForm = document.getElementById("partsForm");
-    const partsVehicle = document.getElementById("partsVehicle");
-    const partName = document.getElementById("partName");
-    const lastChangeKm = document.getElementById("lastChangeKm");
-    const currentKm = document.getElementById("currentKm");
-    const changeInterval = document.getElementById("changeInterval");
+    function validateEgyptianPlate(type, plate, category) {
+      const normalized = plate.trim().replace(/\s+/g, " ");
+      const patterns = { private: /^[\u0621-\u064A]{3}\s\d{4}$/, taxi: /^[\u0621-\u064A]{3}\s\d{4}$/, transport: /^[\u0621-\u064A]{2}\s\d{4}$/, motorcycle: /^[\u0621-\u064A]{2}\s\d{4}$/ };
+      if (!patterns[category] || !patterns[category].test(normalized)) return "صيغة اللوحة غير مطابقة للفئة.";
+      const allowedByType = { sedan: ["private", "taxi"], "4x4": ["private"], pickup: ["transport"], motorbike: ["motorcycle"] };
+      return allowedByType[type].includes(category) ? "" : "فئة اللوحة لا تتوافق مع نوع المركبة.";
+    }
 
-    const vehiclesTable = document.getElementById("vehiclesTable");
-    const maintenanceTable = document.getElementById("maintenanceTable");
-    const partsTable = document.getElementById("partsTable");
-    const kpiVehicles = document.getElementById("kpiVehicles");
-    const kpiActive = document.getElementById("kpiActive");
-    const kpiMaintenance = document.getElementById("kpiMaintenance");
-    const kpiParts = document.getElementById("kpiParts");
-    const splashLogoImg = document.getElementById("splashLogoImg");
-    const appLogoImg = document.getElementById("appLogoImg");
+    function updateVehicleSelects() {
+      const options = data.fleet.map(v => `<option value="${v.code}">${v.code} - ${typeLabel(v.type)}</option>`).join("");
+      ["licenseVehicle", "maintVehicle", "fluidVehicle", "scrapVehicle", "accidentVehicle"].forEach(id => document.getElementById(id).innerHTML = options);
+    }
+
+    function renderDashboard() {
+      const today = new Date();
+      const alertDays = Number(settings.alertDays) || 30;
+      const expiring = data.licenses.filter(l => (new Date(l.expiry) - today) / 86400000 <= alertDays).length;
+      const kpis = [
+        ["قوة المركبات", data.fleet.length], ["مركبات نشطة", data.fleet.filter(v => v.status === "active").length], ["تراخيص تقترب من التجديد", expiring],
+        ["بلاغات صيانة مفتوحة", data.maintenance.filter(m => m.status === "open").length], ["إجمالي الحوادث", data.accidents.length], ["طلبات تخريد", data.scrap.length]
+      ];
+      document.getElementById("dashboardKpis").innerHTML = kpis.map(k => `<article class="card"><div class="card-body"><div>${k[0]}</div><div class="kpi-number">${k[1]}</div></div></article>`).join("");
+      document.getElementById("readinessTable").innerHTML = `
+        <tr><td>الجاهزية التشغيلية</td><td>${Math.round((data.fleet.filter(v => v.status === "active").length / Math.max(1, data.fleet.length)) * 100)}%</td><td>${statusPill("active")}</td></tr>
+        <tr><td>الترخيص القانوني</td><td>${data.licenses.filter(l => l.status === "valid").length}/${data.licenses.length || 1}</td><td>${statusPill(expiring ? "renewal" : "valid")}</td></tr>
+        <tr><td>السلامة والحوادث</td><td>${data.accidents.filter(a => a.status === "investigation").length} قيد التحقيق</td><td>${statusPill(data.accidents.some(a => a.severity === "major") ? "major" : "minor")}</td></tr>`;
+    }
+
+    function renderFleet() {
+      document.getElementById("fleetTable").innerHTML = data.fleet.map(v => `<tr><td>${v.code}</td><td>${typeLabel(v.type)}</td><td>${v.unit}</td><td>${v.policePlate}</td><td>${v.undercoverPlate}</td><td>${statusPill(v.status)}</td></tr>`).join("");
+      document.getElementById("fleetCount").textContent = data.fleet.length;
+    }
+    function renderLicenses() { document.getElementById("licensesTable").innerHTML = data.licenses.map((l, i) => `<tr><td>${i + 1}</td><td>${l.vehicle}</td><td>${l.no}</td><td>${l.issue}</td><td>${l.expiry}</td><td>${statusPill(l.status)}</td></tr>`).join(""); }
+    function renderMaintenance() { document.getElementById("maintenanceTable").innerHTML = data.maintenance.map((m, i) => `<tr><td>${i + 1}</td><td>${m.vehicle}</td><td>${m.type === "scheduled" ? "دورية" : "طارئة"}</td><td>${m.date}</td><td>${statusPill(m.status)}</td><td>${m.notes}</td></tr>`).join(""); }
+    function renderFluids() { document.getElementById("fluidsTable").innerHTML = data.fluids.map((f, i) => `<tr><td>${i + 1}</td><td>${f.vehicle}</td><td>${statusPill(f.type)}</td><td>${f.qty}</td><td>${f.cost}</td><td>${f.date}</td></tr>`).join(""); }
+    function renderScrap() { document.getElementById("scrapTable").innerHTML = data.scrap.map((s, i) => `<tr><td>${i + 1}</td><td>${s.vehicle}</td><td>${s.reason}</td><td>${s.date}</td><td>${statusPill(s.approval)}</td></tr>`).join(""); }
+    function renderAccidents() { document.getElementById("accidentsTable").innerHTML = data.accidents.map((a, i) => `<tr><td>${i + 1}</td><td>${a.vehicle}</td><td>${statusPill(a.severity)}</td><td>${a.date}</td><td>${statusPill(a.status)}</td><td>${a.notes}</td></tr>`).join(""); }
+    function renderAdmin() {
+      document.getElementById("adminUsersTable").innerHTML = data.adminUsers.map((u, i) => `<tr><td>${i + 1}</td><td>${u.name}</td><td>${u.role}</td><td>${statusPill(u.status)}</td></tr>`).join("");
+      document.getElementById("adminLogTable").innerHTML = data.adminLogs.map(l => `<tr><td>${l.time}</td><td>${l.action}</td></tr>`).join("");
+    }
+
+    function renderAll() {
+      updateVehicleSelects();
+      renderDashboard(); renderFleet(); renderLicenses(); renderMaintenance(); renderFluids(); renderScrap(); renderAccidents(); renderAdmin();
+      saveData();
+    }
 
     function applyBrandLogo() {
-      if (BRAND_LOGO_DATA) {
-        if (splashLogoImg) splashLogoImg.src = BRAND_LOGO_DATA;
-        if (appLogoImg) appLogoImg.src = BRAND_LOGO_DATA;
-      }
+      document.getElementById("appLogoImg").src = BRAND_LOGO_DATA;
+      document.getElementById("splashLogoImg").src = BRAND_LOGO_DATA;
+    }
+    function applySettings() {
+      document.getElementById("appNameTitle").textContent = settings.appName;
+      document.getElementById("appSubtitle").textContent = settings.subtitle;
+      document.documentElement.style.setProperty("--brand", settings.brand);
+      document.getElementById("setAppName").value = settings.appName;
+      document.getElementById("setSubtitle").value = settings.subtitle;
+      document.getElementById("setBrand").value = settings.brand;
+      document.getElementById("setAlertDays").value = settings.alertDays;
     }
 
     function lockApp(locked) {
@@ -462,169 +317,63 @@
       loginOverlay.style.display = locked ? "grid" : "none";
     }
 
-    function statusPill(status) {
-      if (status === "active") return '<span class="status ok">نشطة</span>';
-      if (status === "inspection") return '<span class="status warn">فحص</span>';
-      return '<span class="status bad">متوقفة</span>';
-    }
-    function typeLabel(type) {
-      return ({ sedan: "Sedan", pickup: "Pickup", "4x4": "4x4", motorbike: "Motor Bike" })[type] || type;
-    }
-    function categoryLabel(category) {
-      return ({ private: "ملاكي", transport: "نقل", motorcycle: "دراجة", taxi: "أجرة" })[category] || category;
-    }
+    document.querySelectorAll(".nav-link").forEach(btn => btn.addEventListener("click", () => {
+      document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+      btn.classList.add("active");
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.remove("hidden");
+    }));
 
-    function validateEgyptianPlate(type, plate, category) {
-      const normalized = plate.trim().replace(/\s+/g, " ");
-      const patterns = {
-        private: /^[\u0621-\u064A]{3}\s\d{4}$/,
-        taxi: /^[\u0621-\u064A]{3}\s\d{4}$/,
-        transport: /^[\u0621-\u064A]{2}\s\d{4}$/,
-        motorcycle: /^[\u0621-\u064A]{2}\s\d{4}$/
-      };
-      if (!patterns[category] || !patterns[category].test(normalized)) {
-        return "صيغة اللوحة غير مطابقة للفئة المختارة (مثال ملاكي: س ب ج 1234، نقل/دراجة: ن ق 5678).";
-      }
-      const allowedByType = {
-        sedan: ["private", "taxi"],
-        "4x4": ["private"],
-        pickup: ["transport"],
-        motorbike: ["motorcycle"]
-      };
-      return allowedByType[type].includes(category) ? "" : "فئة اللوحة لا تتوافق مع نوع المركبة المحدد.";
-    }
-
-    function renderVehicles() {
-      vehiclesTable.innerHTML = vehicles.map(v => `
-        <tr>
-          <td>${v.code}</td>
-          <td>${typeLabel(v.type)}</td>
-          <td>${v.policePlate}</td>
-          <td>${v.undercoverPlate} <small>(${categoryLabel(v.category)})</small></td>
-          <td>${statusPill(v.status)}</td>
-        </tr>
-      `).join("");
-      kpiVehicles.textContent = vehicles.length;
-      kpiActive.textContent = vehicles.filter(v => v.status === "active").length;
-
-      const options = vehicles.map(v => `<option value="${v.code}">${v.code} - ${typeLabel(v.type)}</option>`).join("");
-      maintVehicle.innerHTML = options;
-      partsVehicle.innerHTML = options;
-    }
-
-    function renderMaintenance() {
-      maintenanceTable.innerHTML = maintenanceRecords.map((m, i) => `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${m.vehicle}</td>
-          <td>${m.type === "scheduled" ? "Scheduled" : "Emergency"}</td>
-          <td>${m.date}</td>
-          <td>${m.notes}</td>
-        </tr>
-      `).join("");
-      kpiMaintenance.textContent = maintenanceRecords.length;
-    }
-
-    function renderParts() {
-      partsTable.innerHTML = partRecords.map((p, i) => {
-        const remaining = p.interval - p.used;
-        const due = remaining <= 0;
-        return `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${p.vehicle}</td>
-            <td>${p.part}</td>
-            <td>${p.used} / ${p.interval} كم</td>
-            <td>${due ? '<span class="status bad">تغيير فوري</span>' : '<span class="status ok">صالحة</span>'}</td>
-            <td>${due ? "الآن" : `بعد ${remaining} كم`}</td>
-          </tr>
-        `;
-      }).join("");
-      kpiParts.textContent = partRecords.filter(p => (p.interval - p.used) <= 0).length;
-    }
-
-    document.querySelectorAll(".nav-link").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
-        btn.classList.add("active");
-        document.getElementById(`tab-${btn.dataset.tab}`).classList.remove("hidden");
-      });
-    });
-
-    loginForm.addEventListener("submit", (e) => {
+    loginForm.addEventListener("submit", e => {
       e.preventDefault();
-      const user = usernameInput.value.trim();
-      const pass = passwordInput.value;
-      if (user === LOGIN_USER && pass === LOGIN_PASS) {
-        sessionStorage.setItem("depotAuth", "1");
-        loginError.textContent = "";
-        lockApp(false);
-      } else {
-        loginError.textContent = "بيانات الدخول غير صحيحة.";
-      }
+      if (document.getElementById("username").value.trim() === LOGIN_USER && document.getElementById("password").value === LOGIN_PASS) {
+        sessionStorage.setItem("depotAuth", "1"); lockApp(false); loginError.textContent = "";
+      } else { loginError.textContent = "بيانات الدخول غير صحيحة."; }
     });
+    document.getElementById("logoutBtn").addEventListener("click", () => { sessionStorage.removeItem("depotAuth"); loginForm.reset(); lockApp(true); });
 
-    logoutBtn.addEventListener("click", () => {
-      sessionStorage.removeItem("depotAuth");
-      loginForm.reset();
-      lockApp(true);
-    });
-
-    vehicleForm.addEventListener("submit", (e) => {
+    document.getElementById("fleetForm").addEventListener("submit", e => {
       e.preventDefault();
-      const type = vehicleType.value;
-      const status = vehicleStatus.value;
-      const policePlate = policePlateInput.value.trim().toUpperCase();
-      const undercoverPlate = undercoverPlateInput.value;
-      const category = plateCategory.value;
-      const err = validateEgyptianPlate(type, undercoverPlate, category);
-      if (err) {
-        vehicleMsg.textContent = err;
-        return;
-      }
-
-      const newCode = `VH-${String(vehicles.length + 1).padStart(3, "0")}`;
-      vehicles.unshift({ code: newCode, type, policePlate, undercoverPlate: undercoverPlate.trim().replace(/\s+/g, " "), category, status });
-      renderVehicles();
-      vehicleForm.reset();
-      vehicleMsg.style.color = "#15803d";
-      vehicleMsg.textContent = `تمت إضافة المركبة ${newCode} بنجاح.`;
-      setTimeout(() => {
-        vehicleMsg.textContent = "";
-        vehicleMsg.style.color = "#dc2626";
-      }, 2200);
+      const type = fleetType.value, category = fleetCategory.value;
+      const err = validateEgyptianPlate(type, fleetUndercoverPlate.value, category);
+      if (err) { document.getElementById("fleetMsg").textContent = err; return; }
+      const code = `VH-${String(Date.now()).slice(-4)}`;
+      data.fleet.unshift({ code, type, unit: fleetUnit.value.trim(), policePlate: fleetPolicePlate.value.trim().toUpperCase(), undercoverPlate: fleetUndercoverPlate.value.trim().replace(/\s+/g, " "), category, status: fleetStatus.value });
+      addAdminLog(`إضافة مركبة جديدة ${code}`);
+      document.getElementById("fleetMsg").textContent = "تمت الإضافة بنجاح";
+      e.target.reset(); renderAll();
     });
 
-    maintenanceForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const vehicle = maintVehicle.value;
-      const type = maintType.value;
-      const date = maintDate.value;
-      const notes = maintNotes.value.trim();
-      if (!vehicle || !date || !notes) return;
-      maintenanceRecords.unshift({ vehicle, type, date, notes });
-      renderMaintenance();
-      maintenanceForm.reset();
-    });
+    document.getElementById("licenseForm").addEventListener("submit", e => { e.preventDefault(); data.licenses.unshift({ vehicle: licenseVehicle.value, no: licenseNo.value.trim(), issue: licenseIssue.value, expiry: licenseExpiry.value, status: licenseStatus.value }); addAdminLog(`تحديث ترخيص ${licenseVehicle.value}`); e.target.reset(); renderAll(); });
+    document.getElementById("maintenanceForm").addEventListener("submit", e => { e.preventDefault(); data.maintenance.unshift({ vehicle: maintVehicle.value, type: maintType.value, date: maintDate.value, status: maintStatus.value, notes: maintNotes.value.trim() }); addAdminLog(`بلاغ صيانة للمركبة ${maintVehicle.value}`); e.target.reset(); renderAll(); });
+    document.getElementById("fluidsForm").addEventListener("submit", e => { e.preventDefault(); data.fluids.unshift({ vehicle: fluidVehicle.value, type: fluidType.value, qty: Number(fluidQty.value), cost: Number(fluidCost.value), date: fluidDate.value }); addAdminLog(`تسجيل ${fluidType.value === "fuel" ? "وقود" : "زيت"} لـ ${fluidVehicle.value}`); e.target.reset(); renderAll(); });
+    document.getElementById("scrapForm").addEventListener("submit", e => { e.preventDefault(); data.scrap.unshift({ vehicle: scrapVehicle.value, reason: scrapReason.value.trim(), date: scrapDate.value, approval: scrapApproval.value }); addAdminLog(`طلب تخريد للمركبة ${scrapVehicle.value}`); e.target.reset(); renderAll(); });
+    document.getElementById("accidentForm").addEventListener("submit", e => { e.preventDefault(); data.accidents.unshift({ vehicle: accidentVehicle.value, severity: accidentSeverity.value, date: accidentDate.value, status: accidentStatus.value, notes: accidentNotes.value.trim() }); addAdminLog(`تسجيل حادث للمركبة ${accidentVehicle.value}`); e.target.reset(); renderAll(); });
+    document.getElementById("adminUserForm").addEventListener("submit", e => { e.preventDefault(); data.adminUsers.unshift({ name: adminUserName.value.trim(), role: adminUserRole.value, status: adminUserStatus.value }); addAdminLog(`إضافة مستخدم جديد: ${adminUserName.value.trim()}`); e.target.reset(); renderAll(); });
 
-    partsForm.addEventListener("submit", (e) => {
+    document.getElementById("settingsForm").addEventListener("submit", e => {
       e.preventDefault();
-      const vehicle = partsVehicle.value;
-      const part = partName.value;
-      const last = Number(lastChangeKm.value);
-      const current = Number(currentKm.value);
-      const interval = Number(changeInterval.value);
-      if (current < last) return;
-      partRecords.unshift({ vehicle, part, used: current - last, interval });
-      renderParts();
-      partsForm.reset();
+      settings.appName = setAppName.value.trim() || defaultSettings.appName;
+      settings.subtitle = setSubtitle.value.trim() || defaultSettings.subtitle;
+      settings.brand = setBrand.value;
+      settings.alertDays = Number(setAlertDays.value) || 30;
+      saveSettings();
+      applySettings();
+      renderDashboard();
+      addAdminLog("تحديث إعدادات النظام");
+      renderAdmin();
+    });
+    document.getElementById("resetDataBtn").addEventListener("click", () => {
+      if (!confirm("تأكيد إعادة ضبط جميع البيانات؟")) return;
+      Object.keys(data).forEach(k => delete data[k]);
+      Object.assign(data, structuredClone(seedData));
+      addAdminLog("إعادة ضبط البيانات");
+      renderAll();
     });
 
     applyBrandLogo();
-    renderVehicles();
-    renderMaintenance();
-    renderParts();
+    applySettings();
+    renderAll();
     lockApp(sessionStorage.getItem("depotAuth") !== "1");
   </script>
 </body>
