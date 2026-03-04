@@ -13,9 +13,9 @@
       --success: #16a34a;
       --warning: #f59e0b;
       --danger: #dc2626;
-      --app-font: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif;
-      --form-font: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif;
-      --tab-font: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif;
+      --app-font: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
+      --form-font: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
+      --tab-font: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
     }
     * { box-sizing: border-box; }
     body { margin: 0; font-family: var(--app-font); background: linear-gradient(135deg, #f0f9ff, #e0e7ff); color: var(--text); padding-bottom: 80px; }
@@ -25,7 +25,7 @@
     .brand-wrap { display: flex; align-items: center; gap: 10px; }
     .brand { font-weight: 700; color: #facc15; font-size: 22px; }
     .subtitle { display: block; color: #fff; font-size: 12px; }
-    .logo { max-height: 52px; width: auto; height: auto; object-fit: contain; }
+    .logo { max-height: 52px; width: auto; height: auto; object-fit: contain; filter: saturate(1.25) contrast(1.18) drop-shadow(0 0 10px rgba(59,130,246,.35)); }
     .logo-anim { animation: floatLogo 2.6s ease-in-out infinite; }
     .btn { border: 1px solid #ccc; padding: 6px 12px; border-radius: 8px; background: #fff; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all .15s ease; }
     .btn::before { content: "🔹"; font-size: 14px; line-height: 1; }
@@ -57,6 +57,7 @@
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
     th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: center; font-size: 13px; }
+    td.actions { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
     thead { background: var(--brand); color: #fff; }
     label { display: block; font-weight: 700; margin-bottom: 4px; }
     input, select, textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: var(--form-font); }
@@ -74,7 +75,7 @@
 
     .splash-screen { position: fixed; inset: 0; z-index: 1500; display: grid; place-items: center; background: radial-gradient(circle at top, #dbeafe, #0f172a 70%); color: #fff; animation: splashAutoHide .25s linear 1.3s forwards; }
     .splash-box { text-align: center; }
-    .splash-logo { width: clamp(160px, 24vw, 230px); height: clamp(160px, 24vw, 230px); border-radius: 50%; border: 3px solid rgba(255, 255, 255, .6); box-shadow: 0 0 0 8px rgba(255, 255, 255, .12); margin: 0 auto 10px; overflow: hidden; }
+    .splash-logo { width: clamp(160px, 24vw, 230px); height: clamp(160px, 24vw, 230px); border-radius: 50%; border: 3px solid rgba(255, 255, 255, .55); box-shadow: 0 0 0 8px rgba(255, 255, 255, .08); margin: 0 auto 10px; overflow: hidden; backdrop-filter: blur(3px); }
     .splash-logo img { width: 100%; height: 100%; object-fit: contain; padding: 14px; }
     .footer { position: fixed; left: 0; right: 0; bottom: 0; background: #0f172a; color: #dbeafe; text-align: center; padding: 8px; font-size: 12px; }
 
@@ -164,7 +165,7 @@
     .status-active { background:#ecfdf3; color:#166534; }
     .sticky-panel { position:sticky; top:72px; }
     .nav-disabled-overlay { pointer-events:none; opacity:.6; }
-    .logo { max-height:52px; width:auto; height:auto; object-fit:contain; }
+    .logo { max-height:52px; width:auto; height:auto; object-fit:contain; filter:saturate(1.25) contrast(1.18) drop-shadow(0 0 10px rgba(59,130,246,.35)); }
     .logo-hero { max-height:none; width:288px; height:288px; aspect-ratio:1/1; border-radius:50%; object-fit:cover; }
     .logo-anim { animation: floatLogo 4s ease-in-out infinite; }
     .bi { display:none; }
@@ -193,7 +194,7 @@
     .splash-screen::before { content:""; position:absolute; inset:-10%; background:radial-gradient(circle at 15% 25%, rgba(250,204,21,.2), transparent 40%), radial-gradient(circle at 80% 15%, rgba(56,189,248,.25), transparent 45%), radial-gradient(circle at 70% 80%, rgba(129,140,248,.25), transparent 50%); opacity:.9; z-index:0; }
     .splash-screen::after { content:""; position:absolute; inset:0; background:linear-gradient(160deg, rgba(15,23,42,.1), rgba(30,64,175,.35)); z-index:0; }
     .splash-screen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
-    .splash-logo { width:clamp(160px,26vw,240px); height:clamp(160px,26vw,240px); border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.18); box-shadow:0 24px 50px rgba(15,23,42,.35); animation:splashPulse 2.8s ease-in-out infinite; overflow:hidden; position:relative; z-index:2; }
+    .splash-logo { width:clamp(160px,26vw,240px); height:clamp(160px,26vw,240px); border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.08); box-shadow:0 24px 50px rgba(15,23,42,.35); animation:splashPulse 2.8s ease-in-out infinite; overflow:hidden; position:relative; z-index:2; backdrop-filter:blur(3px); }
     .splash-logo img { width:100%; height:100%; object-fit:contain; padding:20px; }
     .splash-hero { position:absolute; bottom:clamp(-32px,-3vw,-8px); left:0; right:auto; width:100%; display:flex; justify-content:flex-start; padding-left:clamp(12px,4vw,36px); pointer-events:none; z-index:1; }
     .splash-hero svg { width:min(520px, 85vw); height:auto; opacity:.22; }
@@ -342,7 +343,8 @@
           </form>
         </div>
       </article>
-      <section class="card"><div class="card-header">قوة المركبات (العدد: <span id="fleetCount">0</span>)</div><div class="card-body table-wrap"><table><thead><tr><th>الكود</th><th>النوع</th><th>الوحدة</th><th>لوحة الشرطة</th><th>التمويه</th><th>الحالة</th></tr></thead><tbody id="fleetTable"></tbody></table></div></section>
+      <section class="card"><div class="card-header">قوة المركبات (العدد: <span id="fleetCount">0</span>)</div><div class="card-body table-wrap"><table><thead><tr><th>الكود</th><th>النوع</th><th>الوحدة</th><th>لوحة الشرطة</th><th>التمويه</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="fleetTable"></tbody></table></div></section>
+      <section class="card"><div class="card-header">تقرير المركبة الشامل</div><div class="card-body"><div class="row"><div><label>اختر مركبة</label><select id="vehicleReportSelect"></select></div><div style="display:flex; align-items:end;"><button id="vehicleReportBtn" class="btn btn-primary" type="button" style="width:100%;">إنشاء تقرير</button></div></div><div class="table-wrap" style="margin-top:10px;"><table><tbody id="vehicleReportBody"></tbody></table></div></div></section>
     </section>
 
     <section id="tab-licenses" class="tab-panel hidden">
@@ -373,12 +375,12 @@
     <section id="tab-admin" class="tab-panel hidden">
       <section class="grid row-2">
         <article class="card"><div class="card-header">لوحة المشرف - المستخدمون</div><div class="card-body"><form id="adminUserForm"><div class="row"><div><label>اسم المستخدم</label><input id="adminUserName" required></div><div><label>الدور</label><select id="adminUserRole"><option>ضابط حركة</option><option>فني صيانة</option><option>مشرف وردية</option></select></div><div><label>الحالة</label><select id="adminUserStatus"><option value="active">نشط</option><option value="suspended">موقوف</option></select></div></div><button class="btn btn-primary" style="margin-top:10px;" type="submit">إضافة مستخدم</button></form><div class="table-wrap" style="margin-top:10px;"><table><thead><tr><th>#</th><th>المستخدم</th><th>الدور</th><th>الحالة</th></tr></thead><tbody id="adminUsersTable"></tbody></table></div></div></article>
-        <article class="card"><div class="card-header">خيارات إدارية</div><div class="card-body"><div class="row"><div><button class="btn btn-primary" id="exportDataBtn" type="button" style="width:100%;">تصدير البيانات</button></div><div><label for="importDataFile">استيراد نسخة احتياطية</label><input id="importDataFile" type="file" accept="application/json"></div><div><button class="btn btn-outline" id="clearLogsBtn" type="button" style="width:100%;">تنظيف سجل النشاط</button></div></div><p class="helper">الخيارات مقتبسة من لوحة التحكم في التطبيق المرجعي مع الحفاظ على ما يناسب نظام المستودع.</p></div></article><article class="card"><div class="card-header">سجل النشاط الإداري</div><div class="card-body table-wrap"><table><thead><tr><th>الوقت</th><th>النشاط</th></tr></thead><tbody id="adminLogTable"></tbody></table></div></article>
+        <article class="card"><div class="card-header">خيارات إدارية</div><div class="card-body"><div class="row"><div><button class="btn btn-primary" id="exportDataBtn" type="button" style="width:100%;">تصدير البيانات</button></div><div><label for="importDataFile">استيراد نسخة احتياطية</label><input id="importDataFile" type="file" accept="application/json"></div><div><button class="btn btn-outline" id="clearLogsBtn" type="button" style="width:100%;">تنظيف سجل النشاط</button></div><div><button class="btn btn-success" id="backupSnapshotBtn" type="button" style="width:100%;">نسخة سريعة</button></div><div><button class="btn btn-warning" id="adminAuditBtn" type="button" style="width:100%;">تدقيق البيانات</button></div><div><button class="btn btn-danger" id="lockSystemBtn" type="button" style="width:100%;">قفل النظام</button></div></div><p class="helper">تمت إضافة أدوات أسرع للنسخ الاحتياطي والتدقيق وقفل النظام من لوحة التحكم.</p></div></article><article class="card"><div class="card-header">سجل النشاط الإداري</div><div class="card-body table-wrap"><table><thead><tr><th>الوقت</th><th>النشاط</th></tr></thead><tbody id="adminLogTable"></tbody></table></div></article>
       </section>
     </section>
 
     <section id="tab-settings" class="tab-panel hidden">
-      <article class="card"><div class="card-header">الإعدادات العامة</div><div class="card-body"><form id="settingsForm"><div class="row"><div><label>اسم التطبيق</label><input id="setAppName"></div><div><label>العنوان الفرعي</label><input id="setSubtitle"></div><div><label>لون الهوية</label><input id="setBrand" type="color" value="#1e40af"></div><div><label>أيام تنبيه الترخيص</label><input id="setAlertDays" type="number" min="1" value="30"></div></div><button class="btn btn-success" style="margin-top:10px;" type="submit">حفظ الإعدادات</button><button class="btn btn-outline" id="resetDataBtn" type="button" style="margin-top:10px;">إعادة ضبط البيانات</button><p class="helper">تُحفظ الإعدادات والبيانات محلياً داخل المتصفح لهذا الجهاز.</p></form></div></article>
+      <article class="card"><div class="card-header">الإعدادات العامة</div><div class="card-body"><form id="settingsForm"><div class="row"><div><label>اسم التطبيق</label><input id="setAppName"></div><div><label>العنوان الفرعي</label><input id="setSubtitle"></div><div><label>لون الهوية</label><input id="setBrand" type="color" value="#1e40af"></div><div><label>أيام تنبيه الترخيص</label><input id="setAlertDays" type="number" min="1" value="30"></div><div><label>نمط الخط</label><select id="setFontPreset"><option value="sleek">Sleek / Cairo</option><option value="classic">Classic / Tahoma</option></select></div><div><label>كثافة واجهة العرض</label><select id="setDensity"><option value="comfortable">مريحة</option><option value="compact">مضغوطة</option></select></div></div><button class="btn btn-success" style="margin-top:10px;" type="submit">حفظ الإعدادات</button><button class="btn btn-outline" id="resetDataBtn" type="button" style="margin-top:10px;">إعادة ضبط البيانات</button><p class="helper">تُحفظ الإعدادات والبيانات محلياً داخل المتصفح لهذا الجهاز.</p></form></div></article>
     </section>
   </main>
 
@@ -390,7 +392,7 @@
     const STORAGE_KEY = "vdaDataStore";
     const SETTINGS_KEY = "vdaSettings";
     const BRAND_LOGO_PATH = "logo.png";
-    const BRAND_LOGO_DATA = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeDI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZTRkN2JhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U0ZDdiYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz4KICA8cG9seWxpbmUgcG9pbnRzPSIxNTAsMTIwIDE5MCw0MjAgMjIwLDEyMCAyNjAsNDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iMTgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjI2MCwxMDAgMzcwLDIyMCAzMTAsMjMwIDQxMCw0MjAgMjkwLDMyMCAyNTAsNDIwIDI0MCwyMzAgMTgwLDIyMCIgZmlsbD0iIzI3MzI2YiIgLz4KICA8dGV4dCB4PSIyNTYiIHk9IjU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjI4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtix2KfZhNi52KjZiNin2Kog2YPYqNio2YrYp9mGPC90ZXh0PgogIDx0ZXh0IHg9IjI1NiIgeT0iNDc1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtmF2YTZitmHINin2YTYo9iz2LnZiNmKINmF2YbYp9mI2Lkg2KjYp9mG2Ycg2KfZhNmF2YrYp9mE2YrZg9ipPC90ZXh0Pgo8L3N2Zz4=";
+    const BRAND_LOGO_DATA = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJz4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0nZ2xvdycgY3g9JzUwJScgY3k9JzQ1JScgcj0nNTUlJz4KICAgICAgPHN0b3Agb2Zmc2V0PScwJScgc3RvcC1jb2xvcj0nIzIyZDNlZScgc3RvcC1vcGFjaXR5PScwLjg1Jy8+CiAgICAgIDxzdG9wIG9mZnNldD0nNzAlJyBzdG9wLWNvbG9yPScjMjU2M2ViJyBzdG9wLW9wYWNpdHk9JzAuMzUnLz4KICAgICAgPHN0b3Agb2Zmc2V0PScxMDAlJyBzdG9wLWNvbG9yPScjMjU2M2ViJyBzdG9wLW9wYWNpdHk9JzAnLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9J3NoaWVsZCcgeDE9JzAlJyB5MT0nMCUnIHgyPScxMDAlJyB5Mj0nMTAwJSc+CiAgICAgIDxzdG9wIG9mZnNldD0nMCUnIHN0b3AtY29sb3I9JyMwZWE1ZTknLz4KICAgICAgPHN0b3Agb2Zmc2V0PScxMDAlJyBzdG9wLWNvbG9yPScjNGY0NmU1Jy8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8Y2lyY2xlIGN4PScyNTYnIGN5PScyNTYnIHI9JzIzNicgZmlsbD0ndXJsKCNnbG93KScvPgogIDxwYXRoIGQ9J00yNTYgODBMMzkwIDE0MHYxMzZjMCA5NC02NiAxNTYtMTM0IDE5MmMtNjgtMzYtMTM0LTk4LTEzNC0xOTJWMTR6JyBmaWxsPSd1cmwoI3NoaWVsZCknIHN0cm9rZT0nI2JmZGJmZScgc3Ryb2tlLXdpZHRoPScxMicvPgogIDxwYXRoIGQ9J00xOTAgMjc4bDUyIDUyIDEwNC0xMjQnIGZpbGw9J25vbmUnIHN0cm9rZT0nI2VmZjZmZicgc3Ryb2tlLXdpZHRoPScyNCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJy8+CiAgPHRleHQgeD0nMjU2JyB5PSc0NjYnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdDYWlybywgQXJpYWwsIHNhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMzQnIGZvbnQtd2VpZ2h0PSc4MDAnIGZpbGw9JyMxZTI5M2InPlZEQTwvdGV4dD4KPC9zdmc+";
 
     const seedData = {
       fleet: [
@@ -407,7 +409,7 @@
       adminLogs: [{ time: new Date().toLocaleString("ar-EG"), action: "تشغيل النظام بنجاح" }]
     };
 
-    const defaultSettings = { appName: "نظام إدارة المركبات الشرطية", subtitle: "الإدارة العامة للمساعدات الفنية • Vehicle Depot Administration", brand: "#1e40af", alertDays: 30 };
+    const defaultSettings = { appName: "نظام إدارة المركبات الشرطية", subtitle: "الإدارة العامة للمساعدات الفنية • Vehicle Depot Administration", brand: "#1e40af", alertDays: 30, fontPreset: "sleek", density: "comfortable" };
 
     const loginForm = document.getElementById("loginForm");
     const loginOverlay = document.getElementById("loginOverlay");
@@ -434,6 +436,16 @@
     }
     function typeLabel(type) { return ({ sedan: "Sedan", pickup: "Pickup", "4x4": "4x4", motorbike: "Motor Bike" })[type] || type; }
 
+    function vehicleStats(code) {
+      return {
+        licenses: data.licenses.filter(l => l.vehicle === code).length,
+        maintenance: data.maintenance.filter(m => m.vehicle === code).length,
+        fluids: data.fluids.filter(f => f.vehicle === code).length,
+        scrap: data.scrap.filter(s => s.vehicle === code).length,
+        accidents: data.accidents.filter(a => a.vehicle === code).length
+      };
+    }
+
     function validateEgyptianPlate(type, plate, category) {
       const normalized = plate.trim().replace(/\s+/g, " ");
       const patterns = { private: /^[\u0621-\u064A]{3}\s\d{4}$/, taxi: /^[\u0621-\u064A]{3}\s\d{4}$/, transport: /^[\u0621-\u064A]{2}\s\d{4}$/, motorcycle: /^[\u0621-\u064A]{2}\s\d{4}$/ };
@@ -444,7 +456,7 @@
 
     function updateVehicleSelects() {
       const options = data.fleet.map(v => `<option value="${v.code}">${v.code} - ${typeLabel(v.type)}</option>`).join("");
-      ["licenseVehicle", "maintVehicle", "fluidVehicle", "scrapVehicle", "accidentVehicle"].forEach(id => document.getElementById(id).innerHTML = options);
+      ["licenseVehicle", "maintVehicle", "fluidVehicle", "scrapVehicle", "accidentVehicle", "vehicleReportSelect"].forEach(id => document.getElementById(id).innerHTML = options);
     }
 
     function renderDashboard() {
@@ -463,7 +475,7 @@
     }
 
     function renderFleet() {
-      document.getElementById("fleetTable").innerHTML = data.fleet.map(v => `<tr><td>${v.code}</td><td>${typeLabel(v.type)}</td><td>${v.unit}</td><td>${v.policePlate}</td><td>${v.undercoverPlate}</td><td>${statusPill(v.status)}</td></tr>`).join("");
+      document.getElementById("fleetTable").innerHTML = data.fleet.map(v => `<tr><td>${v.code}</td><td>${typeLabel(v.type)}</td><td>${v.unit}</td><td>${v.policePlate}</td><td>${v.undercoverPlate}</td><td>${statusPill(v.status)}</td><td class="actions"><button class="btn btn-outline" type="button" onclick="editVehicle('${v.code}')">تعديل</button><button class="btn btn-danger" type="button" onclick="removeVehicle('${v.code}')">حذف</button></td></tr>`).join("");
       document.getElementById("fleetCount").textContent = data.fleet.length;
     }
     function renderLicenses() { document.getElementById("licensesTable").innerHTML = data.licenses.map((l, i) => `<tr><td>${i + 1}</td><td>${l.vehicle}</td><td>${l.no}</td><td>${l.issue}</td><td>${l.expiry}</td><td>${statusPill(l.status)}</td></tr>`).join(""); }
@@ -482,6 +494,22 @@
       saveData();
     }
 
+    function renderVehicleReport(code) {
+      const vehicle = data.fleet.find(v => v.code === code);
+      if (!vehicle) {
+        document.getElementById("vehicleReportBody").innerHTML = '<tr><td>لا توجد بيانات للمركبة المحددة.</td></tr>';
+        return;
+      }
+      const stats = vehicleStats(code);
+      document.getElementById("vehicleReportBody").innerHTML = `
+        <tr><th>الكود</th><td>${vehicle.code}</td><th>النوع</th><td>${typeLabel(vehicle.type)}</td></tr>
+        <tr><th>الوحدة</th><td>${vehicle.unit}</td><th>الحالة</th><td>${statusPill(vehicle.status)}</td></tr>
+        <tr><th>لوحة الشرطة</th><td>${vehicle.policePlate}</td><th>لوحة التمويه</th><td>${vehicle.undercoverPlate}</td></tr>
+        <tr><th>التراخيص</th><td>${stats.licenses}</td><th>إجراءات الصيانة</th><td>${stats.maintenance}</td></tr>
+        <tr><th>سجلات الوقود/الزيت</th><td>${stats.fluids}</td><th>الحوادث</th><td>${stats.accidents}</td></tr>
+        <tr><th>طلبات التخريد</th><td>${stats.scrap}</td><th>آخر تحديث</th><td>${new Date().toLocaleString("ar-EG")}</td></tr>`;
+    }
+
     function applyBrandLogo() {
       const appLogo = document.getElementById("appLogoImg");
       const splashLogo = document.getElementById("splashLogoImg");
@@ -498,6 +526,14 @@
       document.getElementById("setSubtitle").value = settings.subtitle;
       document.getElementById("setBrand").value = settings.brand;
       document.getElementById("setAlertDays").value = settings.alertDays;
+      document.getElementById("setFontPreset").value = settings.fontPreset || "sleek";
+      document.getElementById("setDensity").value = settings.density || "comfortable";
+      const sleek = settings.fontPreset !== "classic";
+      document.documentElement.style.setProperty("--app-font", sleek ? '"Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif' : '"Tahoma", "Arial", sans-serif');
+      document.documentElement.style.setProperty("--form-font", sleek ? '"Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif' : '"Tahoma", "Arial", sans-serif');
+      document.documentElement.style.setProperty("--tab-font", sleek ? '"Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif' : '"Tahoma", "Arial", sans-serif');
+      document.body.style.letterSpacing = sleek ? ".1px" : "0";
+      document.body.style.fontSize = settings.density === "compact" ? "14px" : "15px";
     }
 
     function lockApp(locked) {
@@ -522,6 +558,27 @@
     });
     document.getElementById("logoutBtn").addEventListener("click", () => { sessionStorage.removeItem("depotAuth"); loginForm.reset(); lockApp(true); });
 
+    window.editVehicle = function(code) {
+      const v = data.fleet.find(item => item.code === code);
+      if (!v) return;
+      fleetType.value = v.type;
+      fleetStatus.value = v.status;
+      fleetUnit.value = v.unit;
+      fleetPolicePlate.value = v.policePlate;
+      fleetUndercoverPlate.value = v.undercoverPlate;
+      fleetCategory.value = v.category;
+      data.fleet = data.fleet.filter(item => item.code !== code);
+      addAdminLog(`فتح تعديل المركبة ${code}`);
+      renderAll();
+    };
+
+    window.removeVehicle = function(code) {
+      if (!confirm(`تأكيد حذف المركبة ${code}؟`)) return;
+      data.fleet = data.fleet.filter(v => v.code !== code);
+      addAdminLog(`حذف المركبة ${code}`);
+      renderAll();
+    };
+
     document.getElementById("fleetForm").addEventListener("submit", e => {
       e.preventDefault();
       const type = fleetType.value, category = fleetCategory.value;
@@ -540,6 +597,7 @@
     document.getElementById("scrapForm").addEventListener("submit", e => { e.preventDefault(); data.scrap.unshift({ vehicle: scrapVehicle.value, reason: scrapReason.value.trim(), date: scrapDate.value, approval: scrapApproval.value }); addAdminLog(`طلب تخريد للمركبة ${scrapVehicle.value}`); e.target.reset(); renderAll(); });
     document.getElementById("accidentForm").addEventListener("submit", e => { e.preventDefault(); data.accidents.unshift({ vehicle: accidentVehicle.value, severity: accidentSeverity.value, date: accidentDate.value, status: accidentStatus.value, notes: accidentNotes.value.trim() }); addAdminLog(`تسجيل حادث للمركبة ${accidentVehicle.value}`); e.target.reset(); renderAll(); });
     document.getElementById("adminUserForm").addEventListener("submit", e => { e.preventDefault(); data.adminUsers.unshift({ name: adminUserName.value.trim(), role: adminUserRole.value, status: adminUserStatus.value }); addAdminLog(`إضافة مستخدم جديد: ${adminUserName.value.trim()}`); e.target.reset(); renderAll(); });
+    document.getElementById("vehicleReportBtn").addEventListener("click", () => renderVehicleReport(vehicleReportSelect.value));
     document.getElementById("exportDataBtn").addEventListener("click", () => {
       const payload = { data, settings, exportedAt: new Date().toISOString() };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -572,6 +630,27 @@
         e.target.value = "";
       }
     });
+    document.getElementById("backupSnapshotBtn").addEventListener("click", () => {
+      localStorage.setItem(`${STORAGE_KEY}_snapshot`, JSON.stringify({ data, time: new Date().toISOString() }));
+      addAdminLog("حفظ نسخة سريعة محلية");
+      renderAdmin();
+      alert("تم حفظ النسخة السريعة.");
+    });
+    document.getElementById("adminAuditBtn").addEventListener("click", () => {
+      const orphanLicenses = data.licenses.filter(l => !data.fleet.some(v => v.code === l.vehicle)).length;
+      const orphanMaintenance = data.maintenance.filter(m => !data.fleet.some(v => v.code === m.vehicle)).length;
+      addAdminLog(`تدقيق البيانات: تراخيص بدون مركبة ${orphanLicenses} - صيانات بدون مركبة ${orphanMaintenance}`);
+      renderAdmin();
+      alert(`نتيجة التدقيق:
+تراخيص بدون مركبة: ${orphanLicenses}
+صيانات بدون مركبة: ${orphanMaintenance}`);
+    });
+    document.getElementById("lockSystemBtn").addEventListener("click", () => {
+      sessionStorage.removeItem("depotAuth");
+      lockApp(true);
+      addAdminLog("قفل النظام من لوحة الإدارة");
+      renderAdmin();
+    });
     document.getElementById("clearLogsBtn").addEventListener("click", () => {
       if (!confirm("تأكيد تنظيف سجل النشاط الإداري؟")) return;
       data.adminLogs = [{ time: new Date().toLocaleString("ar-EG"), action: "تم تنظيف سجل النشاط الإداري" }];
@@ -585,6 +664,8 @@
       settings.subtitle = setSubtitle.value.trim() || defaultSettings.subtitle;
       settings.brand = setBrand.value;
       settings.alertDays = Number(setAlertDays.value) || 30;
+      settings.fontPreset = setFontPreset.value;
+      settings.density = setDensity.value;
       saveSettings();
       applySettings();
       renderDashboard();
@@ -602,6 +683,7 @@
     applyBrandLogo();
     applySettings();
     renderAll();
+    renderVehicleReport(data.fleet[0]?.code);
     lockApp(sessionStorage.getItem("depotAuth") !== "1");
   </script>
 </body>
