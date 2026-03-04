@@ -1,8 +1,8 @@
 {
   "backend": {
-    "baseUrl": "https://your-secure-backend.example.com/api",
-    "authEndpoint": "https://your-secure-backend.example.com/api/auth/login",
-    "usersEndpoint": "https://your-secure-backend.example.com/api/admin/users"
+    "baseUrl": "http://localhost:8001/api",
+    "authEndpoint": "http://localhost:8001/api/auth/login",
+    "usersEndpoint": "http://localhost:8001/api/admin/users"
   },
   "security": {
     "jwtAudience": "general-assistance-ecosystem",
