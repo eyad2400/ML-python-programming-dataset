@@ -241,7 +241,7 @@
   <div id="splashScreen" class="splash-screen">
     <div class="splash-box">
       <div class="splash-logo">
-        <img id="splashLogoImg" alt="logo" src="data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%23facc15'/><stop offset='100%' stop-color='%231e40af'/></linearGradient></defs><circle cx='50' cy='50' r='48' fill='url(%23g)'/><text x='50' y='58' text-anchor='middle' font-size='38'>🚓</text></svg>">
+        <img id="splashLogoImg" alt="logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
       </div>
       <div style="font-weight:800; font-size:20px;">مرحباً بك في نظام الإدارة العامة للمساعدات الفنية</div>
       <div style="font-size:13px; margin-top:6px; opacity:.9;">جاري تجهيز منصة إدارة المركبات...</div>
@@ -266,7 +266,7 @@
   <nav class="navbar">
     <div class="container-fluid">
       <div class="brand-wrap">
-        <img id="appLogoImg" src="data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g2' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%23facc15'/><stop offset='100%' stop-color='%231e40af'/></linearGradient></defs><circle cx='50' cy='50' r='48' fill='url(%23g2)'/><text x='50' y='58' text-anchor='middle' font-size='38'>🚓</text></svg>" class="logo logo-anim" alt="logo">
+        <img id="appLogoImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" class="logo logo-anim" alt="logo">
         <div>
           <div class="brand" id="appNameTitle">نظام خدمات الضباط</div>
           <small id="appSubtitle" class="subtitle">الإدارة العامة للمساعدات الفنية • وحدة إدارة مستودع المركبات</small>
@@ -285,6 +285,19 @@
     </ul>
 
     <section id="tab-dashboard" class="tab-panel">
+      <section class="card">
+        <div class="card-header">محتويات تطبيق إدارة المركبات</div>
+        <div class="card-body">
+          <ul style="margin:0; padding-inline-start:22px; line-height:1.9; font-weight:600;">
+            <li>قوة المركبات (العدد)</li>
+            <li>التراخيص الخاصة بالمركبة وتجديد الترخيص</li>
+            <li>الأعطال والإصلاحات</li>
+            <li>السوائل (وقود - زيوت)</li>
+            <li>التخريد</li>
+            <li>الحوادث</li>
+          </ul>
+        </div>
+      </section>
       <section class="grid kpi-grid">
         <article class="card"><div class="card-body"><div>إجمالي المركبات</div><div class="kpi-number" id="kpiVehicles">4</div></div></article>
         <article class="card"><div class="card-body"><div>نشطة</div><div class="kpi-number" id="kpiActive">3</div></div></article>
@@ -381,6 +394,7 @@
   <script>
     const LOGIN_USER = "admin";
     const LOGIN_PASS = "Depot@2026";
+    const BRAND_LOGO_DATA = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeDI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZTRkN2JhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U0ZDdiYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz4KICA8cG9seWxpbmUgcG9pbnRzPSIxNTAsMTIwIDE5MCw0MjAgMjIwLDEyMCAyNjAsNDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iMTgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjI2MCwxMDAgMzcwLDIyMCAzMTAsMjMwIDQxMCw0MjAgMjkwLDMyMCAyNTAsNDIwIDI0MCwyMzAgMTgwLDIyMCIgZmlsbD0iIzI3MzI2YiIgLz4KICA8dGV4dCB4PSIyNTYiIHk9IjU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjI4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtix2KfZhNi52KjZiNin2Kog2YPYqNio2YrYp9mGPC90ZXh0PgogIDx0ZXh0IHg9IjI1NiIgeT0iNDc1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtmF2YTZitmHINin2YTYo9iz2LnZiNmKINmF2YbYp9mI2Lkg2KjYp9mG2Ycg2KfZhNmF2YrYp9mE2YrZg9ipPC90ZXh0Pgo8L3N2Zz4=";
 
     const vehicles = [
       { code: "VH-101", type: "sedan", policePlate: "POL-1201", undercoverPlate: "س ب ج 1234", category: "private", status: "active" },
@@ -431,6 +445,15 @@
     const kpiActive = document.getElementById("kpiActive");
     const kpiMaintenance = document.getElementById("kpiMaintenance");
     const kpiParts = document.getElementById("kpiParts");
+    const splashLogoImg = document.getElementById("splashLogoImg");
+    const appLogoImg = document.getElementById("appLogoImg");
+
+    function applyBrandLogo() {
+      if (BRAND_LOGO_DATA) {
+        if (splashLogoImg) splashLogoImg.src = BRAND_LOGO_DATA;
+        if (appLogoImg) appLogoImg.src = BRAND_LOGO_DATA;
+      }
+    }
 
     function lockApp(locked) {
       app.style.filter = locked ? "blur(3px)" : "none";
@@ -598,6 +621,7 @@
       partsForm.reset();
     });
 
+    applyBrandLogo();
     renderVehicles();
     renderMaintenance();
     renderParts();
