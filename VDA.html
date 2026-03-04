@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Tajawal:wght@400;500;700;800&family=Changa:wght@400;600;700&family=El+Messiri:wght@500;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
   <title>نظام إدارة مستودع المركبات - VDA</title>
   <style>
 :root {
@@ -13,9 +16,9 @@
       --success: #16a34a;
       --warning: #f59e0b;
       --danger: #dc2626;
-      --app-font: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
-      --form-font: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
-      --tab-font: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
+      --app-font: "Cairo", "IBM Plex Sans Arabic", "Tajawal", "Changa", "El Messiri", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
+      --form-font: "Cairo", "IBM Plex Sans Arabic", "Tajawal", "Changa", "El Messiri", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
+      --tab-font: "Cairo", "IBM Plex Sans Arabic", "Tajawal", "Changa", "El Messiri", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif;
     }
     * { box-sizing: border-box; }
     body { margin: 0; font-family: var(--app-font); background: linear-gradient(135deg, #f0f9ff, #e0e7ff); color: var(--text); padding-bottom: 80px; }
@@ -75,7 +78,7 @@
 
     .splash-screen { position: fixed; inset: 0; z-index: 1500; display: grid; place-items: center; background: radial-gradient(circle at top, #dbeafe, #0f172a 70%); color: #fff; animation: splashAutoHide .25s linear 1.3s forwards; }
     .splash-box { text-align: center; }
-    .splash-logo { width: clamp(160px, 24vw, 230px); height: clamp(160px, 24vw, 230px); border-radius: 50%; border: 3px solid rgba(255, 255, 255, .55); box-shadow: 0 0 0 8px rgba(255, 255, 255, .08); margin: 0 auto 10px; overflow: hidden; backdrop-filter: blur(3px); }
+    .splash-logo { width: clamp(160px, 24vw, 230px); height: clamp(160px, 24vw, 230px); border-radius: 50%; border: none; box-shadow: none; margin: 0 auto 10px; overflow: hidden; backdrop-filter: none; }
     .splash-logo img { width: 100%; height: 100%; object-fit: contain; padding: 14px; }
     .footer { position: fixed; left: 0; right: 0; bottom: 0; background: #0f172a; color: #dbeafe; text-align: center; padding: 8px; font-size: 12px; }
 
@@ -83,7 +86,7 @@
     @keyframes splashAutoHide { to { opacity: 0; visibility: hidden; pointer-events: none; } }
 
     /* Imported visual pack from Roster-Codex14.html */
-:root { --brand: #1e40af; --brand-dark:#0f172a; --bg:#f0f9ff; --text:#111; --app-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --form-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --tab-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; }
+:root { --brand: #1e40af; --brand-dark:#0f172a; --bg:#f0f9ff; --text:#111; --app-font: "Cairo","IBM Plex Sans Arabic","Tajawal","Changa","El Messiri","Noto Sans Arabic","Tahoma",sans-serif; --form-font: "Cairo","IBM Plex Sans Arabic","Tajawal","Changa","El Messiri","Noto Sans Arabic","Tahoma",sans-serif; --tab-font: "Cairo","IBM Plex Sans Arabic","Tajawal","Changa","El Messiri","Noto Sans Arabic","Tahoma",sans-serif; }
     * { box-sizing: border-box; }
     body { font-family: var(--app-font); background: linear-gradient(135deg,#f0f9ff,#e0e7ff); margin: 0; padding-bottom: 120px; color: var(--text); }
     a { color: inherit; text-decoration: none; }
@@ -194,7 +197,7 @@
     .splash-screen::before { content:""; position:absolute; inset:-10%; background:radial-gradient(circle at 15% 25%, rgba(250,204,21,.2), transparent 40%), radial-gradient(circle at 80% 15%, rgba(56,189,248,.25), transparent 45%), radial-gradient(circle at 70% 80%, rgba(129,140,248,.25), transparent 50%); opacity:.9; z-index:0; }
     .splash-screen::after { content:""; position:absolute; inset:0; background:linear-gradient(160deg, rgba(15,23,42,.1), rgba(30,64,175,.35)); z-index:0; }
     .splash-screen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
-    .splash-logo { width:clamp(160px,26vw,240px); height:clamp(160px,26vw,240px); border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.08); box-shadow:0 24px 50px rgba(15,23,42,.35); animation:splashPulse 2.8s ease-in-out infinite; overflow:hidden; position:relative; z-index:2; backdrop-filter:blur(3px); }
+    .splash-logo { width:clamp(160px,26vw,240px); height:clamp(160px,26vw,240px); border-radius:50%; display:flex; align-items:center; justify-content:center; background:transparent; box-shadow:none; animation:splashPulse 2.8s ease-in-out infinite; overflow:hidden; position:relative; z-index:2; backdrop-filter:none; }
     .splash-logo img { width:100%; height:100%; object-fit:contain; padding:20px; }
     .splash-hero { position:absolute; bottom:clamp(-32px,-3vw,-8px); left:0; right:auto; width:100%; display:flex; justify-content:flex-start; padding-left:clamp(12px,4vw,36px); pointer-events:none; z-index:1; }
     .splash-hero svg { width:min(520px, 85vw); height:auto; opacity:.22; }
@@ -257,6 +260,15 @@
     .sub-tab-btn { border:1px solid #c7d2fe; background:#fff; color:#1f2937; padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:all .15s ease; }
     .sub-tab-btn.active { background:#1e40af; color:#fff; border-color:#1e40af; box-shadow:0 6px 16px rgba(30,64,175,.2); }
     @keyframes floatLogo { 0%{transform:translateY(0);} 50%{transform:translateY(-6px);} 100%{transform:translateY(0);} }
+    body.theme-cool { --brand:#1e40af; --brand-dark:#0f172a; --text:#111827; background:linear-gradient(135deg,#f0f9ff,#e0e7ff); }
+    body.theme-emerald { --brand:#0f766e; --brand-dark:#064e3b; --text:#0f172a; background:linear-gradient(135deg,#ecfdf5,#d1fae5); }
+    body.theme-sunset { --brand:#c2410c; --brand-dark:#7c2d12; --text:#1f2937; background:linear-gradient(135deg,#fff7ed,#ffedd5); }
+    body.theme-midnight { --brand:#4f46e5; --brand-dark:#0b1120; --text:#e2e8f0; background:linear-gradient(135deg,#0f172a,#1e1b4b); }
+    body.theme-midnight .card, body.theme-midnight .relations-column, body.theme-midnight .section-card { background:#111827; border-color:#334155; color:#e2e8f0; }
+    body.theme-midnight .card-header { background:#1e293b; border-color:#334155; color:#e2e8f0; }
+    body.theme-midnight .nav-tabs { background:rgba(15,23,42,.95); border-bottom-color:#334155; }
+    body.theme-midnight .nav-link { background:linear-gradient(180deg,#1f2937,#111827); border-color:#374151; color:#e5e7eb; }
+
     @keyframes splashPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
      @keyframes splashBounce { 0%, 80%, 100% { transform: translateY(0); opacity:.6; } 40% { transform: translateY(-8px); opacity:1; } }
     @keyframes splashAutoHide { to { opacity:0; visibility:hidden; pointer-events:none; } }
@@ -335,7 +347,7 @@
               <div><label for="fleetStatus">الحالة</label><select id="fleetStatus" required><option value="active">نشطة</option><option value="inspection">فحص</option><option value="stopped">متوقفة</option></select></div>
               <div><label for="fleetUnit">الوحدة</label><input id="fleetUnit" placeholder="الدوريات - القطاع A" required></div>
               <div><label for="fleetPolicePlate">لوحة الشرطة</label><input id="fleetPolicePlate" placeholder="POL-2201" required></div>
-              <div><label for="fleetUndercoverPlate">اللوحة التمويهية</label><input id="fleetUndercoverPlate" placeholder="س ب ج 1234" required></div>
+              <div><label for="fleetUndercoverPlate">اللوحة السرية</label><input id="fleetUndercoverPlate" placeholder="س ب ج 1234" required></div>
               <div><label for="fleetCategory">فئة اللوحة</label><select id="fleetCategory" required><option value="private">ملاكي</option><option value="transport">نقل</option><option value="motorcycle">دراجة</option><option value="taxi">أجرة</option></select></div>
             </div>
             <button class="btn btn-success" style="margin-top:10px;" type="submit">إضافة</button>
@@ -380,7 +392,7 @@
     </section>
 
     <section id="tab-settings" class="tab-panel hidden">
-      <article class="card"><div class="card-header">الإعدادات العامة</div><div class="card-body"><form id="settingsForm"><div class="row"><div><label>اسم التطبيق</label><input id="setAppName"></div><div><label>العنوان الفرعي</label><input id="setSubtitle"></div><div><label>لون الهوية</label><input id="setBrand" type="color" value="#1e40af"></div><div><label>أيام تنبيه الترخيص</label><input id="setAlertDays" type="number" min="1" value="30"></div><div><label>نمط الخط</label><select id="setFontPreset"><option value="sleek">Sleek / Cairo</option><option value="classic">Classic / Tahoma</option></select></div><div><label>كثافة واجهة العرض</label><select id="setDensity"><option value="comfortable">مريحة</option><option value="compact">مضغوطة</option></select></div></div><button class="btn btn-success" style="margin-top:10px;" type="submit">حفظ الإعدادات</button><button class="btn btn-outline" id="resetDataBtn" type="button" style="margin-top:10px;">إعادة ضبط البيانات</button><p class="helper">تُحفظ الإعدادات والبيانات محلياً داخل المتصفح لهذا الجهاز.</p></form></div></article>
+      <article class="card"><div class="card-header">الإعدادات العامة</div><div class="card-body"><form id="settingsForm"><div class="row"><div><label>اسم التطبيق</label><input id="setAppName"></div><div><label>العنوان الفرعي</label><input id="setSubtitle"></div><div><label>لون الهوية</label><input id="setBrand" type="color" value="#1e40af"></div><div><label>أيام تنبيه الترخيص</label><input id="setAlertDays" type="number" min="1" value="30"></div><div><label>نمط الخط</label><select id="setFontPreset"><option value="sleek">Sleek / Cairo</option><option value="modern">Modern / Tajawal</option><option value="display">Display / Changa</option><option value="formal">Formal / Amiri</option><option value="classic">Classic / Tahoma</option></select></div><div><label>سمة التطبيق</label><select id="setTheme"><option value="cool">أزرق احترافي</option><option value="emerald">أخضر ميداني</option><option value="sunset">برتقالي دافئ</option><option value="midnight">ليلي داكن</option></select></div><div><label>كثافة واجهة العرض</label><select id="setDensity"><option value="comfortable">مريحة</option><option value="compact">مضغوطة</option></select></div></div><button class="btn btn-success" style="margin-top:10px;" type="submit">حفظ الإعدادات</button><button class="btn btn-outline" id="resetDataBtn" type="button" style="margin-top:10px;">إعادة ضبط البيانات</button><p class="helper">تُحفظ الإعدادات والبيانات محلياً داخل المتصفح لهذا الجهاز.</p></form></div></article>
     </section>
   </main>
 
@@ -409,7 +421,7 @@
       adminLogs: [{ time: new Date().toLocaleString("ar-EG"), action: "تشغيل النظام بنجاح" }]
     };
 
-    const defaultSettings = { appName: "نظام إدارة المركبات الشرطية", subtitle: "الإدارة العامة للمساعدات الفنية • Vehicle Depot Administration", brand: "#1e40af", alertDays: 30, fontPreset: "sleek", density: "comfortable" };
+    const defaultSettings = { appName: "نظام إدارة المركبات الشرطية", subtitle: "الإدارة العامة للمساعدات الفنية • Vehicle Depot Administration", brand: "#1e40af", alertDays: 30, fontPreset: "sleek", theme: "cool", density: "comfortable" };
 
     const loginForm = document.getElementById("loginForm");
     const loginOverlay = document.getElementById("loginOverlay");
@@ -527,12 +539,22 @@
       document.getElementById("setBrand").value = settings.brand;
       document.getElementById("setAlertDays").value = settings.alertDays;
       document.getElementById("setFontPreset").value = settings.fontPreset || "sleek";
+      document.getElementById("setTheme").value = settings.theme || "cool";
       document.getElementById("setDensity").value = settings.density || "comfortable";
-      const sleek = settings.fontPreset !== "classic";
-      document.documentElement.style.setProperty("--app-font", sleek ? '"Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif' : '"Tahoma", "Arial", sans-serif');
-      document.documentElement.style.setProperty("--form-font", sleek ? '"Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif' : '"Tahoma", "Arial", sans-serif');
-      document.documentElement.style.setProperty("--tab-font", sleek ? '"Cairo", "IBM Plex Sans Arabic", "Segoe UI", "Noto Sans Arabic", "Tahoma", sans-serif' : '"Tahoma", "Arial", sans-serif');
-      document.body.style.letterSpacing = sleek ? ".1px" : "0";
+      const fontPresets = {
+        sleek: '"Cairo", "IBM Plex Sans Arabic", "Tajawal", "Changa", "Segoe UI", sans-serif',
+        modern: '"Tajawal", "IBM Plex Sans Arabic", "Cairo", "Segoe UI", sans-serif',
+        display: '"Changa", "El Messiri", "Cairo", "Tajawal", sans-serif',
+        formal: '"Amiri", "El Messiri", "Cairo", "Tahoma", serif',
+        classic: '"Tahoma", "Arial", sans-serif'
+      };
+      const selectedFont = fontPresets[settings.fontPreset] || fontPresets.sleek;
+      document.documentElement.style.setProperty("--app-font", selectedFont);
+      document.documentElement.style.setProperty("--form-font", selectedFont);
+      document.documentElement.style.setProperty("--tab-font", selectedFont);
+      document.body.classList.remove("theme-cool", "theme-emerald", "theme-sunset", "theme-midnight");
+      document.body.classList.add(`theme-${settings.theme || "cool"}`);
+      document.body.style.letterSpacing = settings.fontPreset === "classic" ? "0" : ".1px";
       document.body.style.fontSize = settings.density === "compact" ? "14px" : "15px";
     }
 
@@ -665,6 +687,7 @@
       settings.brand = setBrand.value;
       settings.alertDays = Number(setAlertDays.value) || 30;
       settings.fontPreset = setFontPreset.value;
+      settings.theme = setTheme.value;
       settings.density = setDensity.value;
       saveSettings();
       applySettings();
