@@ -13,16 +13,19 @@
       --success: #16a34a;
       --warning: #f59e0b;
       --danger: #dc2626;
+      --app-font: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif;
+      --form-font: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif;
+      --tab-font: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: "Arial", "Noto Sans Arabic", "Tahoma", sans-serif; background: linear-gradient(135deg, #f0f9ff, #e0e7ff); color: var(--text); padding-bottom: 80px; }
+    body { margin: 0; font-family: var(--app-font); background: linear-gradient(135deg, #f0f9ff, #e0e7ff); color: var(--text); padding-bottom: 80px; }
     .hidden { display: none !important; }
     .navbar { background: linear-gradient(135deg, #0f172a, var(--brand)); color: #fff; padding: 10px 16px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 6px 16px rgba(0, 0, 0, .2); }
     .container-fluid { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     .brand-wrap { display: flex; align-items: center; gap: 10px; }
     .brand { font-weight: 700; color: #facc15; font-size: 22px; }
     .subtitle { display: block; color: #fff; font-size: 12px; }
-    .logo { width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .65); box-shadow: 0 0 0 4px rgba(255, 255, 255, .12); object-fit: cover; background: #fff; }
+    .logo { max-height: 52px; width: auto; height: auto; object-fit: contain; }
     .logo-anim { animation: floatLogo 2.6s ease-in-out infinite; }
     .btn { border: 1px solid #ccc; padding: 6px 12px; border-radius: 8px; background: #fff; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all .15s ease; }
     .btn::before { content: "🔹"; font-size: 14px; line-height: 1; }
@@ -35,7 +38,8 @@
 
     .main-wrap { width: min(1360px, 96%); margin: 16px auto; }
     .nav-tabs { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #ddd; padding: 4px 0 10px; margin: 0 0 12px; list-style: none; position: sticky; top: 72px; z-index: 950; background: rgba(240, 249, 255, .98); }
-    .nav-link { padding: 12px 14px; border: 1px solid #c7d2fe; border-radius: 12px 12px 0 0; background: linear-gradient(180deg, #fff, #eef2ff); font-weight: 700; box-shadow: 0 4px 10px rgba(0, 0, 0, .08); transform: translateY(4px); transition: all .15s ease; cursor: pointer; }
+    .nav-link { padding: 12px 14px; border: 1px solid #c7d2fe; border-radius: 12px 12px 0 0; background: linear-gradient(180deg, #fff, #eef2ff); font-weight: 700; box-shadow: 0 4px 10px rgba(0, 0, 0, .08); transform: translateY(4px); transition: all .15s ease; cursor: pointer; font-family: var(--tab-font); display: inline-flex; align-items: center; gap: 6px; }
+    .nav-link::before { content: attr(data-icon); font-size: 16px; line-height: 1; }
     .nav-link.active { background: #fff; border-color: #a5b4fc; border-bottom-color: #fff; color: var(--brand); transform: translateY(0); box-shadow: 0 8px 16px rgba(0, 0, 0, .12); }
 
     .grid { display: grid; gap: 12px; }
@@ -55,7 +59,7 @@
     th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: center; font-size: 13px; }
     thead { background: var(--brand); color: #fff; }
     label { display: block; font-weight: 700; margin-bottom: 4px; }
-    input, select, textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: inherit; }
+    input, select, textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: var(--form-font); }
     textarea { min-height: 70px; resize: vertical; }
 
     .status { border-radius: 999px; padding: 4px 10px; color: #fff; font-size: 12px; font-weight: 700; display: inline-block; }
@@ -70,8 +74,8 @@
 
     .splash-screen { position: fixed; inset: 0; z-index: 1500; display: grid; place-items: center; background: radial-gradient(circle at top, #dbeafe, #0f172a 70%); color: #fff; animation: splashAutoHide .25s linear 1.3s forwards; }
     .splash-box { text-align: center; }
-    .splash-logo { width: 84px; height: 84px; border-radius: 50%; border: 3px solid rgba(255, 255, 255, .6); box-shadow: 0 0 0 8px rgba(255, 255, 255, .12); margin: 0 auto 10px; overflow: hidden; }
-    .splash-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .splash-logo { width: clamp(160px, 24vw, 230px); height: clamp(160px, 24vw, 230px); border-radius: 50%; border: 3px solid rgba(255, 255, 255, .6); box-shadow: 0 0 0 8px rgba(255, 255, 255, .12); margin: 0 auto 10px; overflow: hidden; }
+    .splash-logo img { width: 100%; height: 100%; object-fit: contain; padding: 14px; }
     .footer { position: fixed; left: 0; right: 0; bottom: 0; background: #0f172a; color: #dbeafe; text-align: center; padding: 8px; font-size: 12px; }
 
     @keyframes floatLogo { 0% { transform: translateY(0); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0); } }
@@ -115,15 +119,15 @@
 
   <main class="main-wrap" id="app" style="filter: blur(3px); pointer-events:none; user-select:none;">
     <ul class="nav-tabs">
-      <li><button class="nav-link active" data-tab="dashboard">📊 لوحة المتابعة</button></li>
-      <li><button class="nav-link" data-tab="fleet">🚓 قوة المركبات</button></li>
-      <li><button class="nav-link" data-tab="licenses">📄 التراخيص</button></li>
-      <li><button class="nav-link" data-tab="maintenance">🛠️ الأعطال والإصلاحات</button></li>
-      <li><button class="nav-link" data-tab="fluids">⛽ السوائل</button></li>
-      <li><button class="nav-link" data-tab="scrap">♻️ التخريد</button></li>
-      <li><button class="nav-link" data-tab="accidents">🚨 الحوادث</button></li>
-      <li><button class="nav-link" data-tab="admin">🧭 لوحة المشرف</button></li>
-      <li><button class="nav-link" data-tab="settings">⚙️ الإعدادات</button></li>
+      <li><button class="nav-link active" data-icon="📊" data-tab="dashboard">لوحة المتابعة</button></li>
+      <li><button class="nav-link" data-icon="🚓" data-tab="fleet">قوة المركبات</button></li>
+      <li><button class="nav-link" data-icon="📄" data-tab="licenses">التراخيص</button></li>
+      <li><button class="nav-link" data-icon="🛠️" data-tab="maintenance">الأعطال والإصلاحات</button></li>
+      <li><button class="nav-link" data-icon="⛽" data-tab="fluids">السوائل</button></li>
+      <li><button class="nav-link" data-icon="♻️" data-tab="scrap">التخريد</button></li>
+      <li><button class="nav-link" data-icon="🚨" data-tab="accidents">الحوادث</button></li>
+      <li><button class="nav-link" data-icon="🛠️" data-tab="admin">لوحة التحكم</button></li>
+      <li><button class="nav-link" data-icon="⚙️" data-tab="settings">الإعدادات</button></li>
     </ul>
 
     <section id="tab-dashboard" class="tab-panel">
@@ -188,7 +192,7 @@
     <section id="tab-admin" class="tab-panel hidden">
       <section class="grid row-2">
         <article class="card"><div class="card-header">لوحة المشرف - المستخدمون</div><div class="card-body"><form id="adminUserForm"><div class="row"><div><label>اسم المستخدم</label><input id="adminUserName" required></div><div><label>الدور</label><select id="adminUserRole"><option>ضابط حركة</option><option>فني صيانة</option><option>مشرف وردية</option></select></div><div><label>الحالة</label><select id="adminUserStatus"><option value="active">نشط</option><option value="suspended">موقوف</option></select></div></div><button class="btn btn-primary" style="margin-top:10px;" type="submit">إضافة مستخدم</button></form><div class="table-wrap" style="margin-top:10px;"><table><thead><tr><th>#</th><th>المستخدم</th><th>الدور</th><th>الحالة</th></tr></thead><tbody id="adminUsersTable"></tbody></table></div></div></article>
-        <article class="card"><div class="card-header">سجل النشاط الإداري</div><div class="card-body table-wrap"><table><thead><tr><th>الوقت</th><th>النشاط</th></tr></thead><tbody id="adminLogTable"></tbody></table></div></article>
+        <article class="card"><div class="card-header">خيارات إدارية</div><div class="card-body"><div class="row"><div><button class="btn btn-primary" id="exportDataBtn" type="button" style="width:100%;">تصدير البيانات</button></div><div><label for="importDataFile">استيراد نسخة احتياطية</label><input id="importDataFile" type="file" accept="application/json"></div><div><button class="btn btn-outline" id="clearLogsBtn" type="button" style="width:100%;">تنظيف سجل النشاط</button></div></div><p class="helper">الخيارات مقتبسة من لوحة التحكم في التطبيق المرجعي مع الحفاظ على ما يناسب نظام المستودع.</p></div></article><article class="card"><div class="card-header">سجل النشاط الإداري</div><div class="card-body table-wrap"><table><thead><tr><th>الوقت</th><th>النشاط</th></tr></thead><tbody id="adminLogTable"></tbody></table></div></article>
       </section>
     </section>
 
@@ -204,6 +208,7 @@
     const LOGIN_PASS = "Depot@2026";
     const STORAGE_KEY = "vdaDataStore";
     const SETTINGS_KEY = "vdaSettings";
+    const BRAND_LOGO_PATH = "logo.png";
     const BRAND_LOGO_DATA = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeDI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZjdmMmRlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjZTRkN2JhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U0ZDdiYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz4KICA8cG9seWxpbmUgcG9pbnRzPSIxNTAsMTIwIDE5MCw0MjAgMjIwLDEyMCAyNjAsNDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxZTQwYWIiIHN0cm9rZS13aWR0aD0iMTgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjI2MCwxMDAgMzcwLDIyMCAzMTAsMjMwIDQxMCw0MjAgMjkwLDMyMCAyNTAsNDIwIDI0MCwyMzAgMTgwLDIyMCIgZmlsbD0iIzI3MzI2YiIgLz4KICA8dGV4dCB4PSIyNTYiIHk9IjU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjI4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtix2KfZhNi52KjZiNin2Kog2YPYqNio2YrYp9mGPC90ZXh0PgogIDx0ZXh0IHg9IjI1NiIgeT0iNDc1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjIwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxZTQwYWIiPtmF2YTZitmHINin2YTYo9iz2LnZiNmKINmF2YbYp9mI2Lkg2KjYp9mG2Ycg2KfZhNmF2YrYp9mE2YrZg9ipPC90ZXh0Pgo8L3N2Zz4=";
 
     const seedData = {
@@ -297,8 +302,12 @@
     }
 
     function applyBrandLogo() {
-      document.getElementById("appLogoImg").src = BRAND_LOGO_DATA;
-      document.getElementById("splashLogoImg").src = BRAND_LOGO_DATA;
+      const appLogo = document.getElementById("appLogoImg");
+      const splashLogo = document.getElementById("splashLogoImg");
+      appLogo.onerror = () => { appLogo.onerror = null; appLogo.src = BRAND_LOGO_DATA; };
+      splashLogo.onerror = () => { splashLogo.onerror = null; splashLogo.src = BRAND_LOGO_DATA; };
+      appLogo.src = BRAND_LOGO_PATH;
+      splashLogo.src = BRAND_LOGO_PATH;
     }
     function applySettings() {
       document.getElementById("appNameTitle").textContent = settings.appName;
@@ -350,6 +359,44 @@
     document.getElementById("scrapForm").addEventListener("submit", e => { e.preventDefault(); data.scrap.unshift({ vehicle: scrapVehicle.value, reason: scrapReason.value.trim(), date: scrapDate.value, approval: scrapApproval.value }); addAdminLog(`طلب تخريد للمركبة ${scrapVehicle.value}`); e.target.reset(); renderAll(); });
     document.getElementById("accidentForm").addEventListener("submit", e => { e.preventDefault(); data.accidents.unshift({ vehicle: accidentVehicle.value, severity: accidentSeverity.value, date: accidentDate.value, status: accidentStatus.value, notes: accidentNotes.value.trim() }); addAdminLog(`تسجيل حادث للمركبة ${accidentVehicle.value}`); e.target.reset(); renderAll(); });
     document.getElementById("adminUserForm").addEventListener("submit", e => { e.preventDefault(); data.adminUsers.unshift({ name: adminUserName.value.trim(), role: adminUserRole.value, status: adminUserStatus.value }); addAdminLog(`إضافة مستخدم جديد: ${adminUserName.value.trim()}`); e.target.reset(); renderAll(); });
+    document.getElementById("exportDataBtn").addEventListener("click", () => {
+      const payload = { data, settings, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `vda-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addAdminLog("تصدير نسخة احتياطية من البيانات");
+      renderAdmin();
+    });
+    document.getElementById("importDataFile").addEventListener("change", async e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const parsed = JSON.parse(await file.text());
+        if (!parsed.data || !parsed.settings) throw new Error("invalid");
+        Object.keys(data).forEach(k => delete data[k]);
+        Object.assign(data, parsed.data);
+        Object.assign(settings, defaultSettings, parsed.settings);
+        saveData();
+        saveSettings();
+        applySettings();
+        addAdminLog("استيراد نسخة احتياطية للبيانات");
+        renderAll();
+      } catch {
+        alert("تعذر قراءة ملف النسخة الاحتياطية.");
+      } finally {
+        e.target.value = "";
+      }
+    });
+    document.getElementById("clearLogsBtn").addEventListener("click", () => {
+      if (!confirm("تأكيد تنظيف سجل النشاط الإداري؟")) return;
+      data.adminLogs = [{ time: new Date().toLocaleString("ar-EG"), action: "تم تنظيف سجل النشاط الإداري" }];
+      saveData();
+      renderAdmin();
+    });
 
     document.getElementById("settingsForm").addEventListener("submit", e => {
       e.preventDefault();
