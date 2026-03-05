@@ -1,1 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TATS - منصة المساعدات الفنية الموحدة</title>
+  <style>
+    :root { --brand: #1e40af; --brand-dark:#0f172a; --bg:#f0f9ff; --text:#111; --app-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --form-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; --tab-font: "Arial","Noto Sans Arabic","Tahoma",sans-serif; }
+    * { box-sizing: border-box; }
+    body { font-family: var(--app-font); background: linear-gradient(135deg,#f0f9ff,#e0e7ff); margin: 0; padding-bottom: 90px; color: var(--text); }
+    .navbar { background: linear-gradient(135deg,#0f172a,var(--brand)); color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 1000; box-shadow:0 8px 18px rgba(15,23,42,.25); }
+    .brand { font-weight: 800; color: #facc15; font-size: 24px; }
+    .subtitle { display:block; color:#fff; font-size:12px; }
+    .container { width:min(1300px, 95%); margin: 14px auto; }
+    .tabs { display:flex; gap:10px; flex-wrap:wrap; position:sticky; top:72px; background:rgba(240,249,255,.96); padding:8px 0; z-index:900; }
+    .tab { padding: 10px 14px; border: 1px solid #c7d2fe; border-radius:12px; background:linear-gradient(180deg,#fff,#eef2ff); font-weight:800; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.08); }
+    .tab.active { background:#fff; color:var(--brand); border-color:#a5b4fc; box-shadow:0 8px 18px rgba(0,0,0,.12); }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,.06); margin: 0 0 14px; overflow:hidden; }
+    .card-header { padding:12px 16px; background:#eef2ff; border-bottom:1px solid #e5e7eb; font-weight:800; display:flex; justify-content:space-between; align-items:center; }
+    .card-body { padding:16px; }
+    .row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; }
+    .kpi { background:linear-gradient(180deg,#fff,#f8fafc); border:1px solid #dbeafe; border-radius:12px; padding:12px; }
+    .kpi strong { font-size:28px; color:var(--brand-dark); display:block; margin-top:8px; }
+    .btn { border: 1px solid #ccc; padding: 7px 12px; border-radius: 8px; background:#fff; cursor:pointer; font-weight:700; }
+    .btn-primary { background: var(--brand); color:#fff; border-color: var(--brand); }
+    .btn-success { background:#16a34a; color:#fff; border-color:#16a34a; }
+    .btn-danger { background:#dc2626; color:#fff; border-color:#dc2626; }
+    .btn-warning { background:#f59e0b; color:#fff; border-color:#f59e0b; }
+    .field label { font-weight:700; display:block; margin-bottom:4px; }
+    input, select, textarea { width:100%; padding:9px 10px; border:1px solid #d1d5db; border-radius:8px; font-family:var(--form-font); }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:center; font-size:13px; }
+    thead { background:var(--brand); color:#fff; }
+    .table-wrap { overflow:auto; }
+    .hidden { display:none; }
+    .muted { color:#64748b; font-size:12px; }
+    .actions { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+    .footer { position:fixed; bottom:0; left:0; right:0; background:#0f172a; color:#e2e8f0; padding:9px; text-align:center; font-size:12px; }
+    .pill { display:inline-block; border-radius:999px; padding:3px 10px; color:#fff; font-size:12px; font-weight:700; }
+    .p-green { background:#16a34a; } .p-orange { background:#f59e0b; } .p-red { background:#dc2626; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="brand">TATS</div>
+    <span class="subtitle">منصة ذكية موحدة تجمع الموارد البشرية + الروستر + مستودع المركبات</span>
+  </nav>
+
+  <div class="container">
+    <div class="tabs" id="tabs"></div>
+
+    <section id="dashboard" class="panel"></section>
+    <section id="employees" class="panel hidden"></section>
+    <section id="roster" class="panel hidden"></section>
+    <section id="vehicles" class="panel hidden"></section>
+    <section id="data" class="panel hidden"></section>
+  </div>
+
+  <div class="footer">TATS Standalone App • يعمل بالكامل محلياً عبر LocalStorage</div>
+
+  <script>
+    const dbKey = 'tats_unified_db_v1';
+    const defaultDB = { employees: [], roster: [], vehicles: [], trips: [] };
+    let db = loadDB();
+
+    const tabs = [
+      { id:'dashboard', label:'📊 لوحة القيادة' },
+      { id:'employees', label:'👥 الموارد البشرية' },
+      { id:'roster', label:'🗓️ الروستر' },
+      { id:'vehicles', label:'🚗 المركبات' },
+      { id:'data', label:'💾 النسخ الاحتياطي' },
+    ];
+
+    function uid(prefix){ return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2,6)}`; }
+    function saveDB(){ localStorage.setItem(dbKey, JSON.stringify(db)); }
+    function loadDB(){ try { return { ...defaultDB, ...(JSON.parse(localStorage.getItem(dbKey)||'{}')) }; } catch { return structuredClone(defaultDB); } }
+    function esc(v=''){ return String(v).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+    function setupTabs(){
+      const wrap = document.getElementById('tabs');
+      wrap.innerHTML = tabs.map((t,i)=>`<button class="tab ${i===0?'active':''}" data-tab="${t.id}">${t.label}</button>`).join('');
+      wrap.addEventListener('click', e => {
+        const btn = e.target.closest('.tab'); if(!btn) return;
+        const id = btn.dataset.tab;
+        document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active', x===btn));
+        document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('hidden', p.id!==id));
+      });
+    }
+
+    function renderDashboard(){
+      const section = document.getElementById('dashboard');
+      const activeTrips = db.trips.filter(t=>t.status==='نشطة').length;
+      section.innerHTML = `
+        <div class="card"><div class="card-header">ملخص النظام الموحد</div>
+          <div class="card-body">
+            <div class="row">
+              <div class="kpi">الموظفون<strong>${db.employees.length}</strong></div>
+              <div class="kpi">مناوبات الروستر<strong>${db.roster.length}</strong></div>
+              <div class="kpi">المركبات<strong>${db.vehicles.length}</strong></div>
+              <div class="kpi">الرحلات النشطة<strong>${activeTrips}</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-header">آخر الأنشطة</div>
+          <div class="card-body muted">
+            • اربط الموظفين بالمناوبات وبالمركبات من خلال الأقسام التالية.<br>
+            • التطبيق مستقل بالكامل، ويمكن تصدير/استيراد البيانات كملف JSON.
+          </div>
+        </div>`;
+    }
+
+    function renderEmployees(){
+      const section = document.getElementById('employees');
+      section.innerHTML = `
+      <div class="card">
+        <div class="card-header">إدارة الموظفين</div>
+        <div class="card-body">
+          <form id="empForm" class="row">
+            <div class="field"><label>الاسم</label><input name="name" required></div>
+            <div class="field"><label>القسم</label><input name="department" required></div>
+            <div class="field"><label>المسمى الوظيفي</label><input name="title" required></div>
+            <div class="field"><label>الهاتف</label><input name="phone"></div>
+            <div class="field"><label>الحالة</label><select name="status"><option>نشط</option><option>إجازة</option><option>موقوف</option></select></div>
+            <div class="field" style="align-self:end"><button class="btn btn-success" type="submit">إضافة موظف</button></div>
+          </form>
+        </div>
+      </div>
+      <div class="card"><div class="card-header">قائمة الموظفين</div><div class="card-body table-wrap">
+        <table><thead><tr><th>#</th><th>الاسم</th><th>القسم</th><th>المسمى</th><th>الهاتف</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>
+        ${db.employees.map((e,i)=>`<tr><td>${i+1}</td><td>${esc(e.name)}</td><td>${esc(e.department)}</td><td>${esc(e.title)}</td><td>${esc(e.phone||'-')}</td><td><span class="pill ${e.status==='نشط'?'p-green':e.status==='إجازة'?'p-orange':'p-red'}">${esc(e.status)}</span></td><td class="actions"><button class="btn btn-danger" data-del-emp="${e.id}">حذف</button></td></tr>`).join('') || '<tr><td colspan="7">لا توجد بيانات</td></tr>'}
+        </tbody></table>
+      </div></div>`;
+
+      section.querySelector('#empForm').onsubmit = ev => {
+        ev.preventDefault(); const f = new FormData(ev.target);
+        db.employees.push({ id: uid('emp'), name:f.get('name'), department:f.get('department'), title:f.get('title'), phone:f.get('phone'), status:f.get('status') });
+        saveDB(); refreshAll();
+      };
+      section.querySelectorAll('[data-del-emp]').forEach(btn=>btn.onclick=()=>{
+        db.employees = db.employees.filter(x=>x.id!==btn.dataset.delEmp);
+        db.roster = db.roster.filter(x=>x.employeeId!==btn.dataset.delEmp);
+        saveDB(); refreshAll();
+      });
+    }
+
+    function employeeOptions(){
+      return db.employees.map(e=>`<option value="${e.id}">${esc(e.name)} - ${esc(e.department)}</option>`).join('');
+    }
+
+    function renderRoster(){
+      const section = document.getElementById('roster');
+      section.innerHTML = `
+      <div class="card"><div class="card-header">جدولة الروستر</div><div class="card-body">
+        <form id="rosterForm" class="row">
+          <div class="field"><label>الموظف</label><select name="employeeId" required><option value="">اختر</option>${employeeOptions()}</select></div>
+          <div class="field"><label>التاريخ</label><input type="date" name="date" required></div>
+          <div class="field"><label>الوردية</label><select name="shift"><option>صباحية</option><option>مسائية</option><option>ليلية</option></select></div>
+          <div class="field"><label>الموقع</label><input name="location" required></div>
+          <div class="field" style="align-self:end"><button class="btn btn-success" type="submit">إضافة مناوبة</button></div>
+        </form></div></div>
+      <div class="card"><div class="card-header">سجل المناوبات</div><div class="card-body table-wrap">
+        <table><thead><tr><th>#</th><th>الموظف</th><th>التاريخ</th><th>الوردية</th><th>الموقع</th><th>إجراءات</th></tr></thead><tbody>
+        ${db.roster.map((r,i)=>{ const e=db.employees.find(x=>x.id===r.employeeId); return `<tr><td>${i+1}</td><td>${esc(e?.name||'—')}</td><td>${esc(r.date)}</td><td>${esc(r.shift)}</td><td>${esc(r.location)}</td><td><button class="btn btn-danger" data-del-r="${r.id}">حذف</button></td></tr>`; }).join('') || '<tr><td colspan="6">لا توجد بيانات</td></tr>'}
+        </tbody></table>
+      </div></div>`;
+
+      section.querySelector('#rosterForm').onsubmit = ev => {
+        ev.preventDefault(); const f = new FormData(ev.target);
+        db.roster.push({ id:uid('ros'), employeeId:f.get('employeeId'), date:f.get('date'), shift:f.get('shift'), location:f.get('location') });
+        saveDB(); refreshAll();
+      };
+      section.querySelectorAll('[data-del-r]').forEach(btn=>btn.onclick=()=>{ db.roster = db.roster.filter(x=>x.id!==btn.dataset.delR); saveDB(); refreshAll(); });
+    }
+
+    function renderVehicles(){
+      const section = document.getElementById('vehicles');
+      section.innerHTML = `
+      <div class="card"><div class="card-header">تعريف المركبات</div><div class="card-body">
+        <form id="vehForm" class="row">
+          <div class="field"><label>رقم المركبة</label><input name="code" required></div>
+          <div class="field"><label>النوع</label><input name="type" required></div>
+          <div class="field"><label>السائق</label><input name="driver" required></div>
+          <div class="field"><label>الحالة</label><select name="status"><option>جاهزة</option><option>صيانة</option><option>خارج الخدمة</option></select></div>
+          <div class="field" style="align-self:end"><button class="btn btn-success" type="submit">إضافة مركبة</button></div>
+        </form>
+      </div></div>
+      <div class="card"><div class="card-header">تشغيل الرحلات (VDA)</div><div class="card-body">
+        <form id="tripForm" class="row">
+          <div class="field"><label>المركبة</label><select name="vehicleId" required><option value="">اختر</option>${db.vehicles.map(v=>`<option value="${v.id}">${esc(v.code)} - ${esc(v.driver)}</option>`).join('')}</select></div>
+          <div class="field"><label>الوجهة</label><input name="destination" required></div>
+          <div class="field"><label>التاريخ</label><input type="date" name="date" required></div>
+          <div class="field"><label>الحالة</label><select name="status"><option>نشطة</option><option>مكتملة</option><option>ملغية</option></select></div>
+          <div class="field" style="align-self:end"><button class="btn btn-warning" type="submit">تسجيل رحلة</button></div>
+        </form>
+      </div></div>
+      <div class="card"><div class="card-header">قائمة المركبات والرحلات</div><div class="card-body table-wrap">
+        <table><thead><tr><th>#</th><th>المركبة</th><th>السائق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>
+          ${db.vehicles.map((v,i)=>`<tr><td>${i+1}</td><td>${esc(v.code)} (${esc(v.type)})</td><td>${esc(v.driver)}</td><td>${esc(v.status)}</td><td><button class="btn btn-danger" data-del-v="${v.id}">حذف</button></td></tr>`).join('') || '<tr><td colspan="5">لا توجد مركبات</td></tr>'}
+        </tbody></table>
+        <br>
+        <table><thead><tr><th>#</th><th>المركبة</th><th>الوجهة</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>
+          ${db.trips.map((t,i)=>{ const v=db.vehicles.find(x=>x.id===t.vehicleId); return `<tr><td>${i+1}</td><td>${esc(v?.code||'—')}</td><td>${esc(t.destination)}</td><td>${esc(t.date)}</td><td>${esc(t.status)}</td><td><button class="btn btn-danger" data-del-t="${t.id}">حذف</button></td></tr>`; }).join('') || '<tr><td colspan="6">لا توجد رحلات</td></tr>'}
+        </tbody></table>
+      </div></div>`;
+
+      section.querySelector('#vehForm').onsubmit = ev => {
+        ev.preventDefault(); const f=new FormData(ev.target);
+        db.vehicles.push({ id:uid('veh'), code:f.get('code'), type:f.get('type'), driver:f.get('driver'), status:f.get('status') });
+        saveDB(); refreshAll();
+      };
+      section.querySelector('#tripForm').onsubmit = ev => {
+        ev.preventDefault(); const f=new FormData(ev.target);
+        db.trips.push({ id:uid('trip'), vehicleId:f.get('vehicleId'), destination:f.get('destination'), date:f.get('date'), status:f.get('status') });
+        saveDB(); refreshAll();
+      };
+      section.querySelectorAll('[data-del-v]').forEach(btn=>btn.onclick=()=>{ db.vehicles = db.vehicles.filter(x=>x.id!==btn.dataset.delV); db.trips = db.trips.filter(x=>x.vehicleId!==btn.dataset.delV); saveDB(); refreshAll(); });
+      section.querySelectorAll('[data-del-t]').forEach(btn=>btn.onclick=()=>{ db.trips = db.trips.filter(x=>x.id!==btn.dataset.delT); saveDB(); refreshAll(); });
+    }
+
+    function renderData(){
+      const section = document.getElementById('data');
+      section.innerHTML = `
+      <div class="card"><div class="card-header">نسخ احتياطي واستعادة</div><div class="card-body">
+        <div class="row">
+          <button class="btn btn-primary" id="exportBtn">تصدير JSON</button>
+          <input type="file" id="importFile" accept="application/json">
+          <button class="btn btn-warning" id="resetBtn">إعادة ضبط كاملة</button>
+        </div>
+        <p class="muted">يمكنك نقل البيانات بين الأجهزة بسهولة من خلال التصدير والاستيراد.</p>
+      </div></div>`;
+      section.querySelector('#exportBtn').onclick = ()=>{
+        const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tats-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+      };
+      section.querySelector('#importFile').onchange = async ev => {
+        const file = ev.target.files[0]; if(!file) return;
+        try { db = { ...defaultDB, ...(JSON.parse(await file.text())) }; saveDB(); refreshAll(); alert('تم الاستيراد بنجاح'); }
+        catch { alert('ملف غير صالح'); }
+      };
+      section.querySelector('#resetBtn').onclick = ()=>{
+        if(confirm('هل تريد حذف جميع البيانات؟')){ db = structuredClone(defaultDB); saveDB(); refreshAll(); }
+      };
+    }
+
+    function refreshAll(){ renderDashboard(); renderEmployees(); renderRoster(); renderVehicles(); renderData(); }
+    setupTabs(); refreshAll();
+  </script>
+</body>
+</html>
 
