@@ -1,0 +1,12 @@
+{
+  "backend": {
+    "baseUrl": "http://localhost:8001/api",
+    "authEndpoint": "http://localhost:8001/api/auth/login",
+    "usersEndpoint": "http://localhost:8001/api/admin/users"
+  },
+  "security": {
+    "jwtAudience": "general-assistance-ecosystem",
+    "requireMfaForAdmins": true,
+    "sessionTimeoutMinutes": 60
+  }
+}
